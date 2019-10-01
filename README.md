@@ -1,8 +1,8 @@
 ## NSZ
-NSZ files are not a real format, they are functionally identicle to NSP files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
+NSZ files are not a real format, they are functionally identical to NSP files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
 
 ## XCZ
-XCZ files are not a real format, they are functionally identicle to XCI files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
+XCZ files are not a real format, they are functionally identical to XCI files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
 
 ## NCZ
 
