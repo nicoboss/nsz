@@ -74,11 +74,13 @@ with open(sys.argv[1], 'rb') as f:
 			i = s.offset
 			
 			crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+			end = s.offset + s.size
 			
-			while i < s.offset + s.size:
+			while i < end:
 				o.seek(i)
 				crypto.seek(i)
-				buf = o.read(0x10000)
+				chunkSz = 0x10000 if end - i > 0x10000 else end - i
+				buf = o.read(chunkSz)
 				
 				if not len(buf):
 					break
@@ -86,7 +88,7 @@ with open(sys.argv[1], 'rb') as f:
 				o.seek(i)
 				o.write(crypto.encrypt(buf))
 				
-				i += 0x10000
+				i += chunkSz
 			
 			
 			
