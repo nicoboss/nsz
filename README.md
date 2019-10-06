@@ -59,4 +59,9 @@ protected:
 
 ## Compressor script
 
-Requires hactool compatible keys.txt to be present with nsz.py
+Requires hactool compatible keys.txt to be present with nsz.py.
+
+example usage:
+nsz.py -C title.nsp --level 17
+
+will generate title.nsz
