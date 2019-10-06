@@ -56,3 +56,7 @@ protected:
 } PACKED;
 ```
 
+
+## Compressor script
+
+Requires hactool compatible keys.txt to be present with nsz.py
