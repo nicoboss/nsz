@@ -62,6 +62,6 @@ protected:
 Requires hactool compatible keys.txt to be present with nsz.py.  Only currently works on base titles (no patches or DLC), but can be updated to work on them later.
 
 example usage:
-nsz.py -C title.nsp --level 17
+nsz.py --level 17 -C title1.nsp title2.nsp title3.nsp
 
-will generate title.nsz
+will generate title1.nsz title2.nsz title3.nsz
