@@ -70,6 +70,35 @@ will generate title1.nsz title2.nsz title3.nsz
 
 py -3 -m pip install -r requirements.txt
 
+## Usage
+```
+nsz.py --help
+usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
+              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-l LEVEL]
+              [-o OUTPUT]
+              [file [file ...]]
+
+positional arguments:
+  file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFO, --info INFO  show info about title or file
+  --depth DEPTH         max depth for file info and extraction
+  -N VERIFY_NCAS, --verify-ncas VERIFY_NCAS
+                        Verify NCAs in container
+  -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
+                        extract / unpack a NSP
+  -c CREATE, --create CREATE
+                        create / pack a NSP
+  -C                    Compress NSP
+  -l LEVEL, --level LEVEL
+                        Compression Level
+  -o OUTPUT, --output OUTPUT
+                        Directory to save the output NSZ files
+nut exception: 0
+```
+
 ## Credits
 
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.

@@ -36,15 +36,24 @@ def isNcaPacked(nca):
 
 	return True
 
-def compress(filePath, compressionLevel = 17):
-	Print.info('compressing (level %d) %s' % (compressionLevel, filePath))
+def compress(filePath, compressionLevel = 17, outputDir = None):
+	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 
 	container.open(filePath, 'rb')
 
 	CHUNK_SZ = 0x1000000
 
-	newNsp = Fs.Pfs0.Pfs0Stream(filePath[0:-1] + 'z')
+	if outputDir is None:
+		nszPath = filePath[0:-1] + 'z'
+	else:
+		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
+		
+	nszPath = os.path.abspath(nszPath)
+	
+	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	
+	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.PROGRAM:
