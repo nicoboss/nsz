@@ -59,7 +59,7 @@ protected:
 
 ## Compressor script
 
-Requires hactool compatible keys.txt to be present with nsz.py.
+Requires hactool compatible keys.txt to be present with nsz.py.  Only currently works on base titles (no patches or DLC), but can be updated to work on them later.
 
 example usage:
 nsz.py -C title.nsp --level 17
