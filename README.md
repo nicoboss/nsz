@@ -65,3 +65,13 @@ example usage:
 nsz.py --level 17 -C title1.nsp title2.nsp title3.nsp
 
 will generate title1.nsz title2.nsz title3.nsz
+
+## Python requirements
+
+py -3 -m pip install -r requirements.txt
+
+## Credits
+
+SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
+
+Nicoboss for the original awesome idea.  https://github.com/nicoboss/nsZip/

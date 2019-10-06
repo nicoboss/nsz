@@ -1,0 +1,4 @@
+pycryptodome==3.9.0
+zstandard
+urllib3
+colorama
