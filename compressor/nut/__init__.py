@@ -57,7 +57,7 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
-		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.PROGRAM:
+		if isinstance(nspf, Fs.Nca.Nca) and (nspf.header.contentType == Fs.Type.Content.PROGRAM or nspf.header.contentType == Fs.Type.Content.PUBLICDATA):
 			if isNcaPacked(nspf):
 				cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
