@@ -96,6 +96,9 @@ optional arguments:
                         Compression Level
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
+  -t THREADS, --threads THREADS
+                        Number of threads to compress with. Negative
+                        corresponds to the number of logical CPU cores.
 nut exception: 0
 ```
 

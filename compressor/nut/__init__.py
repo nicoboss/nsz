@@ -10,6 +10,7 @@ import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
+import time
 
 def sortedFs(nca):
 	fs = []
@@ -36,7 +37,7 @@ def isNcaPacked(nca):
 
 	return True
 
-def compress(filePath, compressionLevel = 17, outputDir = None):
+def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 
@@ -51,14 +52,14 @@ def compress(filePath, compressionLevel = 17, outputDir = None):
 		
 	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	Print.info('compressing (level %d, %d threads) %s -> %s' % (compressionLevel, threads, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.PROGRAM:
 			if isNcaPacked(nspf):
-				cctx = zstandard.ZstdCompressor(level=compressionLevel)
+				cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
 
 				newFileName = nspf._path[0:-1] + 'z'
 
@@ -69,6 +70,8 @@ def compress(filePath, compressionLevel = 17, outputDir = None):
 				nspf.seek(0)
 				f.write(nspf.read(0x4000))
 				written = 0x4000
+				
+				timestamp = time.time()
 
 				compressor = cctx.stream_writer(f)
 				
@@ -105,9 +108,15 @@ def compress(filePath, compressionLevel = 17, outputDir = None):
 						
 				compressor.flush(zstandard.FLUSH_FRAME)
 				
-				print('%d written vs %d tell' % (written, f.tell() - start))
+				elapsed = time.time() - timestamp
+				minutes = elapsed / 60
+				seconds = elapsed % 60
+				
+				speed = 0 if elapsed == 0 else (nspf.size / elapsed)
+
 				written = f.tell() - start
-				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
+				print('\ncompressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
+				print('duration: %02d:%02d  speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))
 				newNsp.resize(newFileName, written)
 				continue
 			else:
