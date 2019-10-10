@@ -11,6 +11,7 @@ import subprocess
 from contextlib import closing
 import zstandard
 import time
+from tqdm import tqdm
 
 def sortedFs(nca):
 	fs = []
@@ -92,20 +93,22 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 				written += len(header)
 				
 				decompressedBytes = 0x4000
+				
+				with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+					for fs in sortedFs(nspf):
+						fs.seek(0)
 
-				for fs in sortedFs(nspf):
-					fs.seek(0)
+						while not fs.eof():
+							buffer = fs.read(CHUNK_SZ)
+							nbytes = len(buffer)
+							
+							if nbytes == 0:
+								raise IOError('read failed')
 
-					while not fs.eof():
-						buffer = fs.read(CHUNK_SZ)
-
-						if len(buffer) == 0:
-							raise IOError('read failed')
-
-						written += compressor.write(buffer)
-						
-						decompressedBytes += len(buffer)
-						
+							written += compressor.write(buffer)
+							
+							decompressedBytes += nbytes
+							bar.update(nbytes)
 				compressor.flush(zstandard.FLUSH_FRAME)
 				
 				elapsed = time.time() - timestamp
@@ -124,9 +127,10 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 
 		f = newNsp.add(nspf._path, nspf.size)
 		nspf.seek(0)
-		while not nspf.eof():
-			buffer = nspf.read(CHUNK_SZ)
-			f.write(buffer)
-
+		with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+			while not nspf.eof():
+				buffer = nspf.read(CHUNK_SZ)
+				f.write(buffer)
+				bar.update(len(buffer))
 
 	newNsp.close()
