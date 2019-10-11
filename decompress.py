@@ -7,6 +7,12 @@ from binascii import hexlify as hx, unhexlify as uhx
 if len(sys.argv) < 3:
 	print('usage: decompress.py input.ncz output.nca')
 
+def readInt8(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(1), byteorder=byteorder, signed=signed)
+
+def readInt32(f, byteorder='little', signed = False):
+		return int.from_bytes(f.read(4), byteorder=byteorder, signed=signed)
+
 def readInt64(f, byteorder='little', signed = False):
 		return int.from_bytes(f.read(8), byteorder=byteorder, signed=signed)
 
@@ -40,23 +46,70 @@ class Section:
 		readInt64(f) # padding
 		self.cryptoKey = f.read(16)
 		self.cryptoCounter = f.read(16)
+		
+class Block:
+	def __init__(self, f):
+		self.f = f
+		self.magic = readInt64(f)
+		self.version = readInt8(f)
+		self.type = readInt8(f)
+		self.unused = readInt8(f)
+		self.blockSizeExponent = readInt8(f)
+		self.numberOfBlocks = readInt32(f)
+		self.decompressedSize = readInt64(f)
+		self.compressedBlockSizeList = []
+		for i in range(self.numberOfBlocks):
+			self.compressedBlockSizeList.append(readInt32(f))
+	
 
+CHUNK_SZ = 16384
 with open(sys.argv[1], 'rb') as f:
 	header = f.read(0x4000)
 	magic = readInt64(f)
 	sectionCount = readInt64(f)
 	sections = []
 	for i in range(sectionCount):
-		sections.append(Section(f))
+		SectionHeader = Section(f)
+		sections.append(SectionHeader)
 		
-	dctx = zstandard.ZstdDecompressor()
-	reader = dctx.stream_reader(f)
+	BlockHeader = Block(f);
+	print(BlockHeader.version)
+	print(BlockHeader.type)
+	print(BlockHeader.unused)
+	print(BlockHeader.blockSizeExponent)
+	print(BlockHeader.numberOfBlocks)
+	print(BlockHeader.decompressedSize)
+	print(BlockHeader.compressedBlockSizeList[0])
+	print(BlockHeader.compressedBlockSizeList[1])
+	blockSize = 2**BlockHeader.blockSizeExponent
+	#for item in BlockHeader.compressedBlockSizeList:
+	#	print(item)
+	print("0:", BlockHeader.compressedBlockSizeList[0])
+	print("1:", BlockHeader.compressedBlockSizeList[1])
+	print("2:", BlockHeader.compressedBlockSizeList[2])
+	print("Start tell:", f.tell())
+	
 		
 	with open(sys.argv[2], 'wb+') as o:
 		o.write(header)
 		
+		blockID = 0
+		useBlockCompression = True
+		
+		dctx = zstandard.ZstdDecompressor()
+		decompressor = dctx.stream_writer(o)
 		while True:
-			chunk = reader.read(16384)
+		
+			if useBlockCompression:
+				print("tell:", f.tell())
+				chunk = f.read(120921)
+				decompressor.write(chunk)
+				decompressor.flush()
+				print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks+1))
+				#f.seek(pos + BlockHeader.compressedBlockSizeList[blockID])
+				blockID += 1
+			else:
+				chunk = reader.read(CHUNK_SZ)
 			
 			if not chunk:
 				break
