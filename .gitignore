@@ -1,0 +1,6 @@
+*.pyc
+*.nsp
+*.nsz
+*.xcz
+*.ncz
+compressor/keys.txt
