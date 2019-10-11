@@ -13,6 +13,7 @@ import zstandard
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import aes128
+import hashlib
 
 ncaHeaderSize = 0x4000
 
@@ -172,6 +173,8 @@ def decompress(filePath, outputDir = None):
 			Print.info('skipping delta fragment')
 			continue
 			
+		hash = hashlib.sha256()
+			
 		if nspf._path.endswith('.ncz'):
 			newFileName = nspf._path[0:-1] + 'a'
 
@@ -194,6 +197,7 @@ def decompress(filePath, outputDir = None):
 			with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
 				f.write(header)
 				bar.update(len(header))
+				hash.update(header)
 				
 				for s in sections:
 					if s.cryptoType == 1: #plain text
@@ -217,10 +221,17 @@ def decompress(filePath, outputDir = None):
 							break
 						
 						#f.seek(i)
-						f.write(crypto.encrypt(buf))
+						buf = crypto.encrypt(buf)
+						f.write(buf)
 						bar.update(len(buf))
+						hash.update(buf)
 						
 						i += chunkSz
+				
+			if hash.hexdigest()[0:32] + '.nca' != newFileName:
+				Print.error('\nNCZ verification failed!\n')
+			else:
+				Print.info('\nNCZ verification successful!\n')
 
 			
 			end = f.tell()
