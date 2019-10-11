@@ -170,7 +170,7 @@ class Pfs0(BaseFs):
 			if ticket.titleKey() != ('0' * 32):
 				Titles.get(ticket.titleId()).key = ticket.titleKey()
 		except:
-			Print.info('no ticket found')
+			pass
 
 		for i in range(fileCount):
 			if self.files[i] != ticket:

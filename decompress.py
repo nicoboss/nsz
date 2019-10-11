@@ -2,6 +2,7 @@ import sys
 import zstandard
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
+from binascii import hexlify as hx, unhexlify as uhx
 
 if len(sys.argv) < 3:
 	print('usage: decompress.py input.ncz output.nca')
@@ -66,10 +67,10 @@ with open(sys.argv[1], 'rb') as f:
 			if s.cryptoType == 1: #plain text
 				continue
 				
-			if s.cryptoType != 3:
-				raise IOError('unknown crypto type')
+			if s.cryptoType not in (3, 4):
+				raise IOError('unknown crypto type: %d' % s.cryptoType)
 				
-			print('%x - %d bytes, type %d' % (s.offset, s.size, s.cryptoType))
+			print('%x - %d bytes, type %d, key: %s, iv: %s' % (s.offset, s.size, s.cryptoType, str(hx(s.cryptoKey)), str(hx(s.cryptoCounter))))
 			
 			i = s.offset
 			

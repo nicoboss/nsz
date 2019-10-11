@@ -16,6 +16,8 @@ class BaseFile:
 		self.cryptoKey = None
 		self.cryptoType = Fs.Type.Crypto.NONE
 		self.cryptoCounter = None
+		self.cryptoOffset = 0
+		self.ctr_val = 0
 		self.isPartition = False
 		self._children = []
 		self._path = None
@@ -175,7 +177,7 @@ class BaseFile:
 		if cryptoCounter != -1:
 			self.cryptoCounter = cryptoCounter
 			
-		if self.cryptoType == Fs.Type.Crypto.CTR:
+		if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 			if self.cryptoKey:
 				self.crypto = aes128.AESCTR(self.cryptoKey, nonce = self.cryptoCounter.copy())
 				self.cryptoType = Fs.Type.Crypto.CTR
@@ -254,6 +256,19 @@ class BaseFile:
 		for j in range(8):
 			ctr[0x10-j-1] = ofs & 0xFF
 			ofs >>= 8
+		return bytes(ctr)
+		
+	def setBktrCounter(self, ctr_val, ofs):
+		ctr = self.cryptoCounter.copy()
+		ofs >>= 4
+		for j in range(8):
+			ctr[0x10-j-1] = ofs & 0xFF
+			ofs >>= 8
+			
+		for j in range(4):
+			ctr[0x8-j-1] = ctr_val & 0xFF
+			ctr_val >>= 8
+			
 		return bytes(ctr)
 		
 	def printInfo(self, maxDepth = 3, indent = 0):
@@ -348,11 +363,10 @@ class BufferedFile(BaseFile):
 	def getPageFlushBuffer(self, buffer):
 		if self.crypto:
 			if self.cryptoType == Fs.Type.Crypto.CTR:
-				#Print.info('reading ctr from ' + hex(self._bufferOffset))
 				self.crypto.seek(self.offset + self._bufferOffset)
-			else:
-				pass
-				#Print.info('reading from ' + hex(self._bufferOffset))
+			elif self.cryptoType == Fs.Type.Crypto.BKTR:
+				self.crypto.seek(self.offset + self._bufferOffset)
+
 			return self.crypto.encrypt(buffer)
 		return buffer
 
@@ -408,7 +422,7 @@ class File(BufferedFile):
 
 	def pageRefreshed(self):
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR:
+			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 				#Print.info('reading ctr from ' + hex(self._bufferOffset))
 				self.crypto.seek(self.offset + self._bufferOffset)
 			else:
@@ -426,7 +440,7 @@ class MemoryFile(File):
 		self.setupCrypto(cryptoType = cryptoType, cryptoKey = cryptoKey, cryptoCounter = cryptoCounter)
 
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR:
+			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 				self.crypto.seek(offset)
 
 			self.buffer = self.crypto.decrypt(self.buffer)

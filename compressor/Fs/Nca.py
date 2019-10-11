@@ -242,6 +242,8 @@ class Nca(File):
 			if fs.fsType:
 				self.sectionFilesystems.append(fs)
 				self.sections.append(section)
+				
+			fs.open(None, 'rb')
 		
 		
 		self.titleKeyDec = None

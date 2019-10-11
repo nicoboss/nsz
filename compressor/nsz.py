@@ -44,7 +44,6 @@ if __name__ == '__main__':
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
 		parser.add_argument('-l', '--level', type=int, default=17, help='Compression Level')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
-		parser.add_argument('-t', '--threads', type=int, default=0, help='Number of threads to compress with.  Negative corresponds to the number of logical CPU cores.')
 
 		
 		args = parser.parse_args()
@@ -76,7 +75,7 @@ if __name__ == '__main__':
 		if args.C:
 			for filePath in args.file:
 				try:
-					nut.compress(filePath, 17 if args.level is None else args.level, args.output, args.threads)
+					nut.compress(filePath, 17 if args.level is None else args.level, args.output)
 
 				except BaseException as e:
 					Print.error(str(e))

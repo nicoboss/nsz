@@ -68,6 +68,14 @@ class AESCTR:
 	def seek(self, offset):
 		self.ctr = Counter.new(64, prefix=self.nonce[0:8], initial_value=(offset >> 4))
 		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
+		
+	def bktrPrefix(self, ctr_val):
+		return self.nonce[0:4] + ctr_val.to_bytes(4, 'big')
+		
+	def bktrSeek(self, offset, ctr_val, virtualOffset = 0):
+		offset += virtualOffset
+		self.ctr = Counter.new(64, prefix=self.bktrPrefix(ctr_val), initial_value=(offset >> 4))
+		self.aes = AES.new(self.key, AES.MODE_CTR, counter=self.ctr)
 
 class AESXTS:
 	'''Class for performing AES XTS cipher operations'''

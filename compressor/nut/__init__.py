@@ -10,7 +10,8 @@ import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
-import time
+
+ncaHeaderSize = 0x4000
 
 def sortedFs(nca):
 	fs = []
@@ -25,7 +26,7 @@ def isNcaPacked(nca):
 	if len(fs) == 0:
 		return True
 
-	next = 0x4000
+	next = ncaHeaderSize
 	for i in range(len(fs)):
 		if fs[i].offset != next:
 			return False
@@ -37,10 +38,10 @@ def isNcaPacked(nca):
 
 	return True
 
-def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
+def compress(filePath, compressionLevel = 17, outputDir = None):
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
-
+	
 	container.open(filePath, 'rb')
 
 	CHUNK_SZ = 0x1000000
@@ -52,14 +53,14 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 		
 	nszPath = os.path.abspath(nszPath)
 	
-	Print.info('compressing (level %d, %d threads) %s -> %s' % (compressionLevel, threads, filePath, nszPath))
+	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and (nspf.header.contentType == Fs.Type.Content.PROGRAM or nspf.header.contentType == Fs.Type.Content.PUBLICDATA):
 			if isNcaPacked(nspf):
-				cctx = zstandard.ZstdCompressor(level=compressionLevel, threads = threads)
+				cctx = zstandard.ZstdCompressor(level=compressionLevel)
 
 				newFileName = nspf._path[0:-1] + 'z'
 
@@ -68,20 +69,22 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 				start = f.tell()
 
 				nspf.seek(0)
-				f.write(nspf.read(0x4000))
-				written = 0x4000
-				
-				timestamp = time.time()
+				f.write(nspf.read(ncaHeaderSize))
+				written = ncaHeaderSize
 
 				compressor = cctx.stream_writer(f)
 				
-				header = b'NCZSECTN'
-				header += len(sortedFs(nspf)).to_bytes(8, 'little')
-				
-				i = 0
+				sections = []
 				for fs in sortedFs(nspf):
+					sections += fs.getEncryptionSections()
+				
+				header = b'NCZSECTN'
+				header += len(sections).to_bytes(8, 'little')
+
+				i = 0
+				for fs in sections:
 					i += 1
-					header += fs.realOffset().to_bytes(8, 'little')
+					header += fs.offset.to_bytes(8, 'little')
 					header += fs.size.to_bytes(8, 'little')
 					header += fs.cryptoType.to_bytes(8, 'little')
 					header += b'\x00' * 8
@@ -91,14 +94,15 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 				f.write(header)
 				written += len(header)
 				
-				decompressedBytes = 0x4000
-
-				for fs in sortedFs(nspf):
-					fs.seek(0)
-
-					while not fs.eof():
-						buffer = fs.read(CHUNK_SZ)
-
+				decompressedBytes = ncaHeaderSize
+					
+				for section in sections:
+					#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+					o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+					
+					while not o.eof():
+						buffer = o.read(CHUNK_SZ)
+						
 						if len(buffer) == 0:
 							raise IOError('read failed')
 
@@ -108,15 +112,9 @@ def compress(filePath, compressionLevel = 17, outputDir = None, threads = 0):
 						
 				compressor.flush(zstandard.FLUSH_FRAME)
 				
-				elapsed = time.time() - timestamp
-				minutes = elapsed / 60
-				seconds = elapsed % 60
-				
-				speed = 0 if elapsed == 0 else (nspf.size / elapsed)
-
+				print('%d written vs %d tell' % (written, f.tell() - start))
 				written = f.tell() - start
-				print('\ncompressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
-				print('duration: %02d:%02d  speed: %.1f MB/s\n' % (minutes, seconds, speed / 1000000.0))
+				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 				newNsp.resize(newFileName, written)
 				continue
 			else:
