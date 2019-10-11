@@ -94,10 +94,16 @@ class BaseFs(File):
 		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
 
 		if self.bktr1Buffer:
-			self.bktrRelocation = Bktr.Bktr1(MemoryFile(self.bktr1Buffer), 'rb', nca = self)
+			try:
+				self.bktrRelocation = Bktr.Bktr1(MemoryFile(self.bktr1Buffer), 'rb', nca = self)
+			except BaseException as e:
+				Print.info('bktr reloc exception: ' + str(e))
 			
 		if self.bktr2Buffer:
-			self.bktrSubsection = Bktr.Bktr2(MemoryFile(self.bktr2Buffer), 'rb', nca = self)
+			try:
+				self.bktrSubsection = Bktr.Bktr2(MemoryFile(self.bktr2Buffer), 'rb', nca = self)
+			except BaseException as e:
+				Print.info('bktr subsection exception: ' + str(e))
 		
 	def bktrRead(self, size = None, direct = False):
 		self.cryptoOffset = 0
