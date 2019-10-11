@@ -1,6 +1,6 @@
 #from Fs.Pfs0 import Pfs0Stream
 from nut import Print
-import os
+import os, io
 import json
 import Fs
 import Fs.Pfs0
@@ -61,6 +61,8 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
+	
+
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
 			Print.info('skipping delta fragment')
@@ -72,13 +74,12 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 				newFileName = nspf._path[0:-1] + 'z'
 				
 				f = newNsp.add(newFileName, nspf.size)
+				f = io.open("../in.ncz", "wb")
 				
 				start = f.tell()
 				
 				nspf.seek(0)
 				f.write(nspf.read(ncaHeaderSize))
-				written = ncaHeaderSize
-				writtenOld = written
 				
 				cctx = zstandard.ZstdCompressor(level=compressionLevel)
 				compressor = cctx.stream_writer(f)
@@ -101,11 +102,8 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 					header += fs.cryptoCounter
 					
 				f.write(header)
-				written += len(header)
 				
-				compressor = cctx.stream_writer(f)
 				blockID = 0
-				blockStartFilePos = 0
 				blocksHeaderFilePos = f.tell()
 				compressedblockSizeList = []
 				
@@ -121,43 +119,60 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 					header += bytesToCompress.to_bytes(8, 'little') #Decompressed Size
 					header += b'\x00' * (blocksToCompress*4)
 					f.write(header)
-					written += len(header)
 				
 				decompressedBytes = ncaHeaderSize
 				
 				with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+					
+					partitions = []
 					for section in sections:
 						#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-						o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
+						partitions.append(nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
 						
-						while not o.eof():
-						
-							if useBlockCompression:
-								
-								buffer = o.read(blockSize)
-								if len(buffer) == 0:
-									raise IOError('read failed')
-								written += compressor.write(buffer)
-								decompressedBytes += len(buffer)
-								written += compressor.flush(zstandard.FLUSH_BLOCK)
-								compressedblockSizeList.append(written-writtenOld)
-								print("written:", written-writtenOld)
-								print("writtenPos:", f.tell() - blockStartFilePos)
-								#print('Block', str(blockID+1)+'/'+str(blocksToCompress+1))
-								blockID += 1
-								blockStartFilePos = f.tell()
-								writtenOld = written
-							else:
-								buffer = o.read(CHUNK_SZ)
-								if len(buffer) == 0:
-									raise IOError('read failed')
-								written += compressor.write(buffer)
+					
+					partNr = 0
+					blockStartFilePos = f.tell()
+					#compressor = cctx.stream_writer(f)
+					while partNr < len(partitions)-1:
+					
+						if useBlockCompression:
 							
+							buffer = partitions[partNr].read(blockSize)
+							while (len(buffer) < blockSize and partNr < len(partitions)-1):
+								partNr += 1
+								buffer += partitions[partNr].read(blockSize - len(buffer))
+							#print("BufferLen:", len(buffer))
+							#with io.open("../"+str(blockID)+".lul", "wb") as e:
+							#	e.write(buffer)
+							#	e.flush()
+							if len(buffer) == 0:
+								raise IOError('read failed')
+							#f = io.open("../"+str(blockID)+".ncz", "wb")
+							compressor = cctx.stream_writer(f)
+							compressor.write(buffer)
 							decompressedBytes += len(buffer)
-							bar.update(len(buffer))
-						
-				compressor.flush(zstandard.FLUSH_BLOCK)
+							compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
+							compressedblockSizeList.append(f.tell() - blockStartFilePos)
+							print("Written:", f.tell() - blockStartFilePos)
+							#print('Block', str(blockID+1)+'/'+str(blocksToCompress+1))
+							blockID += 1
+							blockStartFilePos = f.tell()
+						else:
+							buffer = o.read(CHUNK_SZ)
+							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
+								partNr += 1
+								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
+							if len(buffer) == 0:
+								raise IOError('read failed')
+							compressor.write(buffer)
+							
+							
+						decompressedBytes += len(buffer)
+						bar.update(len(buffer))
 				
+				if not useBlockCompression:
+					compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
+
 				if useBlockCompression:
 					f.seek(blocksHeaderFilePos+24)
 					header = b""
@@ -167,7 +182,6 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 					f.write(header)
 					f.seek(0, 2) #Seek to end of file.
 				
-				print('%d written vs %d tell' % (written, f.tell() - start))
 				written = f.tell() - start
 				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 				newNsp.resize(newFileName, written)

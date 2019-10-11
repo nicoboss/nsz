@@ -87,34 +87,39 @@ with open(sys.argv[1], 'rb') as f:
 	print("0:", BlockHeader.compressedBlockSizeList[0])
 	print("1:", BlockHeader.compressedBlockSizeList[1])
 	print("2:", BlockHeader.compressedBlockSizeList[2])
+	pos = f.tell()
 	print("Start tell:", f.tell())
 	
-		
+	
 	with open(sys.argv[2], 'wb+') as o:
 		o.write(header)
 		
 		blockID = 0
 		useBlockCompression = True
 		
-		dctx = zstandard.ZstdDecompressor()
-		decompressor = dctx.stream_writer(o)
-		while True:
+		#with open("inputChunk.dat", 'wb') as l:
+		#	l.write(f.read(57037))
+		#exit(0)
 		
+		dctx = zstandard.ZstdDecompressor()
+		decompressor = dctx.stream_reader(f)
+		while True:
 			if useBlockCompression:
-				print("tell:", f.tell())
-				chunk = f.read(120921)
-				decompressor.write(chunk)
+				print("Tell:", f.tell())
+				inputChunk = decompressor.read(524287)
+				o.write(inputChunk)
 				decompressor.flush()
-				print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks+1))
-				#f.seek(pos + BlockHeader.compressedBlockSizeList[blockID])
+				o.flush()
+				#print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks+1))
+				pos += BlockHeader.compressedBlockSizeList[blockID]
+				f.seek(pos)
+				decompressor = dctx.stream_reader(f)
 				blockID += 1
 			else:
 				chunk = reader.read(CHUNK_SZ)
-			
-			if not chunk:
-				break
-				
-			o.write(chunk)
+				if not chunk:
+					break
+				o.write(chunk)
 			
 		for s in sections:
 			if s.cryptoType == 1: #plain text
