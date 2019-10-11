@@ -10,6 +10,7 @@ import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
+from tqdm import tqdm
 
 ncaHeaderSize = 0x4000
 
@@ -96,19 +97,21 @@ def compress(filePath, compressionLevel = 17, outputDir = None):
 				
 				decompressedBytes = ncaHeaderSize
 					
-				for section in sections:
-					#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-					o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
-					
-					while not o.eof():
-						buffer = o.read(CHUNK_SZ)
+				with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+					for section in sections:
+						#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+						o = nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True)
 						
-						if len(buffer) == 0:
-							raise IOError('read failed')
+						while not o.eof():
+							buffer = o.read(CHUNK_SZ)
+							
+							if len(buffer) == 0:
+								raise IOError('read failed')
 
-						written += compressor.write(buffer)
-						
-						decompressedBytes += len(buffer)
+							written += compressor.write(buffer)
+							
+							decompressedBytes += len(buffer)
+							bar.update(len(buffer))
 						
 				compressor.flush(zstandard.FLUSH_FRAME)
 				
