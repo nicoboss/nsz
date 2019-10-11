@@ -115,6 +115,9 @@ class BktrRelocationBucket(BktrBucket):
 	def __init__(self, f):
 		super(BktrRelocationBucket, self).__init__(f)
 		
+		if self.entryCount > 0xFFFF:
+			raise IOError('Too many entries')
+			
 		for i in range(self.entryCount):
 			self.entries.append(BktrRelocationEntry(f))
 			
