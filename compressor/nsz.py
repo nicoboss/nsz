@@ -25,6 +25,20 @@ import random
 import queue
 import nut
 
+def expandFiles(path):
+	files = []
+	path = os.path.abspath(path)
+
+	if os.path.isfile(path):
+		files.append(path)
+	else:
+		for f in os.listdir(path):
+			f = os.path.join(path, f)
+			if os.path.isfile(f) and (f.endswith('.nsp') or f.endswith('.nsz')):
+				files.append(f)
+	return files
+	
+
 
 if __name__ == '__main__':
 	try:
@@ -42,6 +56,7 @@ if __name__ == '__main__':
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
+		parser.add_argument('-D', action="store_true", help='Decompress NSZ')
 		parser.add_argument('-l', '--level', type=int, default=17, help='Compression Level')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
 
@@ -73,15 +88,26 @@ if __name__ == '__main__':
 			nsp.pack(args.file)
 
 		if args.C:
-			for filePath in args.file:
-				try:
-					nut.compress(filePath, 17 if args.level is None else args.level, args.output)
+			for i in args.file:
+				for filePath in expandFiles(i):
+					try:
+						if filePath.endswith('.nsp'):
+							nut.compress(filePath, 17 if args.level is None else args.level, args.output)
 
-				except BaseException as e:
-					Print.error(str(e))
-					raise
+					except BaseException as e:
+						Print.error(str(e))
+						raise
+						
+		if args.D:
+			for i in args.file:
+				for filePath in expandFiles(i):
+					try:
+						if filePath.endswith('.nsz'):
+							nut.decompress(filePath, args.output)
 
-
+					except BaseException as e:
+						Print.error(str(e))
+						raise
 
 
 		if args.info:

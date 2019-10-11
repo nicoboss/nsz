@@ -19,7 +19,7 @@ class Pfs0Stream():
 	def __init__(self, path):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		self.path = path
-		self.f = open(path, 'wb')
+		self.f = open(path, 'wb+')
 		self.offset = 0x8000
 		self.files = []
 
@@ -174,7 +174,10 @@ class Pfs0(BaseFs):
 
 		for i in range(fileCount):
 			if self.files[i] != ticket:
-				self.files[i].open(None, None)
+				try:
+					self.files[i].open(None, None)
+				except:
+					pass
 
 		self.files.reverse()
 				

@@ -11,6 +11,8 @@ import subprocess
 from contextlib import closing
 import zstandard
 from tqdm import tqdm
+from binascii import hexlify as hx, unhexlify as uhx
+from nut import aes128
 
 ncaHeaderSize = 0x4000
 
@@ -126,6 +128,106 @@ def compress(filePath, compressionLevel = 17, outputDir = None):
 				continue
 			else:
 				print('not packed!')
+
+		f = newNsp.add(nspf._path, nspf.size)
+		nspf.seek(0)
+		while not nspf.eof():
+			buffer = nspf.read(CHUNK_SZ)
+			f.write(buffer)
+
+
+	newNsp.close()
+	
+class Section:
+	def __init__(self, f):
+		self.f = f
+		self.offset = f.readInt64()
+		self.size = f.readInt64()
+		self.cryptoType = f.readInt64()
+		f.readInt64() # padding
+		self.cryptoKey = f.read(16)
+		self.cryptoCounter = f.read(16)
+
+def decompress(filePath, outputDir = None):
+	filePath = os.path.abspath(filePath)
+	container = Fs.factory(filePath)
+	
+	container.open(filePath, 'rb')
+
+	CHUNK_SZ = 0x1000000
+
+	if outputDir is None:
+		nspPath = filePath[0:-1] + 'p'
+	else:
+		nspPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'p'))
+		
+	nspPath = os.path.abspath(nspPath)
+	
+	Print.info('decompressing %s -> %s' % (filePath, nspPath))
+	
+	newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
+
+	for nspf in container:
+		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
+			Print.info('skipping delta fragment')
+			continue
+			
+		if nspf._path.endswith('.ncz'):
+			newFileName = nspf._path[0:-1] + 'a'
+
+			f = newNsp.add(newFileName, nspf.size)
+			
+			start = f.tell()
+
+			nspf.seek(0)
+			
+			header = nspf.read(ncaHeaderSize)
+			magic = nspf.read(8)
+			sectionCount = nspf.readInt64()
+			sections = []
+			for i in range(sectionCount):
+				sections.append(Section(nspf))
+
+			dctx = zstandard.ZstdDecompressor()
+			reader = dctx.stream_reader(nspf)
+
+			with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+				f.write(header)
+				bar.update(len(header))
+				
+				for s in sections:
+					if s.cryptoType == 1: #plain text
+						continue
+						
+					if s.cryptoType not in (3, 4):
+						raise IOError('unknown crypto type: %d' % s.cryptoType)
+					
+					i = s.offset
+					
+					crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
+					end = s.offset + s.size
+					
+					while i < end:
+						#f.seek(i)
+						crypto.seek(i)
+						chunkSz = 0x10000 if end - i > 0x10000 else end - i
+						buf = reader.read(chunkSz)
+						
+						if not len(buf):
+							break
+						
+						#f.seek(i)
+						f.write(crypto.encrypt(buf))
+						bar.update(len(buf))
+						
+						i += chunkSz
+
+			
+			end = f.tell()
+			written = end - start
+
+			newNsp.resize(newFileName, written)
+			continue
 
 		f = newNsp.add(nspf._path, nspf.size)
 		nspf.seek(0)
