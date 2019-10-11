@@ -74,7 +74,7 @@ py -3 -m pip install -r requirements.txt
 ```
 nsz.py --help
 usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
-              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-l LEVEL]
+              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-D] [-l LEVEL]
               [-o OUTPUT]
               [file [file ...]]
 
@@ -92,14 +92,11 @@ optional arguments:
   -c CREATE, --create CREATE
                         create / pack a NSP
   -C                    Compress NSP
+  -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
                         Compression Level
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
-  -t THREADS, --threads THREADS
-                        Number of threads to compress with. Negative
-                        corresponds to the number of logical CPU cores.
-nut exception: 0
 ```
 
 ## Credits
