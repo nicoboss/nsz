@@ -100,7 +100,7 @@ optional arguments:
   -l LEVEL, --level LEVEL
                         Compression Level
   -b BS, --bs BS        Block Size for random read access 2^x while x between
-                        14 and 32
+                        14 and 32.  Current title installers do not support this yet
   -s SOLID, --solid SOLID
                         Uses solid instead of block compression. Slightly
                         better compression ratio but no random read access
