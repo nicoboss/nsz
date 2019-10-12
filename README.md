@@ -96,7 +96,7 @@ optional arguments:
   -c CREATE, --create CREATE
                         create / pack a NSP
   -C                    Compress NSP
-  -D                    Decompress NSZ
+  -D                    Decompress NSZ [Option currently disabled]
   -l LEVEL, --level LEVEL
                         Compression Level
   -b BS, --bs BS        Block Size for random read access 2^x while x between
