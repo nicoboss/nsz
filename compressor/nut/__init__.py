@@ -1,6 +1,6 @@
 #from Fs.Pfs0 import Pfs0Stream
 from nut import Print
-import os, io
+import os
 import json
 import Fs
 import Fs.Pfs0
@@ -82,7 +82,6 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 				newFileName = nspf._path[0:-1] + 'z'
 				
 				f = newNsp.add(newFileName, nspf.size)
-				f = io.open("../in.ncz", "wb")
 				
 				start = f.tell()
 				
