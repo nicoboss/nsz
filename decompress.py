@@ -79,10 +79,13 @@ with open(sys.argv[1], 'rb') as f:
 	f.seek(pos)
 	useBlockCompression = blockMagic == b'NCZBLOCK'
 	
+	blockSize = -1
 	if useBlockCompression:
 		BlockHeader = Block(f)
+		if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
+			raise ValueError("Corrupted NCZBLOCK header: Block size must be between 14 and 32")
+		blockSize = 2**BlockHeader.blockSizeExponent
 	pos = f.tell()
-	print("Start tell:", f.tell())
 	
 	
 	with open(sys.argv[2], 'wb+') as o:
@@ -96,7 +99,7 @@ with open(sys.argv[1], 'rb') as f:
 		while True:
 			if useBlockCompression:
 				decompressor = dctx.stream_reader(f)
-				inputChunk = decompressor.read(524288)
+				inputChunk = decompressor.read(blockSize)
 				decompressedBytes += len(inputChunk)
 				o.write(inputChunk)
 				decompressor.flush()

@@ -79,7 +79,7 @@ py -3 -m pip install -r requirements.txt
 nsz.py --help
 usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
               [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-D] [-l LEVEL]
-              [-o OUTPUT]
+              [-b BS] [-s SOLID] [-o OUTPUT] [-t THREADS]
               [file [file ...]]
 
 positional arguments:
@@ -99,9 +99,18 @@ optional arguments:
   -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
                         Compression Level
+  -b BS, --bs BS        Block Size for random read access 2^x while x between
+                        14 and 32
+  -s SOLID, --solid SOLID
+                        Uses solid instead of block compression. Slightly
+                        better compression ratio but no random read access
+                        support
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
-```
+  -t THREADS, --threads THREADS
+                        [Option currently disabled] Number of threads to
+                        compress with. Negative corresponds to the number of
+                        logical CPU cores.
 
 ## Credits
 

@@ -55,7 +55,7 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 	blockSize = -1
 	if useBlockCompression:
 		if blockSizeExponent < 14 or blockSizeExponent > 32:
-			raise ValueError("block size must be between 14 and 32")
+			raise ValueError("Block size must be between 14 and 32")
 		blockSize = 2**blockSizeExponent
 
 	if outputDir is None:
