@@ -207,6 +207,20 @@ class Section:
 		f.readInt64() # padding
 		self.cryptoKey = f.read(16)
 		self.cryptoCounter = f.read(16)
+		
+class Block:
+	def __init__(self, f):
+		self.f = f
+		self.magic = f.read(8)
+		self.version = readInt8(f)
+		self.type = readInt8(f)
+		self.unused = readInt8(f)
+		self.blockSizeExponent = readInt8(f)
+		self.numberOfBlocks = readInt32(f)
+		self.decompressedSize = readInt64(f)
+		self.compressedBlockSizeList = []
+		for i in range(self.numberOfBlocks):
+			self.compressedBlockSizeList.append(readInt32(f))
 
 def decompress(filePath, outputDir = None):
 	filePath = os.path.abspath(filePath)
@@ -232,27 +246,43 @@ def decompress(filePath, outputDir = None):
 			Print.info('skipping delta fragment')
 			continue
 			
-		hash = hashlib.sha256()
 			
 		if nspf._path.endswith('.ncz'):
 			newFileName = nspf._path[0:-1] + 'a'
 
 			f = newNsp.add(newFileName, nspf.size)
 			
-			start = f.tell()
+			start = nspf.tell()
 
 			nspf.seek(0)
 			
 			header = nspf.read(ncaHeaderSize)
 			magic = nspf.read(8)
+			if not magic == b'NCZSECTN':
+				raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
 			sectionCount = nspf.readInt64()
 			sections = []
 			for i in range(sectionCount):
 				sections.append(Section(nspf))
 
-			dctx = zstandard.ZstdDecompressor()
-			reader = dctx.stream_reader(nspf)
+			pos = nspf.tell()
+			blockMagic = nspf.read(8)
+			nspf.seek(pos)
+			useBlockCompression = blockMagic == b'NCZBLOCK'
+			
+			blockSize = -1
+			if useBlockCompression:
+				BlockHeader = Block(nspf)
+				if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
+					raise ValueError("Corrupted NCZBLOCK header: Block size must be between 14 and 32")
+				blockSize = 2**BlockHeader.blockSizeExponent
+			pos = nspf.tell()
 
+			dctx = zstandard.ZstdDecompressor()
+			if not useBlockCompression:
+				decompressor = dctx.stream_reader(nspf)
+
+			hash = hashlib.sha256()
 			with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
 				f.write(header)
 				bar.update(len(header))
@@ -273,8 +303,23 @@ def decompress(filePath, outputDir = None):
 					while i < end:
 						#f.seek(i)
 						crypto.seek(i)
-						chunkSz = 0x10000 if end - i > 0x10000 else end - i
-						buf = reader.read(chunkSz)
+						
+						if useBlockCompression:
+							decompressor = dctx.stream_reader(nspf)
+							inputChunk = decompressor.read(blockSize)
+							decompressedBytes += len(inputChunk)
+							o.write(inputChunk)
+							decompressor.flush()
+							o.flush()
+							print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
+							pos += BlockHeader.compressedBlockSizeList[blockID]
+							nspf.seek(pos)
+							blockID += 1
+							if(blockID >= len(BlockHeader.compressedBlockSizeList)):
+								break
+						else:
+							chunkSz = 0x10000 if end - i > 0x10000 else end - i
+							buf = decompressor.read(chunkSz)
 						
 						if not len(buf):
 							break
@@ -286,8 +331,13 @@ def decompress(filePath, outputDir = None):
 						hash.update(buf)
 						
 						i += chunkSz
-				
-			if hash.hexdigest()[0:32] + '.nca' != newFileName:
+			
+			if useBlockCompression and not decompressedBytes == BlockHeader.decompressedSize:
+				Print.error("\nSomething went wrong! decompressedBytes != BlockHeader.decompressedSize:", decompressedBytes, "vs.", BlockHeader.decompressedSize)
+			hexHash = hash.hexdigest()[0:32]
+			if hexHash + '.nca' != newFileName:
+				print(hexHash + '.nca')
+				print(newFileName)
 				Print.error('\nNCZ verification failed!\n')
 			else:
 				Print.info('\nNCZ verification successful!\n')
