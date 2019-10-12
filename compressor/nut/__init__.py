@@ -39,7 +39,7 @@ def isNcaPacked(nca):
 
 	return True
 
-def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir = None, threads = 0):
+def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent = 19, outputDir = None, threads = 0):
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 	
@@ -47,8 +47,13 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 
 	CHUNK_SZ = 0x1000000
 	
-	useBlockCompression = blockSizeExponent >= 14 and blockSizeExponent <= 32
-	blockSize = 2**blockSizeExponent
+	useBlockCompression = not solid
+	
+	blockSize = -1
+	if useBlockCompression:
+		if blockSizeExponent < 14 or blockSizeExponent > 32:
+			raise ValueError("block size must be between 14 and 32")
+		blockSize = 2**blockSizeExponent
 
 	if outputDir is None:
 		nszPath = filePath[0:-1] + 'z'
@@ -109,7 +114,7 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 				
 				if useBlockCompression:
 					bytesToCompress = nspf.size-0x4000
-					blocksToCompress = bytesToCompress//blockSize + (bytesToCompress%blockSize > 0) + 3
+					blocksToCompress = bytesToCompress//blockSize + (bytesToCompress%blockSize > 0)
 					header = b'NCZBLOCK' #Magic
 					header += b'\x02' #Version
 					header += b'\x01' #Type
@@ -132,52 +137,45 @@ def compress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir 
 					
 					partNr = 0
 					blockStartFilePos = f.tell()
-					#compressor = cctx.stream_writer(f)
-					while partNr < len(partitions)-1:
+					bar.update(blockStartFilePos)
+					if not useBlockCompression:
+						compressor = cctx.stream_writer(f)
+					while True:
 					
 						if useBlockCompression:
-							
 							buffer = partitions[partNr].read(blockSize)
 							while (len(buffer) < blockSize and partNr < len(partitions)-1):
 								partNr += 1
 								buffer += partitions[partNr].read(blockSize - len(buffer))
-							#print("BufferLen:", len(buffer))
-							#with io.open("../"+str(blockID)+".lul", "wb") as e:
-							#	e.write(buffer)
-							#	e.flush()
 							if len(buffer) == 0:
-								raise IOError('read failed')
-							#f = io.open("../"+str(blockID)+".ncz", "wb")
+								break
 							compressor = cctx.stream_writer(f)
 							compressor.write(buffer)
-							decompressedBytes += len(buffer)
+							compressor.flush(zstandard.FLUSH_FRAME)
 							compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
 							compressedblockSizeList.append(f.tell() - blockStartFilePos)
-							print("Written:", f.tell() - blockStartFilePos)
-							#print('Block', str(blockID+1)+'/'+str(blocksToCompress+1))
 							blockID += 1
 							blockStartFilePos = f.tell()
 						else:
-							buffer = o.read(CHUNK_SZ)
+							buffer = partitions[partNr].read(CHUNK_SZ)
 							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
 								partNr += 1
 								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
 							if len(buffer) == 0:
-								raise IOError('read failed')
+								break
 							compressor.write(buffer)
-							
 							
 						decompressedBytes += len(buffer)
 						bar.update(len(buffer))
 				
 				if not useBlockCompression:
+					compressor.flush(zstandard.FLUSH_FRAME)
 					compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
 
 				if useBlockCompression:
 					f.seek(blocksHeaderFilePos+24)
 					header = b""
 					for compressedblockSize in compressedblockSizeList:
-						print(compressedblockSize)
 						header += compressedblockSize.to_bytes(4, 'little')
 					f.write(header)
 					f.seek(0, 2) #Seek to end of file.

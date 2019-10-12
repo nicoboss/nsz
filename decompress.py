@@ -50,7 +50,7 @@ class Section:
 class Block:
 	def __init__(self, f):
 		self.f = f
-		self.magic = readInt64(f)
+		self.magic = f.read(8)
 		self.version = readInt8(f)
 		self.type = readInt8(f)
 		self.unused = readInt8(f)
@@ -65,62 +65,56 @@ class Block:
 CHUNK_SZ = 16384
 with open(sys.argv[1], 'rb') as f:
 	header = f.read(0x4000)
-	magic = readInt64(f)
+	magic = f.read(8)
+	if not magic == b'NCZSECTN':
+		raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
 	sectionCount = readInt64(f)
 	sections = []
 	for i in range(sectionCount):
 		SectionHeader = Section(f)
 		sections.append(SectionHeader)
 		
-	BlockHeader = Block(f);
-	print(BlockHeader.version)
-	print(BlockHeader.type)
-	print(BlockHeader.unused)
-	print(BlockHeader.blockSizeExponent)
-	print(BlockHeader.numberOfBlocks)
-	print(BlockHeader.decompressedSize)
-	print(BlockHeader.compressedBlockSizeList[0])
-	print(BlockHeader.compressedBlockSizeList[1])
-	blockSize = 2**BlockHeader.blockSizeExponent
-	#for item in BlockHeader.compressedBlockSizeList:
-	#	print(item)
-	print("0:", BlockHeader.compressedBlockSizeList[0])
-	print("1:", BlockHeader.compressedBlockSizeList[1])
-	print("2:", BlockHeader.compressedBlockSizeList[2])
+	pos = f.tell()
+	blockMagic = f.read(8)
+	f.seek(pos)
+	useBlockCompression = blockMagic == b'NCZBLOCK'
+	
+	if useBlockCompression:
+		BlockHeader = Block(f)
 	pos = f.tell()
 	print("Start tell:", f.tell())
 	
 	
 	with open(sys.argv[2], 'wb+') as o:
 		o.write(header)
-		
+		decompressedBytes = 0
 		blockID = 0
-		useBlockCompression = True
-		
-		#with open("inputChunk.dat", 'wb') as l:
-		#	l.write(f.read(57037))
-		#exit(0)
 		
 		dctx = zstandard.ZstdDecompressor()
-		decompressor = dctx.stream_reader(f)
+		if not useBlockCompression:
+			decompressor = dctx.stream_reader(f)
 		while True:
 			if useBlockCompression:
-				print("Tell:", f.tell())
-				inputChunk = decompressor.read(524287)
+				decompressor = dctx.stream_reader(f)
+				inputChunk = decompressor.read(524288)
+				decompressedBytes += len(inputChunk)
 				o.write(inputChunk)
 				decompressor.flush()
 				o.flush()
-				#print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks+1))
+				print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
 				pos += BlockHeader.compressedBlockSizeList[blockID]
 				f.seek(pos)
-				decompressor = dctx.stream_reader(f)
 				blockID += 1
-			else:
-				chunk = reader.read(CHUNK_SZ)
-				if not chunk:
+				if(blockID >= len(BlockHeader.compressedBlockSizeList)):
 					break
-				o.write(chunk)
+			else:
+				inputChunk = decompressor.read(CHUNK_SZ)
+				if not inputChunk:
+					break
+				o.write(inputChunk)
 			
+		if useBlockCompression and not decompressedBytes == BlockHeader.decompressedSize:
+				raise EOFError("Something went wrong! decompressedBytes != BlockHeader.decompressedSize: " + str(decompressedBytes) + " vs. " + str(BlockHeader.decompressedSize))
 		for s in sections:
 			if s.cryptoType == 1: #plain text
 				continue

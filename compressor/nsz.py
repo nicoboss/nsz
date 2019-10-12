@@ -44,9 +44,9 @@ if __name__ == '__main__':
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
 		parser.add_argument('-l', '--level', type=int, default=17, help='Compression Level')
 		parser.add_argument('-b', '--bs', type=int, default=19, help='Block Size for random read access 2^x while x between 14 and 32')
-		parser.add_argument('-s', '--solid', type=bool, default=False, help='Uses solid instead of block compression. Slightly better compression ratio but no random read access support')
+		parser.add_argument('-s', '--solid', type=bool, default=True, help='Uses solid instead of block compression. Slightly better compression ratio but no random read access support')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
-		parser.add_argument('-t', '--threads', type=int, default=0, help='Number of threads to compress with.  Negative corresponds to the number of logical CPU cores.')
+		parser.add_argument('-t', '--threads', type=int, default=0, help='[Option currently disabled] Number of threads to compress with.  Negative corresponds to the number of logical CPU cores.')
 
 		
 		args = parser.parse_args()
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 		if args.C:
 			for filePath in args.file:
 				try:
-					nut.compress(filePath, 17 if args.level is None else args.level, args.bs, args.output, args.threads)
+					nut.compress(filePath, 17 if args.level is None else args.level, args.solid, args.bs, args.output, args.threads)
 
 				except BaseException as e:
 					Print.error(str(e))
