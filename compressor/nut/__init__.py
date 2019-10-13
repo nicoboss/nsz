@@ -288,13 +288,7 @@ def decompress(filePath, outputDir = None):
 				bar.update(len(header))
 				hash.update(header)
 				
-				for s in sections:
-					if s.cryptoType == 1: #plain text
-						continue
-						
-					if s.cryptoType not in (3, 4):
-						raise IOError('unknown crypto type: %d' % s.cryptoType)
-					
+				for s in sections:					
 					i = s.offset
 					
 					crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
@@ -325,7 +319,8 @@ def decompress(filePath, outputDir = None):
 							break
 						
 						#f.seek(i)
-						buf = crypto.encrypt(buf)
+						if s.cryptoType in (3, 4):
+							buf = crypto.encrypt(buf)
 						f.write(buf)
 						bar.update(len(buf))
 						hash.update(buf)
