@@ -186,9 +186,9 @@ class Bktr1(Bktr):
 		
 		self.buckets = []
 		
-		if self.bktr_size:
-			for i in range(self.bucketCount):
-				self.buckets.append(BktrRelocationBucket(self.nca))
+		#if self.bktr_size:
+		#	for i in range(self.bucketCount):
+		#		self.buckets.append(BktrRelocationBucket(self.nca))
 				
 	def getRelocationEntry(self, offset):
 		if len(self.buckets) == 0:
