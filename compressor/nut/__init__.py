@@ -10,6 +10,7 @@ import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
+import multiprocessing
 from multiprocessing import Process, Manager, Value, Lock
 from time import sleep
 from tqdm import tqdm
@@ -88,28 +89,31 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 
 
 
-def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent = 19, outputDir = None, threads = 0):
+def compress(filePath, compressionLevel = 17, useBlockCompression = False, blockSizeExponent = 19, outputDir = None, threads = -1):
 	
-	useBlockCompression = True #not solid
+	if threads == -1:
+		threads = multiprocessing.cpu_count()
 	
-	if blockSizeExponent < 14 or blockSizeExponent > 32:
-		raise ValueError("Block size must be between 14 and 32")
-	blockSize = 2**blockSizeExponent
-	
-	manager = Manager()
-	results = manager.list()
-	readyForWork = Counter(0)
-	pleaseKillYourself = Counter(0)
-	threads = 7
-	TasksPerChunk = 209715200//blockSize
-	for i in range(TasksPerChunk):
-		results.append(b"")
-	work = manager.Queue(threads)
-	pool = []
-	for i in range(threads):
-		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
-		p.start()
-		pool.append(p)
+	blockSize = -1
+	if(useBlockCompression):
+		if blockSizeExponent < 14 or blockSizeExponent > 32:
+			raise ValueError("Block size must be between 14 and 32")
+		blockSize = 2**blockSizeExponent
+		
+		manager = Manager()
+		results = manager.list()
+		readyForWork = Counter(0)
+		pleaseKillYourself = Counter(0)
+		threads = 7
+		TasksPerChunk = 209715200//blockSize
+		for i in range(TasksPerChunk):
+			results.append(b"")
+		work = manager.Queue(threads)
+		pool = []
+		for i in range(threads):
+			p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+			p.start()
+			pool.append(p)
 	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)

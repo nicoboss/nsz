@@ -79,7 +79,7 @@ py -3 -m pip install -r requirements.txt
 nsz.py --help
 usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
               [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-D] [-l LEVEL]
-              [-b BS] [-s SOLID] [-o OUTPUT] [-t THREADS]
+              [-b BLOCK] [-s BS] [-t THREADS] [-o OUTPUT]
               [file [file ...]]
 
 positional arguments:
@@ -96,21 +96,24 @@ optional arguments:
   -c CREATE, --create CREATE
                         create / pack a NSP
   -C                    Compress NSP
-  -D                    Decompress NSZ [Option currently disabled]
+  -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
                         Compression Level
-  -b BS, --bs BS        Block Size for random read access 2^x while x between
-                        14 and 32.  Current title installers do not support this yet
-  -s SOLID, --solid SOLID
-                        Uses solid instead of block compression. Slightly
-                        better compression ratio but no random read access
-                        support
+  -b BLOCK, --block BLOCK
+                        Uses highly multithreaded block compression with
+                        random read access allowing compressed games to be
+                        played without decompression in the future however
+                        this comes with a low compression ratio cost. Current
+                        title installers do not support this yet.
+  -s BS, --bs BS        Block Size for random read access 2^x while x between
+                        14 and 32. Default is 19 => 512 KB. Current title
+                        installers do not support this yet.
+  -t THREADS, --threads THREADS
+                        Number of threads to compress with. Usless without
+                        enabeling block compression using -b. Negative
+                        corresponds to the number of logical CPU cores.
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
-  -t THREADS, --threads THREADS
-                        [Option currently disabled] Number of threads to
-                        compress with. Negative corresponds to the number of
-                        logical CPU cores.
 
 ## Credits
 
