@@ -10,6 +10,8 @@ import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
+from multiprocessing import Process, Manager, Value, Lock
+from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import aes128
@@ -41,22 +43,81 @@ def isNcaPacked(nca):
 		return False
 
 	return True
+	
+	
+class Counter(object):
+	def __init__(self, initval=0):
+		self.val = Value('i', initval)
+		self.lock = Lock()
+		
+	def set(self, newValue):
+		with self.lock:
+			self.val.value = newValue
+		
+	def increment(self):
+		with self.lock:
+			self.val.value += 1
+		
+	def decrement(self):
+		with self.lock:
+			self.val.value -= 1
+		
+	def value(self):
+		with self.lock:
+			return self.val.value
+
+def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
+	while True:
+		readyForWork.increment()
+		item = in_queue.get()
+		readyForWork.decrement()
+		if(pleaseKillYourself.value() > 0):
+			break
+		buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID = item
+		
+		#print("Hi:", chunkRelativeBlockID)
+		
+		if buffer == 0:
+			return
+		
+		cctx = zstandard.ZstdCompressor(level=compressionLevel)
+		compressed = cctx.compress(buffer)
+		
+		#print(compressed)
+		out_list[chunkRelativeBlockID] = compressed
+
+
 
 def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent = 19, outputDir = None, threads = 0):
+	
+	useBlockCompression = True #not solid
+	
+	if blockSizeExponent < 14 or blockSizeExponent > 32:
+		raise ValueError("Block size must be between 14 and 32")
+	blockSize = 2**blockSizeExponent
+	
+	manager = Manager()
+	results = manager.list()
+	readyForWork = Counter(0)
+	pleaseKillYourself = Counter(0)
+	threads = 7
+	TasksPerChunk = 209715200//blockSize
+	for i in range(TasksPerChunk):
+		results.append(b"")
+	work = manager.Queue(threads)
+	pool = []
+	for i in range(threads):
+		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+		p.start()
+		pool.append(p)
+	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
-	
 	container.open(filePath, 'rb')
 
 	CHUNK_SZ = 0x1000000
 	
-	useBlockCompression = not solid
-	
-	blockSize = -1
-	if useBlockCompression:
-		if blockSizeExponent < 14 or blockSizeExponent > 32:
-			raise ValueError("Block size must be between 14 and 32")
-		blockSize = 2**blockSizeExponent
+
 
 	if outputDir is None:
 		nszPath = filePath[0:-1] + 'z'
@@ -68,8 +129,6 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
-
-	
 
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
@@ -87,9 +146,6 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 				
 				nspf.seek(0)
 				f.write(nspf.read(ncaHeaderSize))
-				
-				cctx = zstandard.ZstdCompressor(level=compressionLevel)
-				compressor = cctx.stream_writer(f)
 				
 				sections = []
 				for fs in sortedFs(nspf):
@@ -111,6 +167,8 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 				f.write(header)
 				
 				blockID = 0
+				chunkRelativeBlockID = 0
+				startChunkBlockID = 0
 				blocksHeaderFilePos = f.tell()
 				compressedblockSizeList = []
 				
@@ -126,6 +184,7 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 					header += bytesToCompress.to_bytes(8, 'little') #Decompressed Size
 					header += b'\x00' * (blocksToCompress*4)
 					f.write(header)
+					compressedblockSizeList = [0]*blocksToCompress
 				
 				decompressedBytes = ncaHeaderSize
 				
@@ -138,9 +197,9 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 						
 					
 					partNr = 0
-					blockStartFilePos = f.tell()
-					bar.update(blockStartFilePos)
+					bar.update(f.tell())
 					if not useBlockCompression:
+						cctx = zstandard.ZstdCompressor(level=compressionLevel)
 						compressor = cctx.stream_writer(f)
 					while True:
 					
@@ -149,15 +208,26 @@ def compress(filePath, compressionLevel = 17, solid = False, blockSizeExponent =
 							while (len(buffer) < blockSize and partNr < len(partitions)-1):
 								partNr += 1
 								buffer += partitions[partNr].read(blockSize - len(buffer))
-							if len(buffer) == 0:
-								break
-							compressor = cctx.stream_writer(f)
-							compressor.write(buffer)
-							compressor.flush(zstandard.FLUSH_FRAME)
-							compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
-							compressedblockSizeList.append(f.tell() - blockStartFilePos)
+							
+							if chunkRelativeBlockID >= TasksPerChunk or len(buffer) == 0:
+								while readyForWork.value() < threads:
+									sleep(0.02)
+								for i in range(min(TasksPerChunk, blocksToCompress-startChunkBlockID)):
+									compressedblockSizeList[startChunkBlockID+i] = len(results[i])
+									f.write(results[i])
+									results[i] = b""
+								if len(buffer) == 0:
+									pleaseKillYourself.increment()
+									for i in range(readyForWork.value()):
+										work.put(None)
+									while readyForWork.value() > 0:
+										sleep(0.02)
+									break
+								chunkRelativeBlockID = 0
+								startChunkBlockID = blockID
+							work.put([buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID])
 							blockID += 1
-							blockStartFilePos = f.tell()
+							chunkRelativeBlockID += 1
 						else:
 							buffer = partitions[partNr].read(CHUNK_SZ)
 							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
@@ -288,7 +358,7 @@ def decompress(filePath, outputDir = None):
 				bar.update(len(header))
 				hash.update(header)
 				
-				for s in sections:					
+				for s in sections:
 					i = s.offset
 					
 					crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
@@ -330,6 +400,8 @@ def decompress(filePath, outputDir = None):
 			if useBlockCompression and not decompressedBytes == BlockHeader.decompressedSize:
 				Print.error("\nSomething went wrong! decompressedBytes != BlockHeader.decompressedSize:", decompressedBytes, "vs.", BlockHeader.decompressedSize)
 			hexHash = hash.hexdigest()[0:32]
+			print(hexHash + '.nca')
+			print(newFileName)
 			if hexHash + '.nca' != newFileName:
 				print(hexHash + '.nca')
 				print(newFileName)
