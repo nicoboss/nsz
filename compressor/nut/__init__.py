@@ -1,6 +1,6 @@
 from nut import BlockCompressor
 from nut import SolidCompressor
-from nut import Decompressor
+from nut import NszDecompressor
 
 def compress(filePath, compressionLevel = 17, useBlockCompression = False, blockSizeExponent = 19, outputDir = None, threads = -1):
 	if threads == -1:
@@ -12,4 +12,4 @@ def compress(filePath, compressionLevel = 17, useBlockCompression = False, block
 
 
 def decompress(filePath, outputDir = None):
-	Decompressor.decompress(filePath, outputDir)
+	NszDecompressor.decompress(filePath, outputDir)
