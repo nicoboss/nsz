@@ -114,6 +114,7 @@ optional arguments:
                         corresponds to the number of logical CPU cores.
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
+  -w                    Overwrite file if it exists in the output directory
 
 ## Credits
 
