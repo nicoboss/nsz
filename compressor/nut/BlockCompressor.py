@@ -15,7 +15,7 @@ from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
-
+import glob
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 	while True:
@@ -73,12 +73,29 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 	else:
 		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
 
-	if os.path.exists(nszPath) and not overwrite:
-		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % os.path.basename(nszPath))
-		return
-
 	nszPath = os.path.abspath(nszPath)
-	
+
+	# Getting title ID to check for NSZ file in the output directory
+
+	titleId = ''
+
+	for nspf in container:
+		if isinstance(nspf, Fs.Ticket.Ticket):
+			nspf.getRightsId()
+			titleId = nspf.titleId()
+			break # No need to go for other objects
+
+	# Checking output directory to see if the NSZ file with same title ID as NSP exists.
+	nszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*' % titleId))
+
+	# If the file exists and '-w' parameter is not used than don't compress
+ 	
+	if nszFile and not overwrite:
+		# The message should be clearer I think. It outputs NSZ file in the output directory. But if the NSP file is entirely
+		# different user may not understand why it wasn't processed.
+		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % nszFile[0])
+		return	
+
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
