@@ -1,3 +1,4 @@
+
 class Section:
 	def __init__(self, f):
 		self.f = f
@@ -12,12 +13,12 @@ class Block:
 	def __init__(self, f):
 		self.f = f
 		self.magic = f.read(8)
-		self.version = readInt8(f)
-		self.type = readInt8(f)
-		self.unused = readInt8(f)
-		self.blockSizeExponent = readInt8(f)
-		self.numberOfBlocks = readInt32(f)
-		self.decompressedSize = readInt64(f)
+		self.version = f.readInt8()
+		self.type = f.readInt8()
+		self.unused = f.readInt8()
+		self.blockSizeExponent = f.readInt8()
+		self.numberOfBlocks = f.readInt32()
+		self.decompressedSize = f.readInt64()
 		self.compressedBlockSizeList = []
 		for i in range(self.numberOfBlocks):
-			self.compressedBlockSizeList.append(readInt32(f))
+			self.compressedBlockSizeList.append(f.readInt32())
