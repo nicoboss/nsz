@@ -37,7 +37,7 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 
 
 
-def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir = None, threads = -1):
+def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
 	
 	ncaHeaderSize = 0x4000
 	
@@ -45,27 +45,11 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 		raise ValueError("Block size must be between 14 and 32")
 	blockSize = 2**blockSizeExponent
 	
-	manager = Manager()
-	results = manager.list()
-	readyForWork = ThreadSafeCounter.Counter(0)
-	pleaseKillYourself = ThreadSafeCounter.Counter(0)
-	threads = 7
-	TasksPerChunk = 209715200//blockSize
-	for i in range(TasksPerChunk):
-		results.append(b"")
-	work = manager.Queue(threads)
-	pool = []
-	for i in range(threads):
-		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
-		p.start()
-		pool.append(p)
-	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 	container.open(filePath, 'rb')
 
 	CHUNK_SZ = 0x1000000
-	
 
 
 	if outputDir is None:
@@ -86,21 +70,36 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 			break # No need to go for other objects
 
 	# Checking output directory to see if the NSZ file with same title ID as NSP exists.
-	nszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*' % titleId))
+	potentiallyExistingNszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*.nsz' % titleId))
 
 	# If the file exists and '-w' parameter is not used than don't compress
  	
-	if nszFile and not overwrite:
+	if potentiallyExistingNszFile and not overwrite:
 		# The message should be clearer I think. It outputs NSZ file in the output directory. But if the NSP file is entirely
 		# different user may not understand why it wasn't processed.
-		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % nszFile[0])
-		return	
+		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % potentiallyExistingNszFile[0])
+		return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 
 	try:
+	
+		manager = Manager()
+		results = manager.list()
+		readyForWork = ThreadSafeCounter.Counter(0)
+		pleaseKillYourself = ThreadSafeCounter.Counter(0)
+		threads = 7
+		TasksPerChunk = 209715200//blockSize
+		for i in range(TasksPerChunk):
+			results.append(b"")
+		work = manager.Queue(threads)
+		pool = []
+		for i in range(threads):
+			p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+			p.start()
+			pool.append(p)
 	
 		for nspf in container:
 			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
