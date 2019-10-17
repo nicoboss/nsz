@@ -74,7 +74,7 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
 
 	if os.path.exists(nszPath) and not overwrite:
-		Print.info('NSZ file exists in the output directory, if you want to overwrite use -w parameter!')
+		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % os.path.basename(nszPath))
 		return
 
 	nszPath = os.path.abspath(nszPath)
