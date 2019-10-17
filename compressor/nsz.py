@@ -62,6 +62,7 @@ if __name__ == '__main__':
 		parser.add_argument('-s', '--bs', type=int, default=19, help='Block Size for random read access 2^x while x between 14 and 32. Default is 19 => 512 KB. Current title installers do not support this yet.')
 		parser.add_argument('-t', '--threads', type=int, default=0, help='Number of threads to compress with. Usless without enabeling block compression using -b. Negative corresponds to the number of logical CPU cores.')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
+		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Overwrite file if it exists in the output folder')
 		
 
 		
@@ -96,7 +97,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							nut.compress(filePath, 17 if args.level is None else args.level, args.block, args.bs, args.output, args.threads)
+							nut.compress(filePath, 17 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
 
 					except BaseException as e:
 						Print.error(str(e))
