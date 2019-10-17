@@ -14,9 +14,11 @@ from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import glob
+import threading
+import signal
 
 def solidCompress(filePath, compressionLevel = 17, outputDir = None, threads = -1, overwrite = False):
-	
+
 	ncaHeaderSize = 0x4000
 	
 	filePath = os.path.abspath(filePath)
@@ -145,6 +147,11 @@ def solidCompress(filePath, compressionLevel = 17, outputDir = None, threads = -
 				buffer = nspf.read(CHUNK_SZ)
 				f.write(buffer)
 		newNsp.close()
+		
+	except KeyboardInterrupt:
+		newNsp.close()
+		os.remove(nszPath)
+		raise KeyboardInterrupt
 
 	except BaseException as e:
 		Print.error(str(e))

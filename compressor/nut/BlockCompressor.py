@@ -218,6 +218,11 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 				f.write(buffer)
 		
 		newNsp.close()
+		
+	except KeyboardInterrupt:
+		newNsp.close()
+		os.remove(nszPath)
+		raise KeyboardInterrupt
 
 	except BaseException as e:
 		Print.error(str(e))
