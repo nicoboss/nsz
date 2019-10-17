@@ -13,7 +13,7 @@ from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
-
+import glob
 
 def solidCompress(filePath, compressionLevel = 17, outputDir = None, threads = -1, overwrite = False):
 	
@@ -30,17 +30,25 @@ def solidCompress(filePath, compressionLevel = 17, outputDir = None, threads = -
 	else:
 		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
 	
-	if os.path.exists(nszPath) and not overwrite:
-		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % os.path.basename(nszPath))
-		return
-
 	nszPath = os.path.abspath(nszPath)
 	
+	titleId = ''
+	for nspf in container:
+		if isinstance(nspf, Fs.Ticket.Ticket):
+			nspf.getRightsId()
+			titleId = nspf.titleId()
+	nszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*' % titleId))
+
+	if nszFile and not overwrite:
+		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % nszFile[0])
+		return
+
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
 	
 	for nspf in container:
+
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
 			Print.info('skipping delta fragment')
 			continue
