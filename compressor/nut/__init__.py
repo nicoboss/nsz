@@ -2,7 +2,7 @@ from nut import BlockCompressor
 from nut import SolidCompressor
 from nut import NszDecompressor
 
-def compress(filePath, compressionLevel = 17, useBlockCompression = False, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
+def compress(filePath, compressionLevel = 18, useBlockCompression = False, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
 	if threads == -1:
 		threads = multiprocessing.cpu_count()
 	if useBlockCompression:

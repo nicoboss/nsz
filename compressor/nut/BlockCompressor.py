@@ -42,7 +42,7 @@ def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYou
 
 
 
-def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
+def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
 	
 	ncaHeaderSize = 0x4000
 	

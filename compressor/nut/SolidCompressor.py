@@ -17,7 +17,7 @@ import glob
 import threading
 import signal
 
-def solidCompress(filePath, compressionLevel = 17, outputDir = None, threads = -1, overwrite = False):
+def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False):
 
 	ncaHeaderSize = 0x4000
 	
