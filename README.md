@@ -106,7 +106,7 @@ optional arguments:
                         this comes with a low compression ratio cost. Current
                         title installers do not support this yet.
   -s BS, --bs BS        Block Size for random read access 2^x while x between
-                        14 and 32. Default is 19 => 512 KB. Current title
+                        14 and 32. Default is 20 => 1 MB. Current title
                         installers do not support this yet.
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Usless without
