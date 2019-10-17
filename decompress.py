@@ -79,7 +79,6 @@ with open(sys.argv[1], 'rb') as f:
 	f.seek(pos)
 	useBlockCompression = blockMagic == b'NCZBLOCK'
 	
-	blockSize = -1
 	if useBlockCompression:
 		BlockHeader = Block(f)
 		if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
@@ -98,13 +97,17 @@ with open(sys.argv[1], 'rb') as f:
 			decompressor = dctx.stream_reader(f)
 		while True:
 			if useBlockCompression:
-				decompressor = dctx.stream_reader(f)
-				inputChunk = decompressor.read(blockSize)
-				decompressedBytes += len(inputChunk)
-				o.write(inputChunk)
-				decompressor.flush()
-				o.flush()
-				print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
+				if BlockHeader.compressedBlockSizeList[blockID] < blockSize:
+					decompressor = dctx.stream_reader(f)
+					inputChunk = decompressor.read(blockSize)
+					decompressedBytes += len(inputChunk)
+					o.write(inputChunk)
+					decompressor.flush()
+					o.flush()
+					print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
+				else:
+					o.write(f.read(blockSize))
+					decompressedBytes += blockSize
 				pos += BlockHeader.compressedBlockSizeList[blockID]
 				f.seek(pos)
 				blockID += 1

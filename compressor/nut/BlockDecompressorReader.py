@@ -17,17 +17,20 @@ class BlockDecompressorReader:
 		for compressedBlockSize in BlockHeader.compressedBlockSizeList:
 			compressedBlockOffsetList.append(compressedBlockOffsetList[-1]+compressedBlockSize)
 		self.CompressedBlockOffsetList = compressedBlockOffsetList
-		
+		self.CompressedBlockSizeList = BlockHeader.compressedBlockSizeList
 	
 	def __decompressBlock(self, blockID):
 		if(blockID >= len(self.CompressedBlockOffsetList)):
 			raise EOFError("BlockID exceeds the amounts of compressed blocks in that file!")
 		self.nspf.seek(self.CompressedBlockOffsetList[blockID])
-		decompressor = self.dctx.stream_reader(self.nspf)
-		inputChunk = decompressor.read(self.BlockSize)
-		decompressor.flush()
-		#print('Block', str(blockID+1)+'/'+str(len(self.CompressedBlockOffsetList)))
-		return inputChunk
+		if self.CompressedBlockSizeList[blockID] < self.BlockSize:
+			decompressor = self.dctx.stream_reader(self.nspf)
+			inputChunk = decompressor.read(self.BlockSize)
+			decompressor.flush()
+			#print('Block', str(blockID+1)+'/'+str(len(self.CompressedBlockOffsetList)))
+			return inputChunk
+		else:
+			return self.nspf.read(self.BlockSize)
 	
 	
 	def seek(self, offset, whence = 0):

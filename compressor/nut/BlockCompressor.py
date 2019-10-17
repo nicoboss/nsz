@@ -17,7 +17,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import glob
 
-def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
+def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYourself):
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
@@ -33,7 +33,12 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		compressed = cctx.compress(buffer)
 		
 		#print(compressed)
-		out_list[chunkRelativeBlockID] = compressed
+		#We don't use len(buffer) to alwys compress smaller last blocks
+		#So CompressedBlockSizeList[blockID] == blockSize is always uncompressed
+		if len(compressed) < len(buffer):
+			out_list[chunkRelativeBlockID] = compressed
+		else:
+			out_list[chunkRelativeBlockID] = buffer
 
 
 
@@ -97,7 +102,7 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 		work = manager.Queue(threads)
 		pool = []
 		for i in range(threads):
-			p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+			p = Process(target=compressBlockTask, args=(work, results, blockSize, readyForWork, pleaseKillYourself))
 			p.start()
 			pool.append(p)
 	
