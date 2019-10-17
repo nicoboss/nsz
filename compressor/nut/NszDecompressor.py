@@ -1,4 +1,4 @@
-from nut import Print, Header, SectionFs, aes128
+from nut import Print, Header, SectionFs, BlockDecompressorReader, aes128
 import os
 import json
 import Fs
@@ -49,7 +49,8 @@ def decompress(filePath, outputDir = None):
 			f = newNsp.add(newFileName, nspf.size)
 			
 			start = nspf.tell()
-
+			decompressedBytes = 0
+			blockID = 0
 			nspf.seek(0)
 			
 			header = nspf.read(ncaHeaderSize)
@@ -69,9 +70,7 @@ def decompress(filePath, outputDir = None):
 			blockSize = -1
 			if useBlockCompression:
 				BlockHeader = Header.Block(nspf)
-				if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
-					raise ValueError("Corrupted NCZBLOCK header: Block size must be between 14 and 32")
-				blockSize = 2**BlockHeader.blockSizeExponent
+				blockDecompressorReader = BlockDecompressorReader.BlockDecompressorReader(nspf, BlockHeader)
 			pos = nspf.tell()
 
 			dctx = zstandard.ZstdDecompressor()
@@ -93,38 +92,26 @@ def decompress(filePath, outputDir = None):
 					while i < end:
 						#f.seek(i)
 						crypto.seek(i)
-						
+						chunkSz = 0x10000 if end - i > 0x10000 else end - i
 						if useBlockCompression:
-							decompressor = dctx.stream_reader(nspf)
-							inputChunk = decompressor.read(blockSize)
-							decompressedBytes += len(inputChunk)
-							o.write(inputChunk)
-							decompressor.flush()
-							o.flush()
-							print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
-							pos += BlockHeader.compressedBlockSizeList[blockID]
-							nspf.seek(pos)
-							blockID += 1
-							if(blockID >= len(BlockHeader.compressedBlockSizeList)):
-								break
+							inputChunk = blockDecompressorReader.read(chunkSz)
 						else:
-							chunkSz = 0x10000 if end - i > 0x10000 else end - i
-							buf = decompressor.read(chunkSz)
+							inputChunk = decompressor.read(chunkSz)
 						
-						if not len(buf):
+						if not len(inputChunk):
 							break
 						
 						#f.seek(i)
+						if not useBlockCompression:
+							decompressor.flush()
 						if s.cryptoType in (3, 4):
-							buf = crypto.encrypt(buf)
-						f.write(buf)
-						bar.update(len(buf))
-						hash.update(buf)
+							inputChunk = crypto.encrypt(inputChunk)
+						f.write(inputChunk)
+						bar.update(len(inputChunk))
+						hash.update(inputChunk)
 						
-						i += chunkSz
+						i += len(inputChunk)
 			
-			if useBlockCompression and not decompressedBytes == BlockHeader.decompressedSize:
-				Print.error("\nSomething went wrong! decompressedBytes != BlockHeader.decompressedSize:", decompressedBytes, "vs.", BlockHeader.decompressedSize)
 			hexHash = hash.hexdigest()[0:32]
 			print(hexHash + '.nca')
 			print(newFileName)
@@ -145,8 +132,8 @@ def decompress(filePath, outputDir = None):
 		f = newNsp.add(nspf._path, nspf.size)
 		nspf.seek(0)
 		while not nspf.eof():
-			buffer = nspf.read(CHUNK_SZ)
-			f.write(buffer)
+			inputChunkfer = nspf.read(CHUNK_SZ)
+			f.write(inputChunkfer)
 
 
 	newNsp.close()
