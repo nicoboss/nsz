@@ -1,6 +1,8 @@
 *.pyc
 *.nsp
 *.nca
+*.tik
+*.cert
 *.nsz
 *.xcz
 *.ncz
