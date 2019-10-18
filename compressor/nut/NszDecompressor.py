@@ -48,7 +48,7 @@ def decompress(filePath, outputDir = None):
 
 			f = newNsp.add(newFileName, nspf.size)
 			
-			start = nspf.tell()
+			start = f.tell()
 			decompressedBytes = 0
 			blockID = 0
 			nspf.seek(0)
