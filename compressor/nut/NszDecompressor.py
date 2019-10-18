@@ -43,13 +43,17 @@ def decompress(filePath, outputDir = None):
 			continue
 			
 			
-		if nspf._path.endswith('.ncz'):
+		if not nspf._path.endswith('.ncz'):
+			f = newNsp.add(nspf._path, nspf.size)
+			nspf.seek(0)
+			while not nspf.eof():
+				inputChunk = nspf.read(CHUNK_SZ)
+				f.write(inputChunk)
+		else:
 			newFileName = nspf._path[0:-1] + 'a'
 
 			f = newNsp.add(newFileName, nspf.size)
-			
 			start = f.tell()
-			decompressedBytes = 0
 			blockID = 0
 			nspf.seek(0)
 			
@@ -124,16 +128,10 @@ def decompress(filePath, outputDir = None):
 
 			
 			end = f.tell()
-			written = end - start
+			written = (end - start)
+			print("Written:", written)
 
 			newNsp.resize(newFileName, written)
 			continue
-
-		f = newNsp.add(nspf._path, nspf.size)
-		nspf.seek(0)
-		while not nspf.eof():
-			inputChunkfer = nspf.read(CHUNK_SZ)
-			f.write(inputChunkfer)
-
-
+		
 	newNsp.close()
