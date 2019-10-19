@@ -33,11 +33,10 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
 	
 	nszPath = os.path.abspath(nszPath)
+	nszFilename = os.path.basename(nszPath)
 	
 	# Getting title ID to check for NSZ file in the output directory
-
 	titleId = ''
-
 	for nspf in container:
 		if isinstance(nspf, Fs.Ticket.Ticket):
 			nspf.getRightsId()
@@ -48,11 +47,10 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 	potentiallyExistingNszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*.nsz' % titleId))
 
 	# If the file exists and '-w' parameter is not used than don't compress
- 	
 	if potentiallyExistingNszFile and not overwrite:
-		# The message should be clearer I think. It outputs NSZ file in the output directory. But if the NSP file is entirely
-		# different user may not understand why it wasn't processed.
-		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % potentiallyExistingNszFile[0])
+		potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
+		Print.info('{0} with the same title ID {1} already exists in the output directory.\n'\
+		'If you want to overwrite it with {2} use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
 		return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
