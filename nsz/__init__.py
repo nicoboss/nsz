@@ -10,6 +10,8 @@ def compress(filePath, compressionLevel = 18, useBlockCompression = False, block
 	else:
 		SolidCompressor.solidCompress(filePath, compressionLevel, outputDir, threads, overwrite)
 
-
 def decompress(filePath, outputDir = None):
 	NszDecompressor.decompress(filePath, outputDir)
+
+def verify(filePath):
+	NszDecompressor.verify(filePath)

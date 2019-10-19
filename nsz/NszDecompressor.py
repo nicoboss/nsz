@@ -17,43 +17,64 @@ import hashlib
 
 
 def decompress(filePath, outputDir = None):
+	__decompress(filePath, outputDir, True)
+
+def verify(filePath):
+	__decompress(filePath, None, False)
+
+def __decompress(filePath, outputDir = None, write = True):
 	
 	ncaHeaderSize = 0x4000
+	CHUNK_SZ = 0x1000000
+	
+	if write:
+		if outputDir is None:
+			nspPath = filePath[0:-1] + 'p'
+		else:
+			nspPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'p'))
+			
+		nspPath = os.path.abspath(nspPath)
+		
+		Print.info('decompressing %s -> %s' % (filePath, nspPath))
+		
+		newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
 	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 	
 	container.open(filePath, 'rb')
-
-	CHUNK_SZ = 0x1000000
-
-	if outputDir is None:
-		nspPath = filePath[0:-1] + 'p'
-	else:
-		nspPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'p'))
-		
-	nspPath = os.path.abspath(nspPath)
 	
-	Print.info('decompressing %s -> %s' % (filePath, nspPath))
 	
-	newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
-
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
 			Print.info('skipping delta fragment')
 			continue
 
 		if not nspf._path.endswith('.ncz'):
-			f = newNsp.add(nspf._path, nspf.size)
+			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
+			if write:
+				f = newNsp.add(nspf._path, nspf.size)
+			hash = hashlib.sha256()
 			nspf.seek(0)
 			while not nspf.eof():
 				inputChunk = nspf.read(CHUNK_SZ)
-				f.write(inputChunk)
+				hash.update(inputChunk)
+				if write:
+					f.write(inputChunk)
+			hexHash = hash.hexdigest()[0:32]
+			if verifyFile:
+				if hexHash + '.nca' == nspf._path:
+					Print.error('[VERIFIED  ] {0}'.format(nspf._path))
+				else:
+					Print.info('[CORRUPTED ] {0}'.format(nspf._path))
+			elif not write:
+				Print.info('[SKIPPED   ] {0}'.format(nspf._path))
 			continue
 
 		newFileName = nspf._path[0:-1] + 'a'
-		f = newNsp.add(newFileName, nspf.size)
-		start = f.tell()
+		if write:
+			f = newNsp.add(newFileName, nspf.size)
+			start = f.tell()
 		blockID = 0
 		nspf.seek(0)
 		
@@ -83,7 +104,8 @@ def decompress(filePath, outputDir = None):
 
 		hash = hashlib.sha256()
 		with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
-			f.write(header)
+			if write:
+				f.write(header)
 			bar.update(len(header))
 			hash.update(header)
 			
@@ -94,7 +116,6 @@ def decompress(filePath, outputDir = None):
 				end = s.offset + s.size
 				
 				while i < end:
-					#f.seek(i)
 					crypto.seek(i)
 					chunkSz = 0x10000 if end - i > 0x10000 else end - i
 					if useBlockCompression:
@@ -105,33 +126,30 @@ def decompress(filePath, outputDir = None):
 					if not len(inputChunk):
 						break
 					
-					#f.seek(i)
 					if not useBlockCompression:
 						decompressor.flush()
 					if s.cryptoType in (3, 4):
 						inputChunk = crypto.encrypt(inputChunk)
-					f.write(inputChunk)
+					if write:
+						f.write(inputChunk)
 					bar.update(len(inputChunk))
 					hash.update(inputChunk)
 					
 					i += len(inputChunk)
-		
+
 		hexHash = hash.hexdigest()[0:32]
-		print(hexHash + '.nca')
-		print(newFileName)
-		if hexHash + '.nca' != newFileName:
-			print(hexHash + '.nca')
-			print(newFileName)
-			Print.error('\nNCZ verification failed!\n')
+		if hexHash + '.nca' == newFileName:
+			Print.error('[VERIFIED  ] {0}'.format(nspf._path))
 		else:
-			Print.info('\nNCZ verification successful!\n')
+			Print.info('[CORRUPTED ] {0}'.format(nspf._path))
 
 		
-		end = f.tell()
-		written = (end - start)
-		print("Written:", written)
-
-		newNsp.resize(newFileName, written)
+		if write:
+			end = f.tell()
+			written = (end - start)
+			newNsp.resize(newFileName, written)
+		
 		continue
-		
-	newNsp.close()
+
+	if write:
+		newNsp.close()

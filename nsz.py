@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
 		parser.add_argument('-i', '--info', help='show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='max depth for file info and extraction')
-		parser.add_argument('-N', '--verify-ncas', help='Verify NCAs in container')
+		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verify NSP and NSZ files')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
@@ -97,7 +97,6 @@ if __name__ == '__main__':
 					try:
 						if filePath.endswith('.nsp'):
 							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
-
 					except BaseException as e:
 						Print.error(str(e))
 						raise
@@ -108,7 +107,6 @@ if __name__ == '__main__':
 					try:
 						if filePath.endswith('.nsz'):
 							nsz.decompress(filePath, args.output)
-
 					except BaseException as e:
 						Print.error(str(e))
 						raise
@@ -119,23 +117,19 @@ if __name__ == '__main__':
 
 			f.printInfo(args.depth+1)
 
-		if args.verify_ncas:
-			nut.initTitles()
-			nut.initFiles()
-			f = Fs.factory(args.verify_ncas)
-			f.open(args.verify_ncas, 'r+b')
-			if not f.verify():
-				Print.error('Archive is INVALID: %s' % args.verify_ncas)
-			else:
-				Print.error('Archive is VALID: %s' % args.verify_ncas)
-			f.close()
-
-			if not Titles.contains(args.scrape_title):
-				Print.error('Could not find title ' + args.scrape_title)
-			else:
-				Titles.get(args.scrape_title).scrape(False)
-				Titles.save()
-				pprint.pprint(Titles.get(args.scrape_title).__dict__)
+		if args.verify:
+			for i in args.file:
+				for filePath in expandFiles(i):
+					try:
+						if filePath.endswith('.nsp') or filePath.endswith('.nsz'):
+							if filePath.endswith('.nsp'):
+								print("[VERIFY NSP] {0}".format(i))
+							if filePath.endswith('.nsz'):
+								print("[VERIFY NSZ] {0}".format(i))
+							nsz.verify(filePath)
+					except BaseException as e:
+						Print.error(str(e))
+						raise
 
 
 		

@@ -77,9 +77,9 @@ py -3 -m pip install -r requirements.txt
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
-              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-D] [-l LEVEL] [-B]
-              [-s BS] [-t THREADS] [-o OUTPUT] [-w]
+usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-V] [-x EXTRACT [EXTRACT ...]]
+              [-c CREATE] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-t THREADS]
+              [-o OUTPUT] [-w]
               [file [file ...]]
 
 positional arguments:
@@ -89,8 +89,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -i INFO, --info INFO  show info about title or file
   --depth DEPTH         max depth for file info and extraction
-  -N VERIFY_NCAS, --verify-ncas VERIFY_NCAS
-                        Verify NCAs in container
+  -V, --verify          Verify NSP and NSZ files
   -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
                         extract / unpack a NSP
   -c CREATE, --create CREATE
