@@ -1,6 +1,6 @@
-from nut import BlockCompressor
-from nut import SolidCompressor
-from nut import NszDecompressor
+from nsz import BlockCompressor
+from nsz import SolidCompressor
+from nsz import NszDecompressor
 
 def compress(filePath, compressionLevel = 18, useBlockCompression = False, blockSizeExponent = 20, outputDir = None, threads = -1, overwrite = False):
 	if threads == -1:

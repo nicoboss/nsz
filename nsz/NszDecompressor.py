@@ -1,4 +1,5 @@
-from nut import Print, Header, SectionFs, BlockDecompressorReader, aes128
+from nut import Print, aes128
+from nsz import Header, SectionFs, BlockDecompressorReader
 import os
 import json
 import Fs

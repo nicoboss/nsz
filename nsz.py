@@ -12,8 +12,6 @@ import json
 if not getattr(sys, 'frozen', False):
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-#sys.path.insert(0, 'nut')
-
 import Fs
 import Fs.Nsp
 from nut import Hex
@@ -24,6 +22,7 @@ import pprint
 import random
 import queue
 import nut
+import nsz
 
 def expandFiles(path):
 	files = []
@@ -97,7 +96,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							nut.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
+							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
 
 					except BaseException as e:
 						Print.error(str(e))
@@ -108,7 +107,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
-							nut.decompress(filePath, args.output)
+							nsz.decompress(filePath, args.output)
 
 					except BaseException as e:
 						Print.error(str(e))
