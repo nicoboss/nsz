@@ -1,4 +1,5 @@
-from nut import Print, ThreadSafeCounter, SectionFs, aes128
+from nut import Print, ThreadSafeCounter, aes128
+from nsz import SectionFs
 import os
 import json
 import Fs
