@@ -11,7 +11,7 @@ def compress(filePath, compressionLevel = 18, useBlockCompression = False, block
 	else:
 		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, outputDir, threads, overwrite)
 	if verifyHash:
-		print(outFile)
+		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)
 
 def decompress(filePath, outputDir = None):

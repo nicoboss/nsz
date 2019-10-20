@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
 			f.printInfo(args.depth+1)
 
-		if args.verify:
+		if args.verify and not args.C and not args.D:
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:

@@ -64,13 +64,13 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 			hexHash = hash.hexdigest()[0:32]
 			if verifyFile:
 				if hexHash + '.nca' == nspf._path:
-					Print.error('[VERIFIED  ] {0}'.format(nspf._path))
+					Print.error('[VERIFIED]   {0}'.format(nspf._path))
 				else:
-					Print.info('[CORRUPTED ] {0}'.format(nspf._path))
+					Print.info('[CORRUPTED]  {0}'.format(nspf._path))
 					if raiseVerificationException:
 						raise Exception("Verification detected hash missmatch!")
 			elif not write:
-				Print.info('[SKIPPED   ] {0}'.format(nspf._path))
+				Print.info('[EXISTS]     {0}'.format(nspf._path))
 			continue
 
 		newFileName = nspf._path[0:-1] + 'a'
@@ -141,9 +141,9 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 
 		hexHash = hash.hexdigest()[0:32]
 		if hexHash + '.nca' == newFileName:
-			Print.error('[VERIFIED  ] {0}'.format(nspf._path))
+			Print.error('[VERIFIED]   {0}'.format(nspf._path))
 		else:
-			Print.info('[CORRUPTED ] {0}'.format(nspf._path))
+			Print.info('[CORRUPTED]  {0}'.format(nspf._path))
 			if raiseVerificationException:
 				raise Exception("Verification detected hash missmatch")
 
