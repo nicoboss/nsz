@@ -77,9 +77,9 @@ py -3 -m pip install -r requirements.txt
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-V] [-x EXTRACT [EXTRACT ...]]
-              [-c CREATE] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-t THREADS]
-              [-o OUTPUT] [-w]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-t THREADS] [-o OUTPUT]
+              [-w] [-i INFO] [--depth DEPTH] [-x EXTRACT [EXTRACT ...]]
+              [-c CREATE] [-V]
               [file [file ...]]
 
 positional arguments:
@@ -87,13 +87,6 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INFO, --info INFO  show info about title or file
-  --depth DEPTH         max depth for file info and extraction
-  -V, --verify          Verify NSP and NSZ files
-  -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
-                        extract / unpack a NSP
-  -c CREATE, --create CREATE
-                        create / pack a NSP
   -C                    Compress NSP
   -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
@@ -108,15 +101,23 @@ optional arguments:
                         installers do not support this yet.
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Usless without
-                        enabeling block compression using -B. Negative
+                        enabeling block compression using -B. Numbers < 1
                         corresponds to the number of logical CPU cores.
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
-  -w, --overwrite       Overwrite file if it exists in the output folder
+  -w, --overwrite       Continues even if there already is a file with the
+                        same name or title id inside the output directory
+  -i INFO, --info INFO  Show info about title or file
+  --depth DEPTH         Max depth for file info and extraction
+  -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
+                        extract / unpack a NSP
+  -c CREATE, --create CREATE
+                        create / pack a NSP
+  -V, --verify          Verify existing NSP and NSZ files
 ```
 
 ## Credits
 
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
 
-Nicoboss for the original awesome idea.  https://github.com/nicoboss/nsZip/
+nicoboss for the original awesome idea. https://github.com/nicoboss/nsZip/
