@@ -1,69 +1,61 @@
 ## NSZ
-NSZ files are not a real format, they are functionally identical to NSP files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
+NSZ files are not a real format, they are functionally identical to NSP files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
-NSC_Builder supports compressing NSP to NSZ, and decompressing NSZ to NSP.  The sample scripts located here are just examples of how the format works.
+NSC_Builder supports compressing NSP to NSZ, and decompressing NSZ to NSP. The sample scripts located here are just examples of how the format works.
 
 NSC_Builder can be downloaded at https://github.com/julesontheroad/NSC_BUILDER
 
 ## XCZ
-XCZ files are not a real format, they are functionally identical to XCI files.  Their sole purpose to alert the user that it contains compressed NCZ files.  NCZ files can be mixed with NCA files in the same container.
+XCZ files are not a real format, they are functionally identical to XCI files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
 ## NCZ
+These are compressed NCA files. The NCA's are decrypted, and then compressed using zStandard. Only NCA's with a 0x4000 byte header are supported (CNMT nca's are not supported).
 
-These are compressed NCA files.  The NCA's are decrypted, and then compressed using zstandard.  Only NCA's with a 0x4000 byte header are supported (CNMT nca's are not supported).
+The first 0x4000 bytes of a NCZ file is exactly the same as the original NCA (and still encrypted).
 
-The first 0x4000 bytes of a NCZ file is exactly the same as the original NCA (its still encrypted as well).
-
-At 0x4000, there will be a variable sized NCZ Header structure.  This header contains a list of sections which tell the decompressor how to re-encrypt the NCA data after decompression.
+At 0x4000, there is the variable sized NCZ Header. It contains a list of sections which tell the decompressor how to re-encrypt the NCA data after decompression. It can also contain an optional block compression header allowing random read access.
 
 All of the information in the header can be derived from the original NCA + Ticket, however it is provided preparsed to make decompression as easy as possible for third parties.
 
-Directly after the NCZ header, the zstandard stream begins and ends at EOF.  The stream is decompressed to offset 0x4000.
+Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splatted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py
 
-```cpp
-class NczHeader
-{
-public:
-	class Section
-	{
-	public:
-		u64 offset;
-		u64 size;
-		u8 cryptoType;
-		u8 padding1[7];
-		u64 padding2;
-		integer<128> cryptoKey;
-		integer<128> cryptoCounter;
-	} PACKED;
+```python
+class Section:
+	def __init__(self, f):
+		self.magic = f.read(8) # b'NCZSECTN'
+		self.offset = f.readInt64()
+		self.size = f.readInt64()
+		self.cryptoType = f.readInt64()
+		f.readInt64() # padding
+		self.cryptoKey = f.read(16)
+		self.cryptoCounter = f.read(16)
 
-	const bool isValid()
-	{
-		return m_magic == MAGIC && m_sectionCount < 0xFFFF;
-	}
+class Block:
+	def __init__(self, f):
+		self.magic = f.read(8) # b'NCZBLOCK'
+		self.version = f.readInt8()
+		self.type = f.readInt8()
+		self.unused = f.readInt8()
+		self.blockSizeExponent = f.readInt8()
+		self.numberOfBlocks = f.readInt32()
+		self.decompressedSize = f.readInt64()
+		self.compressedBlockSizeList = []
+		for i in range(self.numberOfBlocks):
+			self.compressedBlockSizeList.append(f.readInt32())
 
-	const u64 size() const
-	{
-		return sizeof(m_magic) + sizeof(m_sectionCount) + sizeof(Section) * m_sectionCount;
-	}
+nspf.seek(0x4000)
+sectionCount = nspf.readInt64()
+for i in range(sectionCount):
+	sections.append(Section(nspf))
 
-	const Section& section(u64 i) const
-	{
-		return m_sections[i];
-	}
-
-protected:
-	u64 m_magic;
-	u64 m_sectionCount;
-	Section m_sections[1];
-
-	static const u64 MAGIC = 0x4E544345535A434E;
-} PACKED;
+if blockCompression:
+	BlockHeader = Block(nspf)
 ```
 
 
 ## Compressor script
 
-Requires hactool compatible keys.txt to be present with nsz.py.  Only currently works with base games, updates, and DLC.
+Requires hactool compatible keys.txt to be present with nsz.py. Only currently works with base games, updates, and DLC.
 
 example usage:
 nsz.py --level 18 -C title1.nsp title2.nsp title3.nsp
