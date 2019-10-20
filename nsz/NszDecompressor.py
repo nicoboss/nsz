@@ -17,12 +17,12 @@ import hashlib
 
 
 def decompress(filePath, outputDir = None):
-	__decompress(filePath, outputDir, True)
+	__decompress(filePath, outputDir, True, False)
 
-def verify(filePath):
-	__decompress(filePath, None, False)
+def verify(filePath, raiseVerificationException):
+	__decompress(filePath, None, False, raiseVerificationException)
 
-def __decompress(filePath, outputDir = None, write = True):
+def __decompress(filePath, outputDir = None, write = True, raiseVerificationException = False):
 	
 	ncaHeaderSize = 0x4000
 	CHUNK_SZ = 0x1000000
@@ -67,6 +67,8 @@ def __decompress(filePath, outputDir = None, write = True):
 					Print.error('[VERIFIED  ] {0}'.format(nspf._path))
 				else:
 					Print.info('[CORRUPTED ] {0}'.format(nspf._path))
+					if raiseVerificationException:
+						raise Exception("Verification detected hash missmatch!")
 			elif not write:
 				Print.info('[SKIPPED   ] {0}'.format(nspf._path))
 			continue
@@ -142,6 +144,8 @@ def __decompress(filePath, outputDir = None, write = True):
 			Print.error('[VERIFIED  ] {0}'.format(nspf._path))
 		else:
 			Print.info('[CORRUPTED ] {0}'.format(nspf._path))
+			if raiseVerificationException:
+				raise Exception("Verification detected hash missmatch")
 
 		
 		if write:

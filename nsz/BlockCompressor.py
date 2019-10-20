@@ -239,3 +239,5 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 		Print.error(traceback.format_exc())
 		newNsp.close()
 		os.remove(nszPath)
+		
+	return nszPath

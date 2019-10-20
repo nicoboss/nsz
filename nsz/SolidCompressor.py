@@ -166,3 +166,4 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 		newNsp.close()
 		os.remove(nszPath)
 		
+	return nszPath

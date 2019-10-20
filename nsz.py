@@ -54,6 +54,7 @@ if __name__ == '__main__':
 		parser.add_argument('-l', '--level', type=int, default=18, help='Compression Level')
 		parser.add_argument('-B', '--block', action="store_true", default=False, help='Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Current title installers do not support this yet.')
 		parser.add_argument('-s', '--bs', type=int, default=20, help='Block Size for random read access 2^x while x between 14 and 32. Default is 20 => 1 MB. Current title installers do not support this yet.')
+		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter')
 		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Usless without enabeling block compression using -B. Numbers < 1 corresponds to the number of logical CPU cores.')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
@@ -61,7 +62,6 @@ if __name__ == '__main__':
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
-		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verify existing NSP and NSZ files')
 		
 
 		
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
+							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify)
 					except BaseException as e:
 						Print.error(str(e))
 						raise
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 								print("[VERIFY NSP] {0}".format(i))
 							if filePath.endswith('.nsz'):
 								print("[VERIFY NSZ] {0}".format(i))
-							nsz.verify(filePath)
+							nsz.verify(filePath, False)
 					except BaseException as e:
 						Print.error(str(e))
 						raise

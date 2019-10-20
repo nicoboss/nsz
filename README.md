@@ -77,9 +77,9 @@ py -3 -m pip install -r requirements.txt
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-t THREADS] [-o OUTPUT]
-              [-w] [-i INFO] [--depth DEPTH] [-x EXTRACT [EXTRACT ...]]
-              [-c CREATE] [-V]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-t THREADS]
+              [-o OUTPUT] [-w] [-i INFO] [--depth DEPTH]
+              [-x EXTRACT [EXTRACT ...]] [-c CREATE]
               [file [file ...]]
 
 positional arguments:
@@ -99,6 +99,9 @@ optional arguments:
   -s BS, --bs BS        Block Size for random read access 2^x while x between
                         14 and 32. Default is 20 => 1 MB. Current title
                         installers do not support this yet.
+  -V, --verify          Verifies files after compression raising an unhandled
+                        exception on hash mismatch and verify existing NSP and
+                        NSZ files when given as parameter
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Usless without
                         enabeling block compression using -B. Numbers < 1
@@ -113,7 +116,6 @@ optional arguments:
                         extract / unpack a NSP
   -c CREATE, --create CREATE
                         create / pack a NSP
-  -V, --verify          Verify existing NSP and NSZ files
 ```
 
 ## Credits
