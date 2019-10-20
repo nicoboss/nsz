@@ -17,6 +17,7 @@ from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import glob
+import traceback
 
 def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYourself):
 	while True:
@@ -43,7 +44,7 @@ def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYou
 
 
 
-def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outputDir = None, threads = -1, overwrite = False):
+def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threads = 32, outputDir = None, overwrite = False):
 	
 	ncaHeaderSize = 0x4000
 	
@@ -78,11 +79,16 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outpu
 	potentiallyExistingNszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*.nsz' % titleId))
 
 	# If the file exists and '-w' parameter is not used than don't compress
-	if potentiallyExistingNszFile and not overwrite:
-		potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
-		Print.info('{0} with the same title ID {1} already exists in the output directory.\n'\
-		'If you want to overwrite it with {2} use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
-		return
+	if not overwrite:
+		if os.path.isfile(nszPath):
+			Print.info('{0} with the same file name already exists in the output directory.\n'\
+			'If you want to overwrite it use the -w parameter!'.format(nszFilename))
+			return
+		if potentiallyExistingNszFile:
+			potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
+			Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
+			'If you want to continue with {2} keeping booth files use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
+			return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -94,7 +100,6 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outpu
 		results = manager.list()
 		readyForWork = ThreadSafeCounter.Counter(0)
 		pleaseKillYourself = ThreadSafeCounter.Counter(0)
-		threads = 7
 		TasksPerChunk = 209715200//blockSize
 		for i in range(TasksPerChunk):
 			results.append(b"")
@@ -125,6 +130,9 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outpu
 					sections = []
 					for fs in SectionFs.sortedFs(nspf):
 						sections += fs.getEncryptionSections()
+					
+					if len(sections) == 0:
+						raise Exception("NCA can't be decrypted. Outdated keys.txt?")
 					
 					header = b'NCZSECTN'
 					header += len(sections).to_bytes(8, 'little')
@@ -228,6 +236,6 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outpu
 		raise KeyboardInterrupt
 
 	except BaseException as e:
-		Print.error(str(e))
+		Print.error(traceback.format_exc())
 		newNsp.close()
 		os.remove(nszPath)
