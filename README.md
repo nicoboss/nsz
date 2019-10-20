@@ -66,7 +66,7 @@ protected:
 Requires hactool compatible keys.txt to be present with nsz.py.  Only currently works with base games, updates, and DLC.
 
 example usage:
-nsz.py --level 17 -C title1.nsp title2.nsp title3.nsp
+nsz.py --level 18 -C title1.nsp title2.nsp title3.nsp
 
 will generate title1.nsz title2.nsz title3.nsz
 
@@ -77,9 +77,9 @@ py -3 -m pip install -r requirements.txt
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-N VERIFY_NCAS]
-              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [-C] [-D] [-l LEVEL]
-              [-b BLOCK] [-s BS] [-t THREADS] [-o OUTPUT]
+usage: nsz.py [-h] [-i INFO] [--depth DEPTH] [-V] [-x EXTRACT [EXTRACT ...]]
+              [-c CREATE] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-t THREADS]
+              [-o OUTPUT] [-w]
               [file [file ...]]
 
 positional arguments:
@@ -89,8 +89,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -i INFO, --info INFO  show info about title or file
   --depth DEPTH         max depth for file info and extraction
-  -N VERIFY_NCAS, --verify-ncas VERIFY_NCAS
-                        Verify NCAs in container
+  -V, --verify          Verify NSP and NSZ files
   -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
                         extract / unpack a NSP
   -c CREATE, --create CREATE
@@ -99,22 +98,22 @@ optional arguments:
   -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
                         Compression Level
-  -b BLOCK, --block BLOCK
-                        Uses highly multithreaded block compression with
+  -B, --block           Uses highly multithreaded block compression with
                         random read access allowing compressed games to be
                         played without decompression in the future however
                         this comes with a low compression ratio cost. Current
                         title installers do not support this yet.
   -s BS, --bs BS        Block Size for random read access 2^x while x between
-                        14 and 32. Default is 19 => 512 KB. Current title
+                        14 and 32. Default is 20 => 1 MB. Current title
                         installers do not support this yet.
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Usless without
-                        enabeling block compression using -b. Negative
+                        enabeling block compression using -B. Negative
                         corresponds to the number of logical CPU cores.
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
-  -w                    Overwrite file if it exists in the output directory
+  -w, --overwrite       Overwrite file if it exists in the output folder
+```
 
 ## Credits
 

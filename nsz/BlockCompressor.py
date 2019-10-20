@@ -1,4 +1,5 @@
-from nut import Print, ThreadSafeCounter, SectionFs, aes128
+from nut import Print, aes128
+from nsz import SectionFs, ThreadSafeCounter
 import os
 import json
 import Fs
@@ -17,7 +18,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import glob
 
-def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
+def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYourself):
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
@@ -33,11 +34,16 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		compressed = cctx.compress(buffer)
 		
 		#print(compressed)
-		out_list[chunkRelativeBlockID] = compressed
+		#We don't use len(buffer) to alwys compress smaller last blocks
+		#So CompressedBlockSizeList[blockID] == blockSize is always uncompressed
+		if len(compressed) < len(buffer):
+			out_list[chunkRelativeBlockID] = compressed
+		else:
+			out_list[chunkRelativeBlockID] = buffer
 
 
 
-def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outputDir = None, threads = -1, overwrite = False):
+def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outputDir = None, threads = -1, overwrite = False):
 	
 	ncaHeaderSize = 0x4000
 	
@@ -58,11 +64,10 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 		nszPath = os.path.join(outputDir, os.path.basename(filePath[0:-1] + 'z'))
 
 	nszPath = os.path.abspath(nszPath)
+	nszFilename = os.path.basename(nszPath)
 
 	# Getting title ID to check for NSZ file in the output directory
-
 	titleId = ''
-
 	for nspf in container:
 		if isinstance(nspf, Fs.Ticket.Ticket):
 			nspf.getRightsId()
@@ -73,11 +78,10 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 	potentiallyExistingNszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*.nsz' % titleId))
 
 	# If the file exists and '-w' parameter is not used than don't compress
- 	
 	if potentiallyExistingNszFile and not overwrite:
-		# The message should be clearer I think. It outputs NSZ file in the output directory. But if the NSP file is entirely
-		# different user may not understand why it wasn't processed.
-		Print.info('%s exists in the output directory, if you want to overwrite use -w parameter!' % potentiallyExistingNszFile[0])
+		potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
+		Print.info('{0} with the same title ID {1} already exists in the output directory.\n'\
+		'If you want to overwrite it with {2} use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
 		return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
@@ -97,7 +101,7 @@ def blockCompress(filePath, compressionLevel = 17, blockSizeExponent = 19, outpu
 		work = manager.Queue(threads)
 		pool = []
 		for i in range(threads):
-			p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+			p = Process(target=compressBlockTask, args=(work, results, blockSize, readyForWork, pleaseKillYourself))
 			p.start()
 			pool.append(p)
 	

@@ -1,7 +1,10 @@
 *.pyc
 *.nsp
 *.nca
+*.tik
+*.cert
 *.nsz
 *.xcz
 *.ncz
-compressor/keys.txt
+*.keys
+*keys.txt

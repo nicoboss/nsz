@@ -12,8 +12,6 @@ import json
 if not getattr(sys, 'frozen', False):
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-#sys.path.insert(0, 'nut')
-
 import Fs
 import Fs.Nsp
 from nut import Hex
@@ -24,6 +22,7 @@ import pprint
 import random
 import queue
 import nut
+import nsz
 
 def expandFiles(path):
 	files = []
@@ -52,15 +51,15 @@ if __name__ == '__main__':
 
 		parser.add_argument('-i', '--info', help='show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='max depth for file info and extraction')
-		parser.add_argument('-N', '--verify-ncas', help='Verify NCAs in container')
+		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verify NSP and NSZ files')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
 		parser.add_argument('-D', action="store_true", help='Decompress NSZ')
-		parser.add_argument('-l', '--level', type=int, default=17, help='Compression Level')
-		parser.add_argument('-b', '--block', help='Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Current title installers do not support this yet.')
-		parser.add_argument('-s', '--bs', type=int, default=19, help='Block Size for random read access 2^x while x between 14 and 32. Default is 19 => 512 KB. Current title installers do not support this yet.')
-		parser.add_argument('-t', '--threads', type=int, default=0, help='Number of threads to compress with. Usless without enabeling block compression using -b. Negative corresponds to the number of logical CPU cores.')
+		parser.add_argument('-l', '--level', type=int, default=18, help='Compression Level')
+		parser.add_argument('-B', '--block', action="store_true", default=False, help='Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Current title installers do not support this yet.')
+		parser.add_argument('-s', '--bs', type=int, default=20, help='Block Size for random read access 2^x while x between 14 and 32. Default is 20 => 1 MB. Current title installers do not support this yet.')
+		parser.add_argument('-t', '--threads', type=int, default=0, help='Number of threads to compress with. Usless without enabeling block compression using -B. Negative corresponds to the number of logical CPU cores.')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Overwrite file if it exists in the output folder')
 		
@@ -97,8 +96,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							nut.compress(filePath, 17 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
-
+							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite)
 					except BaseException as e:
 						Print.error(str(e))
 						raise
@@ -108,8 +106,7 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
-							nut.decompress(filePath, args.output)
-
+							nsz.decompress(filePath, args.output)
 					except BaseException as e:
 						Print.error(str(e))
 						raise
@@ -120,23 +117,19 @@ if __name__ == '__main__':
 
 			f.printInfo(args.depth+1)
 
-		if args.verify_ncas:
-			nut.initTitles()
-			nut.initFiles()
-			f = Fs.factory(args.verify_ncas)
-			f.open(args.verify_ncas, 'r+b')
-			if not f.verify():
-				Print.error('Archive is INVALID: %s' % args.verify_ncas)
-			else:
-				Print.error('Archive is VALID: %s' % args.verify_ncas)
-			f.close()
-
-			if not Titles.contains(args.scrape_title):
-				Print.error('Could not find title ' + args.scrape_title)
-			else:
-				Titles.get(args.scrape_title).scrape(False)
-				Titles.save()
-				pprint.pprint(Titles.get(args.scrape_title).__dict__)
+		if args.verify:
+			for i in args.file:
+				for filePath in expandFiles(i):
+					try:
+						if filePath.endswith('.nsp') or filePath.endswith('.nsz'):
+							if filePath.endswith('.nsp'):
+								print("[VERIFY NSP] {0}".format(i))
+							if filePath.endswith('.nsz'):
+								print("[VERIFY NSZ] {0}".format(i))
+							nsz.verify(filePath)
+					except BaseException as e:
+						Print.error(str(e))
+						raise
 
 
 		
