@@ -98,6 +98,7 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsp'):
 							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify)
 					except BaseException as e:
+						Print.error('Error when compressing file: %s' % filePath)
 						Print.error(str(e))
 						raise
 						
@@ -108,6 +109,7 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsz'):
 							nsz.decompress(filePath, args.output)
 					except BaseException as e:
+						Print.error('Error when decompressing file: %s' % filePath)
 						Print.error(str(e))
 						raise
 		
@@ -128,6 +130,7 @@ if __name__ == '__main__':
 								print("[VERIFY NSZ] {0}".format(i))
 							nsz.verify(filePath, False)
 					except BaseException as e:
+						Print.error('Error when verifying file: %s' % filePath)
 						Print.error(str(e))
 						raise
 

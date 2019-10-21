@@ -129,7 +129,7 @@ class NcaHeader(File):
 			if titleRightsTitleId in Titles.keys() and Titles.get(titleRightsTitleId).key:
 				self.titleKeyDec = Keys.decryptTitleKey(uhx(Titles.get(titleRightsTitleId).key), self.masterKey)
 			else:
-				Print.info('could not find title key!')
+				Print.info('could not find title key %s!' % titleRightsTitleId)
 		else:
 			self.titleKeyDec = self.key()
 
