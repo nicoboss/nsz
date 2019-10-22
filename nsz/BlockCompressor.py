@@ -16,8 +16,8 @@ from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
-import glob
 import traceback
+import fnmatch
 
 def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYourself):
 	while True:

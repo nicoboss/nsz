@@ -14,9 +14,8 @@ from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
-import glob
 import traceback
-import fnmatch, re
+import fnmatch
 
 def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False, filesAtTarget = []):
 

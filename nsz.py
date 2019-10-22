@@ -25,6 +25,7 @@ import queue
 import nut
 import nsz
 import glob
+import fnmatch, re
 
 def expandFiles(path):
 	files = []
@@ -99,6 +100,23 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
+							titleId = re.match(r'([0-9]|[A-F]|[a-f]){16}',filePath)
+							potentiallyExistingNszFile = ''
+							for potentiallyExistingNszFile in filesAtTarget:
+								fnmatch.fnmatch(potentiallyExistingNszFile, '*%s*.nsz' % titleId)
+
+							if not args.overwrite:
+								# if os.path.isfile(nszPath):
+								# 	Print.info('{0} with the same file name already exists in the output directory.\n'\
+								# 	'If you want to overwrite it use the -w parameter!'.format(nszFilename))
+								# 	continue
+								if potentiallyExistingNszFile:
+									potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile)
+									Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
+									'If you want to continue with {2} keeping both files use the -w parameter!'
+									.format(potentiallyExistingNszFileName, titleId, potentiallyExistingNszFile))
+									continue
+
 							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify, filesAtTarget)
 					except KeyboardInterrupt:
 						raise
