@@ -8,6 +8,7 @@ import re
 import pathlib
 import urllib3
 import json
+import traceback
 
 if not getattr(sys, 'frozen', False):
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +38,7 @@ def expandFiles(path):
 				files.append(f)
 	return files
 	
-
+err = []
 
 if __name__ == '__main__':
 	try:
@@ -97,9 +98,13 @@ if __name__ == '__main__':
 					try:
 						if filePath.endswith('.nsp'):
 							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify)
-					except BaseException as e:
-						Print.error(str(e))
+					except KeyboardInterrupt:
 						raise
+					except BaseException as e:
+						Print.error('Error when compressing file: %s' % filePath)
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
+#						raise
 						
 		if args.D:
 			for i in args.file:
@@ -107,9 +112,13 @@ if __name__ == '__main__':
 					try:
 						if filePath.endswith('.nsz'):
 							nsz.decompress(filePath, args.output)
-					except BaseException as e:
-						Print.error(str(e))
+					except KeyboardInterrupt:
 						raise
+					except BaseException as e:
+						Print.error('Error when decompressing file: %s' % filePath)
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
+#						raise
 		
 		if args.info:
 			f = Fs.factory(args.info)
@@ -127,9 +136,13 @@ if __name__ == '__main__':
 							if filePath.endswith('.nsz'):
 								print("[VERIFY NSZ] {0}".format(i))
 							nsz.verify(filePath, False)
-					except BaseException as e:
-						Print.error(str(e))
+					except KeyboardInterrupt:
 						raise
+					except BaseException as e:
+						Print.error('Error when verifying file: %s' % filePath)
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
+#						raise
 
 
 		
@@ -141,6 +154,12 @@ if __name__ == '__main__':
 	except BaseException as e:
 		Print.info('nut exception: ' + str(e))
 		raise
+	if err:
+		Print.info('\033[93m\033[1mErrors:')
+		for e in err:
+			Print.info('\033[0mError when processing %s' % e["filename"] )
+			Print.info(e["error"])
+			
 
 	Print.info('fin')
 
