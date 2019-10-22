@@ -27,6 +27,11 @@ import nsz
 import glob
 import fnmatch, re
 
+# I think we should definitely change the code below.
+# If nsz.py executed like this:
+# python /path/to/nsz/nsz.py -C -o /path/to/out file.nsp
+# This causes nsz.py to search the file in /path/to/nsz directory.
+# It should return ./file.nsp or /path/to/nsp/file.nsp
 def expandFiles(path):
 	files = []
 	path = os.path.abspath(path)
@@ -100,12 +105,17 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							titleId = re.match(r'([0-9]|[A-F]|[a-f]){16}',filePath)
+							# If filename includes titleID this will speed up skipping existing files immensely.
+							# maybe we should make this a method or something? 
+							titleId = re.search(r'[0-9A-Fa-f]{16}',filePath).group()
 							potentiallyExistingNszFile = ''
-							for potentiallyExistingNszFile in filesAtTarget:
-								fnmatch.fnmatch(potentiallyExistingNszFile, '*%s*.nsz' % titleId)
-
+							for file in filesAtTarget:
+								if fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+									potentiallyExistingNszFile = file
 							if not args.overwrite:
+								# While we could also move filename check here, it doesn't matter much, because
+								# we check filename without reading anything from nsp so it's fast enough
+
 								# if os.path.isfile(nszPath):
 								# 	Print.info('{0} with the same file name already exists in the output directory.\n'\
 								# 	'If you want to overwrite it use the -w parameter!'.format(nszFilename))
@@ -116,7 +126,7 @@ if __name__ == '__main__':
 									'If you want to continue with {2} keeping both files use the -w parameter!'
 									.format(potentiallyExistingNszFileName, titleId, potentiallyExistingNszFile))
 									continue
-
+							
 							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify, filesAtTarget)
 					except KeyboardInterrupt:
 						raise
@@ -127,10 +137,33 @@ if __name__ == '__main__':
 #						raise
 						
 		if args.D:
+			filesAtTarget = glob.glob(os.path.join(os.path.abspath('.' and args.output),'*.nsp'))
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
+							# If filename includes titleID this will speed up skipping existing files immensely.
+							# maybe we should make this a method or something? 
+							titleId = re.search(r'[0-9A-Fa-f]{16}',filePath).group()
+							potentiallyExistingNspFile = ''
+							for file in filesAtTarget:
+								if fnmatch.fnmatch(file, '*%s*.nsp' % titleId):
+									potentiallyExistingNspFile = file
+							if not args.overwrite:
+								# While we could also move filename check here, it doesn't matter much, because
+								# we check filename without reading anything from nsp so it's fast enough
+
+								# if os.path.isfile(nszPath):
+								# 	Print.info('{0} with the same file name already exists in the output directory.\n'\
+								# 	'If you want to overwrite it use the -w parameter!'.format(nszFilename))
+								# 	continue
+								if potentiallyExistingNspFile:
+									potentiallyExistingNspFileName = os.path.basename(potentiallyExistingNspFile)
+									Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
+									'If you want to continue with {2} keeping both files use the -w parameter!'
+									.format(potentiallyExistingNspFileName, titleId, potentiallyExistingNspFile))
+									continue
+
 							nsz.decompress(filePath, args.output)
 					except KeyboardInterrupt:
 						raise

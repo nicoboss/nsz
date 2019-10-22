@@ -36,6 +36,8 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 	nszFilename = os.path.basename(nszPath)
 	
 	# Getting title ID to check for NSZ file in the output directory
+	# We should still keep this part of title ID comparison because not all files have titleID in
+	# filename.
 	titleId = ''
 	for nspf in container:
 		if isinstance(nspf, Fs.Ticket.Ticket):
