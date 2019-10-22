@@ -8,6 +8,7 @@ import re
 import pathlib
 import urllib3
 import json
+import traceback
 
 if not getattr(sys, 'frozen', False):
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +38,7 @@ def expandFiles(path):
 				files.append(f)
 	return files
 	
-
+err = []
 
 if __name__ == '__main__':
 	try:
@@ -101,7 +102,8 @@ if __name__ == '__main__':
 						raise
 					except BaseException as e:
 						Print.error('Error when compressing file: %s' % filePath)
-						Print.error(str(e))
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
 #						raise
 						
 		if args.D:
@@ -114,7 +116,8 @@ if __name__ == '__main__':
 						raise
 					except BaseException as e:
 						Print.error('Error when decompressing file: %s' % filePath)
-						Print.error(str(e))
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
 #						raise
 		
 		if args.info:
@@ -137,7 +140,8 @@ if __name__ == '__main__':
 						raise
 					except BaseException as e:
 						Print.error('Error when verifying file: %s' % filePath)
-						Print.error(str(e))
+						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						traceback.print_exc()
 #						raise
 
 
@@ -150,6 +154,12 @@ if __name__ == '__main__':
 	except BaseException as e:
 		Print.info('nut exception: ' + str(e))
 		raise
+	if err:
+		Print.info('\033[93m\033[1mErrors:')
+		for e in err:
+			Print.info('\033[0mError when processing %s' % e["filename"] )
+			Print.info(e["error"])
+			
 
 	Print.info('fin')
 

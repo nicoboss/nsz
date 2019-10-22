@@ -57,7 +57,7 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 		if potentiallyExistingNszFile:
 			potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
 			Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-			'If you want to continue with {2} keeping booth files use the -w parameterx!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
+			'If you want to continue with {2} keeping booth files use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
 			return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
