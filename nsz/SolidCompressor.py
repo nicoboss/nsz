@@ -16,10 +16,9 @@ from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import glob
 import traceback
-import threading
-import signal
+import fnmatch, re
 
-def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False):
+def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False, filesAtTarget = []):
 
 	ncaHeaderSize = 0x4000
 	
@@ -46,7 +45,10 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 			break # No need to go for other objects
 
 	# Checking output directory to see if the NSZ file with same title ID as NSP exists.
-	potentiallyExistingNszFile = glob.glob(os.path.join(os.path.dirname(nszPath),'*%s*.nsz' % titleId))
+	potentiallyExistingNszFile = ''
+	for file in filesAtTarget:
+		if fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+			potentiallyExistingNszFile = file
 
 	# If the file exists and '-w' parameter is not used than don't compress
 	if not overwrite:
@@ -55,9 +57,10 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 			'If you want to overwrite it use the -w parameter!'.format(nszFilename))
 			return
 		if potentiallyExistingNszFile:
-			potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile[0])
+			potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile)
 			Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-			'If you want to continue with {2} keeping booth files use the -w parameter!'.format(potentiallyExistingNszFileName, titleId, nszFilename))
+			'If you want to continue with {2} keeping both files use the -w parameter!'
+			.format(potentiallyExistingNszFileName, titleId, nszFilename))
 			return
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))

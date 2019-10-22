@@ -24,6 +24,7 @@ import random
 import queue
 import nut
 import nsz
+import glob
 
 def expandFiles(path):
 	files = []
@@ -93,11 +94,12 @@ if __name__ == '__main__':
 			nsp.pack(args.file)
 		
 		if args.C:
+			filesAtTarget = glob.glob(os.path.join(os.path.abspath('.' and args.output),'*.nsz'))
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify)
+							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify, filesAtTarget)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
