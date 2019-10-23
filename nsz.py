@@ -114,7 +114,7 @@ if __name__ == '__main__':
 							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if fnmatch.fnmatch(file,'*%s*\[%s\].nsz' % (titleId,versionNumber)):
+								if re.match(r'.*\b%s\b.*\[v\b%s\b\]\.nsz' % (titleId,versionNumber),file):
 									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 							version = re.search(r'\[v\d+\]',filePath).group()
 							potentiallyExistingNspFile = ''
 							for file in filesAtTarget:
-								if fnmatch.fnmatch(file, '*%s*%s.nsz' % (titleId,version)):
+								if re.match(r'.*\b%s\b.*\[v\b%s\b\]\.nsz' % (titleId,versionNumber),file):
 									potentiallyExistingNszFile = file
 									break
 								elif fnmatch.fnmatch(file, '*%s*.nsz' % (titleId,version)):
