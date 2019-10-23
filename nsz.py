@@ -109,8 +109,14 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsp'):
 							# If filename includes titleID this will speed up skipping existing files immensely.
 							# maybe we should make this a method or something? 
-							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
-							version = re.search(r'\[v\d+\]',filePath).group()
+							titleId = ""
+							version = "v0"
+							titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}',filePath)
+							versionResult = re.search(r'\[v\d+\]',filePath)
+							if titleIdResult:
+								titleId = titleIdResult.group()
+							if versionResult:
+								version = versionResult.group()
 							versionNumber = int(re.search(r'\d+',version).group())
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
@@ -161,8 +167,14 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsz'):
 							# If filename includes titleID this will speed up skipping existing files immensely.
 							# maybe we should make this a method or something? 
-							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
-							version = re.search(r'\[v\d+\]',filePath).group()
+							titleId = ""
+							version = "v0"
+							titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}',filePath)
+							versionResult = re.search(r'\[v\d+\]',filePath)
+							if titleIdResult:
+								titleId = titleIdResult.group()
+							if versionResult:
+								version = versionResult.group()
 							versionNumber = int(re.search(r'\d+',version).group())
 							potentiallyExistingNspFile = ''
 							for file in filesAtTarget:
