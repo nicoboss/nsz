@@ -112,9 +112,11 @@ if __name__ == '__main__':
 							version = re.search(r'\[v\d+\]',filePath).group()
 							versionNumber = re.search(r'\d+',version).group()
 							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
+							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
+							regex = re.compile(regexStr)
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if re.match(r'.*\b%s\b.*\[v\b%s\b\]\.nsz' % (titleId,versionNumber),file):
+								if regex.match(file):
 									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
@@ -158,9 +160,14 @@ if __name__ == '__main__':
 							# maybe we should make this a method or something? 
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
-							potentiallyExistingNspFile = ''
+							versionNumber = re.search(r'\d+',version).group()
+							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
+							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
+							regex = re.compile(regexStr)
+							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if re.match(r'.*\b%s\b.*\[v\b%s\b\]\.nsz' % (titleId,versionNumber),file):
+								if regex.match(file):
+									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
 								elif fnmatch.fnmatch(file, '*%s*.nsz' % (titleId,version)):
