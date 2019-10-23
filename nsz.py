@@ -65,7 +65,7 @@ if __name__ == '__main__':
 		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter')
 		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Only allowed for block compression by default. Numbers < 1 corresponds to the number of logical CPU cores.')
 		parser.add_argument('--enable_solid_multithreading', action="store_true", default=False, help='Allows --threads for solid compression. This option will lower the compression ratio. Its highly recommended to use block compression instead.')
-		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
+		parser.add_argument('-o', '--output', default="", help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
 		parser.add_argument('-r', '--rm-old-version', action="store_true", default=False, help='Removes older version if found')
 		parser.add_argument('-i', '--info', help='Show info about title or file')
