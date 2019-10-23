@@ -63,7 +63,8 @@ if __name__ == '__main__':
 		parser.add_argument('-B', '--block', action="store_true", default=False, help='Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Current title installers do not support this yet.')
 		parser.add_argument('-s', '--bs', type=int, default=20, help='Block Size for random read access 2^x while x between 14 and 32. Default is 20 => 1 MB. Current title installers do not support this yet.')
 		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter')
-		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Usless without enabeling block compression using -B. Numbers < 1 corresponds to the number of logical CPU cores.')
+		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Only allowed for block compression by default. Numbers < 1 corresponds to the number of logical CPU cores.')
+		parser.add_argument('--enable_solid_multithreading', action="store_true", default=False, help='Allows --threads for solid compression. This option will lower the compression ratio. Its highly recommended to use block compression instead.')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
 		parser.add_argument('-r', '--rm-old-version', action="store_true", default=False, help='Removes older version if found')
@@ -142,7 +143,7 @@ if __name__ == '__main__':
 									.format(potentiallyExistingNszFileName, titleId, potentiallyExistingNszFile))
 									continue
 							
-							nsz.compress(filePath, 18 if args.level is None else args.level, args.block, args.bs, args.output, args.threads, args.overwrite, args.verify, filesAtTarget)
+							nsz.compress(filePath, args, filesAtTarget)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:

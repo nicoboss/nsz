@@ -128,7 +128,10 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 						
 						partNr = 0
 						bar.update(f.tell())
-						cctx = zstandard.ZstdCompressor(level=compressionLevel)
+						if threads > 1:
+							cctx = zstandard.ZstdCompressor(level=compressionLevel, threads=threads)
+						else:
+							cctx = zstandard.ZstdCompressor(level=compressionLevel)
 						compressor = cctx.stream_writer(f)
 						while True:
 						
