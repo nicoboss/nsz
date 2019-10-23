@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
 		
 		args = parser.parse_args()
-
+		outfolder = args.output if args.output else os.path.join(os.path.abspath('.'))
 
 		Print.info('                        ,;:;;,')
 		Print.info('                       ;;;;;')
@@ -101,7 +101,10 @@ if __name__ == '__main__':
 			nsp.pack(args.file)
 		
 		if args.C:
-			filesAtTarget = glob.glob(os.path.join(os.path.abspath('.' and args.output),'*.nsz'))
+			filesAtTarget = set()
+			for file in os.scandir(outfolder):
+				if file.name.endswith(".nsz"):
+					filesAtTarget.add(file.name.lower())
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
@@ -118,7 +121,10 @@ if __name__ == '__main__':
 						#raise
 						
 		if args.D:
-			filesAtTarget = glob.glob(os.path.join(os.path.abspath('.' and args.output),'*.nsp'))
+			filesAtTarget = set()
+			for file in os.scandir(outfolder):
+				if file.name.endswith(".nsp"):
+					filesAtTarget.add(file.name.lower())
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
@@ -154,12 +160,12 @@ if __name__ == '__main__':
 						raise
 					except BaseException as e:
 						Print.error('Error when verifying file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						err.append({"filename":filePath,"error":traceback.format_exc() })
 						traceback.print_exc()
 						#raise
 		
 		
-		if len(sys.argv)==1:
+		if len(sys.argv) == 1:
 			pass
 
 	except KeyboardInterrupt:

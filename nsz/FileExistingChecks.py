@@ -5,11 +5,20 @@ from nut import Print
 
 def AllowedToWriteOutfile(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
 	# If filename includes titleID this will speed up skipping existing files immensely.
+	outFile = (os.path.splitext(os.path.basename(filePath))[0]+targetFileExtension).lower()
+	if outFile in filesAtTarget:
+		Print.info('{0} with the same file name already exists in the output directory.\n'\
+		'If you want to overwrite it use the -w parameter!'.format(filePath))
+		return False
+	
 	titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}', filePath)
+	if not titleIdResult:
+		return True
+	titleId = titleIdResult.group()
+	
 	versionResult = re.search(r'\[v\d+\]', filePath)
 	potentiallyExistingFile = ''
-	if titleIdResult and versionResult:
-		titleId = titleIdResult.group()
+	if versionResult:
 		versionNumber = int(versionResult.group()[2:-1])
 		for file in filesAtTarget:
 			if re.match(r'.*%s.*\[v%s\]\%s' % (titleId, versionNumber, targetFileExtension), file, re.IGNORECASE):
@@ -25,6 +34,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, filesAtTarget, removeOl
 						if removeOld:
 							Print.info('Deleting old update of the file...')
 							os.remove(file)
+
 	if not overwrite:
 		# While we could also move filename check here, it doesn't matter much, because
 		# we check filename without reading anything from nsp/nsz so it's fast enough

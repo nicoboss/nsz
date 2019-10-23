@@ -45,25 +45,6 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 			titleId = nspf.titleId()
 			break # No need to go for other objects
 
-	# Checking output directory to see if the NSZ file with same title ID as NSP exists.
-	potentiallyExistingNszFile = ''
-	for file in filesAtTarget:
-		if fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
-			potentiallyExistingNszFile = file
-
-	# If the file exists and '-w' parameter is not used than don't compress
-	if not overwrite:
-		if os.path.isfile(nszPath):
-			Print.info('{0} with the same file name already exists in the output directory.\n'\
-			'If you want to overwrite it use the -w parameter!'.format(nszFilename))
-			return
-		if potentiallyExistingNszFile:
-			potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile)
-			Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-			'If you want to continue with {2} keeping both files use the -w parameter!'
-			.format(potentiallyExistingNszFileName, titleId, nszFilename))
-			return
-
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
