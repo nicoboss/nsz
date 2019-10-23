@@ -10,7 +10,7 @@ def compress(filePath, args, filesAtTarget):
 	if args.block:
 		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs)
 	else:
-		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads if args.enable_solid_multithreading else -1, args.overwrite, filesAtTarget)
+		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads, args.overwrite, filesAtTarget)
 	if args.verify:
 		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)
