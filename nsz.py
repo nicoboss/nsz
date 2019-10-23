@@ -110,6 +110,7 @@ if __name__ == '__main__':
 							# maybe we should make this a method or something? 
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
+							versionNumber = 0
 							versionNumber = re.search(r'\d+',version).group()
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
@@ -121,6 +122,7 @@ if __name__ == '__main__':
 								
 								elif re.match(r'.*%s.*\.nsz' % titleId, file):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
+									targetVersionNumber = 0
 									targetVersionNumber = re.search(r'\d+',targetVersion).group()
 									Print.info('Target Version: %s ' % targetVersionNumber)
 									if targetVersionNumber < versionNumber:
@@ -162,6 +164,7 @@ if __name__ == '__main__':
 							# maybe we should make this a method or something? 
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
+							versionNumber = 0
 							versionNumber = re.search(r'\d+',version).group()
 							potentiallyExistingNspFile = ''
 							for file in filesAtTarget:
@@ -170,6 +173,7 @@ if __name__ == '__main__':
 									break
 								elif re.match(r'.*%s.*\.(?i)nsz' % titleId, file):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
+									targetVersionNumber = 0
 									targetVersionNumber = re.search(r'\d+',targetVersion).group()
 									Print.info('Target Version: %s ' % targetVersionNumber)
 									if targetVersionNumber < versionNumber:
