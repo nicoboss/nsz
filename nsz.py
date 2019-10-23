@@ -25,7 +25,7 @@ import queue
 import nut
 import nsz
 import glob
-import fnmatch, re
+import re
 
 # I think we should definitely change the code below.
 # If nsz.py executed like this:
@@ -111,17 +111,18 @@ if __name__ == '__main__':
 							# maybe we should make this a method or something? 
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
-							versionNumber = re.search(r'\d+',version).group()
-							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
-							regex = re.compile(regexStr)
+							versionNumber = int(re.search(r'\d+',version).group())
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if regex.match(file):
+								if re.match(r'.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber),file):
 									potentiallyExistingNszFile = file
 									break
-								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+								# elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+								# File extension check should be case insensitive I think.
+								
+								elif re.match(r'.*%s.*\.nsz' % titleId, file):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
-									targetVersionNumber = re.search(r'\d+',targetVersion).group()
+									targetVersionNumber = int(re.search(r'\d+',targetVersion).group())
 									Print.info('Target Version: %s ' % targetVersionNumber)
 									if targetVersionNumber < versionNumber:
 										Print.info('Target file is an old update')
@@ -162,17 +163,15 @@ if __name__ == '__main__':
 							# maybe we should make this a method or something? 
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
-							versionNumber = re.search(r'\d+',version).group()
-							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
-							regex = re.compile(regexStr)
-							potentiallyExistingNszFile = ''
+							versionNumber = int(re.search(r'\d+',version).group())
+							potentiallyExistingNspFile = ''
 							for file in filesAtTarget:
-								if regex.match(file):
-									potentiallyExistingNszFile = file
+								if re.match(r'.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber),file):
+									potentiallyExistingNspFile = file
 									break
-								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+								elif re.match(r'.*%s.*\.(?i)nsz' % titleId, file):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
-									targetVersionNumber = re.search(r'\d+',targetVersion).group()
+									targetVersionNumber = int(re.search(r'\d+',targetVersion).group())
 									Print.info('Target Version: %s ' % targetVersionNumber)
 									if targetVersionNumber < versionNumber:
 										Print.info('Target file is an old update')
