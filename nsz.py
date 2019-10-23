@@ -66,6 +66,7 @@ if __name__ == '__main__':
 		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Usless without enabeling block compression using -B. Numbers < 1 corresponds to the number of logical CPU cores.')
 		parser.add_argument('-o', '--output', help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
+		parser.add_argument('-r', '--rm-old-version', action="store_true", default=False, help='Removes older version if found')
 		parser.add_argument('-i', '--info', help='Show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
@@ -107,11 +108,19 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsp'):
 							# If filename includes titleID this will speed up skipping existing files immensely.
 							# maybe we should make this a method or something? 
-							titleId = re.search(r'[0-9A-Fa-f]{16}',filePath).group()
+							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
+							version = re.search(r'\[v\d+\]',filePath).group()
+							versionNumber = re.search(r'\d+',version).group()
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+								if fnmatch.fnmatch(file, '*%s*%s.nsz' % (titleId,version)):
 									potentiallyExistingNszFile = file
+									break
+								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
+									targetVersion = re.search(r'\[v\d+\]',file).group()
+									targetVersionNumber = re.search(r'\d+',targetVersion).group()
+									if targetVersionNumber < versionNumber and args.rm_old_version:
+										os.remove(file)
 							if not args.overwrite:
 								# While we could also move filename check here, it doesn't matter much, because
 								# we check filename without reading anything from nsp so it's fast enough
@@ -144,11 +153,18 @@ if __name__ == '__main__':
 						if filePath.endswith('.nsz'):
 							# If filename includes titleID this will speed up skipping existing files immensely.
 							# maybe we should make this a method or something? 
-							titleId = re.search(r'[0-9A-Fa-f]{16}',filePath).group()
+							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
+							version = re.search(r'\[v\d+\]',filePath).group()
 							potentiallyExistingNspFile = ''
 							for file in filesAtTarget:
-								if fnmatch.fnmatch(file, '*%s*.nsp' % titleId):
-									potentiallyExistingNspFile = file
+								if fnmatch.fnmatch(file, '*%s*%s.nsz' % (titleId,version)):
+									potentiallyExistingNszFile = file
+									break
+								elif fnmatch.fnmatch(file, '*%s*.nsz' % (titleId,version)):
+									targetVersion = re.search(r'\[v\d+\]',file).group()
+									targetVersionNumber = re.search(r'\d+',targetVersion).group()
+									if targetVersionNumber < versionNumber and args.rm_old_version:
+										os.remove(file)
 							if not args.overwrite:
 								# While we could also move filename check here, it doesn't matter much, because
 								# we check filename without reading anything from nsp so it's fast enough
