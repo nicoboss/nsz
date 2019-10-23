@@ -24,8 +24,8 @@ import random
 import queue
 import nut
 import nsz
+from nsz import FileExistingChecks
 import glob
-import re
 
 # I think we should definitely change the code below.
 # If nsz.py executed like this:
@@ -106,57 +106,16 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							# If filename includes titleID this will speed up skipping existing files immensely.
-							# maybe we should make this a method or something? 
-							titleId = ""
-							version = "v0"
-							titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}',filePath)
-							versionResult = re.search(r'\[v\d+\]',filePath)
-							if titleIdResult:
-								titleId = titleIdResult.group()
-							if versionResult:
-								version = versionResult.group()
-							versionNumber = int(re.search(r'\d+',version).group())
-							potentiallyExistingNszFile = ''
-							for file in filesAtTarget:
-								if re.match(r'.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber),file):
-									potentiallyExistingNszFile = file
-									break
-								# elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
-								# File extension check should be case insensitive I think.
-								
-								elif re.match(r'.*%s.*\.nsz' % titleId, file):
-									targetVersion = re.search(r'\[v\d+\]',file).group()
-									targetVersionNumber = int(re.search(r'\d+',targetVersion).group())
-									Print.info('Target Version: %s ' % targetVersionNumber)
-									if targetVersionNumber < versionNumber:
-										Print.info('Target file is an old update')
-										if args.rm_old_version:
-											Print.info('Deleting old update of the file...')
-											os.remove(file)
-							if not args.overwrite:
-								# While we could also move filename check here, it doesn't matter much, because
-								# we check filename without reading anything from nsp so it's fast enough
-
-								# if os.path.isfile(nszPath):
-								# 	Print.info('{0} with the same file name already exists in the output directory.\n'\
-								# 	'If you want to overwrite it use the -w parameter!'.format(nszFilename))
-								# 	continue
-								if potentiallyExistingNszFile:
-									potentiallyExistingNszFileName = os.path.basename(potentiallyExistingNszFile)
-									Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-									'If you want to continue with {2} keeping both files use the -w parameter!'
-									.format(potentiallyExistingNszFileName, titleId, potentiallyExistingNszFile))
-									continue
-							
+							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", filesAtTarget, args.rm_old_version, args.overwrite):
+								continue
 							nsz.compress(filePath, args, filesAtTarget)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
 						Print.error('Error when compressing file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						err.append({"filename":filePath,"error":traceback.format_exc() })
 						traceback.print_exc()
-#						raise
+						#raise
 						
 		if args.D:
 			filesAtTarget = glob.glob(os.path.join(os.path.abspath('.' and args.output),'*.nsp'))
@@ -164,54 +123,16 @@ if __name__ == '__main__':
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
-							# If filename includes titleID this will speed up skipping existing files immensely.
-							# maybe we should make this a method or something? 
-							titleId = ""
-							version = "v0"
-							titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}',filePath)
-							versionResult = re.search(r'\[v\d+\]',filePath)
-							if titleIdResult:
-								titleId = titleIdResult.group()
-							if versionResult:
-								version = versionResult.group()
-							versionNumber = int(re.search(r'\d+',version).group())
-							potentiallyExistingNspFile = ''
-							for file in filesAtTarget:
-								if re.match(r'.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber),file):
-									potentiallyExistingNspFile = file
-									break
-								elif re.match(r'.*%s.*\.(?i)nsz' % titleId, file):
-									targetVersion = re.search(r'\[v\d+\]',file).group()
-									targetVersionNumber = int(re.search(r'\d+',targetVersion).group())
-									Print.info('Target Version: %s ' % targetVersionNumber)
-									if targetVersionNumber < versionNumber:
-										Print.info('Target file is an old update')
-										if args.rm_old_version:
-											Print.info('Deleting old update of the file...')
-											os.remove(file)
-							if not args.overwrite:
-								# While we could also move filename check here, it doesn't matter much, because
-								# we check filename without reading anything from nsp so it's fast enough
-
-								# if os.path.isfile(nszPath):
-								# 	Print.info('{0} with the same file name already exists in the output directory.\n'\
-								# 	'If you want to overwrite it use the -w parameter!'.format(nszFilename))
-								# 	continue
-								if potentiallyExistingNspFile:
-									potentiallyExistingNspFileName = os.path.basename(potentiallyExistingNspFile)
-									Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-									'If you want to continue with {2} keeping both files use the -w parameter!'
-									.format(potentiallyExistingNspFileName, titleId, potentiallyExistingNspFile))
-									continue
-
+							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", filesAtTarget, args.rm_old_version, args.overwrite):
+								continue
 							nsz.decompress(filePath, args.output)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
 						Print.error('Error when decompressing file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })				
+						err.append({"filename":filePath,"error":traceback.format_exc() })
 						traceback.print_exc()
-#						raise
+						#raise
 		
 		if args.info:
 			f = Fs.factory(args.info)
@@ -235,9 +156,8 @@ if __name__ == '__main__':
 						Print.error('Error when verifying file: %s' % filePath)
 						err.append({"filename":filePath,"error":traceback.format_exc() })				
 						traceback.print_exc()
-#						raise
-
-
+						#raise
+		
 		
 		if len(sys.argv)==1:
 			pass
