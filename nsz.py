@@ -111,14 +111,17 @@ if __name__ == '__main__':
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
 							versionNumber = re.search(r'\d+',version).group()
+							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
 								if fnmatch.fnmatch(file, '*%s*%s.nsz' % (titleId,version)):
+									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
 								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
 									targetVersionNumber = re.search(r'\d+',targetVersion).group()
+									Print.info('Target Version: %s ' % targetVersionNumber)
 									if targetVersionNumber < versionNumber and args.rm_old_version:
 										os.remove(file)
 							if not args.overwrite:
