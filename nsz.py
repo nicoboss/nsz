@@ -114,7 +114,7 @@ if __name__ == '__main__':
 							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
-								if fnmatch.fnmatch(file, '*%s*%s.nsz' % (titleId,version)):
+								if fnmatch.fnmatch(file,'*%s*\[%s\].nsz' % (titleId,versionNumber)):
 									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
