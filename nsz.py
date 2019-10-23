@@ -111,21 +111,22 @@ if __name__ == '__main__':
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
 							versionNumber = re.search(r'\d+',version).group()
-							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
 							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
 							regex = re.compile(regexStr)
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
 								if regex.match(file):
-									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
 								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
 									targetVersionNumber = re.search(r'\d+',targetVersion).group()
 									Print.info('Target Version: %s ' % targetVersionNumber)
-									if targetVersionNumber < versionNumber and args.rm_old_version:
-										os.remove(file)
+									if targetVersionNumber < versionNumber:
+										Print.info('Target file is an old update')
+										if args.rm_old_version:
+											Print.info('Deleting old update of the file...')
+											os.remove(file)
 							if not args.overwrite:
 								# While we could also move filename check here, it doesn't matter much, because
 								# we check filename without reading anything from nsp so it's fast enough
@@ -161,20 +162,22 @@ if __name__ == '__main__':
 							titleId = re.search(r'0100[0-9A-Fa-f]{12}',filePath).group()
 							version = re.search(r'\[v\d+\]',filePath).group()
 							versionNumber = re.search(r'\d+',version).group()
-							Print.info('Title ID: %s Version: %s ' % (titleId,versionNumber))
 							regexStr = '.*%s.*\[v%s\]\.nsz' % (titleId,versionNumber)
 							regex = re.compile(regexStr)
 							potentiallyExistingNszFile = ''
 							for file in filesAtTarget:
 								if regex.match(file):
-									Print.info('File exists: %s' % potentiallyExistingNszFile)
 									potentiallyExistingNszFile = file
 									break
-								elif fnmatch.fnmatch(file, '*%s*.nsz' % (titleId,version)):
+								elif fnmatch.fnmatch(file, '*%s*.nsz' % titleId):
 									targetVersion = re.search(r'\[v\d+\]',file).group()
 									targetVersionNumber = re.search(r'\d+',targetVersion).group()
-									if targetVersionNumber < versionNumber and args.rm_old_version:
-										os.remove(file)
+									Print.info('Target Version: %s ' % targetVersionNumber)
+									if targetVersionNumber < versionNumber:
+										Print.info('Target file is an old update')
+										if args.rm_old_version:
+											Print.info('Deleting old update of the file...')
+											os.remove(file)
 							if not args.overwrite:
 								# While we could also move filename check here, it doesn't matter much, because
 								# we check filename without reading anything from nsp so it's fast enough
