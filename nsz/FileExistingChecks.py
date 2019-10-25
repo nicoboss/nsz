@@ -6,10 +6,14 @@ from nut import Print
 def AllowedToWriteOutfile(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
 	# If filename includes titleID this will speed up skipping existing files immensely.
 	outFile = (os.path.splitext(os.path.basename(filePath))[0]+targetFileExtension).lower()
-	if outFile in filesAtTarget:
+	if not overwrite and outFile in filesAtTarget:
 		Print.info('{0} with the same file name already exists in the output directory.\n'\
 		'If you want to overwrite it use the -w parameter!'.format(filePath))
 		return False
+	
+	return True
+	
+	
 	
 	titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}', filePath)
 	if not titleIdResult:
