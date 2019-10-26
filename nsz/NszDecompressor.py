@@ -25,7 +25,7 @@ def verify(filePath, raiseVerificationException):
 def __decompress(filePath, outputDir = None, write = True, raiseVerificationException = False):
 	
 	ncaHeaderSize = 0x4000
-	CHUNK_SZ = 0x1000000
+	CHUNK_SZ = 0x100000
 	
 	if write:
 		if outputDir is None:

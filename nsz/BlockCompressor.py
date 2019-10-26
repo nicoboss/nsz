@@ -56,7 +56,7 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 	container = Fs.factory(filePath)
 	container.open(filePath, 'rb')
 
-	CHUNK_SZ = 0x1000000
+	CHUNK_SZ = 0x100000
 
 
 	if outputDir is None:
