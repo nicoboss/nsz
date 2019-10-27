@@ -6,7 +6,6 @@ import sys
 import os
 import re
 import pathlib
-import urllib3
 import json
 import traceback
 
@@ -49,7 +48,6 @@ err = []
 
 if __name__ == '__main__':
 	try:
-		urllib3.disable_warnings()
 
 		#signal.signal(signal.SIGINT, handler)
 
