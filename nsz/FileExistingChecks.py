@@ -1,9 +1,46 @@
+import Fs
+import Fs.Pfs0
+import Fs.Nca
+import Fs.Type
 import os
 import glob
 import re
 from nut import Print
 
+def ExtractTitleIDAndVersion(gamePath):
+	titleId = ""
+	version = -1
+	gameName = os.path.basename(gamePath)
+	titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}', gameName)
+	if titleIdResult:
+		titleId = titleIdResult.group()
+		
+	versionResult = re.search(r'\[v\d+\]', gameName)
+	if versionResult:
+		version = int(versionResult.group()[2:-1])
+	
+	if titleId != "" and version > -1 and version%65536 == 0:
+		return(titleId, version)
+	
+	gamePath = os.path.abspath(gamePath)
+	container = Fs.factory(gamePath)
+	container.open(gamePath, 'rb')
+	for nspf in container:
+		if isinstance(nspf, Fs.Ticket.Ticket):
+			titleId = nspf.getRightsId()
+		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
+			for section in nspf:
+				if isinstance(section, Fs.Pfs0.Pfs0):
+					version = section.getVersion()
+	
+	if titleId != "" and version > -1 and version%65536 == 0:
+		return(titleId, version)
+		
+	raise("Failed to determinate TitleID/Version!")
+
+
 def AllowedToWriteOutfile(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
+	print(ExtractTitleIDAndVersion(filePath))
 	# If filename includes titleID this will speed up skipping existing files immensely.
 	outFile = (os.path.splitext(os.path.basename(filePath))[0]+targetFileExtension).lower()
 	if not overwrite and outFile in filesAtTarget:

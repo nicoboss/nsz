@@ -181,6 +181,10 @@ class Pfs0(BaseFs):
 
 		self.files.reverse()
 				
+	
+	def getVersion(self):
+		return super(Pfs0, self).getVersion()
+	
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sPFS0\n' % (tabs))

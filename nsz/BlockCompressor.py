@@ -4,7 +4,6 @@ import os
 import json
 import Fs
 import Fs.Pfs0
-import Fs.Type
 import Fs.Nca
 import Fs.Type
 import subprocess

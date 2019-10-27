@@ -1,3 +1,4 @@
+import Fs
 from Fs.File import File
 from Fs import Type
 from nut import Print
@@ -137,6 +138,12 @@ class BaseFs(File):
 		'''
 		return super(BaseFs, self).read(size, direct)
 		
+	def getVersion(self):
+		for f in self:
+			if isinstance(f, Fs.Cnmt.Cnmt):
+				return f.version
+		raise("No Cnmt found!")
+	
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		Print.info(tabs + 'magic = ' + str(self.magic))
