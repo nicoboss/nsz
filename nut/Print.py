@@ -7,8 +7,12 @@ enableDebug = False
 
 silent = False
 
+
 def info(s):
 	print(s)
+	
+def infoNoNewline(s):
+	print(s, end = '')
 
 def error(s):
 	print(s)

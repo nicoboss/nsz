@@ -29,12 +29,12 @@ def ExtractTitleIDAndVersion(gamePath):
 	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
 	for nspf in container:
-		if isinstance(nspf, Fs.Ticket.Ticket):
-			titleId = nspf.getRightsId()
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 			for section in nspf:
 				if isinstance(section, Fs.Pfs0.Pfs0):
-					version = section.getVersion()
+					Cnmt = section.getCnmt()
+					titleId = Cnmt.titleId
+					version = Cnmt.version
 	
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
@@ -48,16 +48,18 @@ def CreateTargetDict(targetFolder, extension):
 	for file in os.scandir(targetFolder):
 		filePath = os.path.join(targetFolder, file)
 		if file.name.endswith(extension):
+			Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
 			filesAtTarget.add(file.name.lower())
-			IdVersion = ExtractTitleIDAndVersion(file)
-			titleIDEntry = alreadyExists.get(IdVersion[0])
+			(titleID, version) = ExtractTitleIDAndVersion(file)
+			titleIDEntry = alreadyExists.get(titleID)
 			if titleIDEntry == None:
-				titleIDEntry = {IdVersion[1]: {filePath}}
-			elif not IdVersion[1] in titleIDEntry:
-				titleIDEntry.add({IdVersion[1]: {filePath}})
+				titleIDEntry = {version: {filePath}}
+			elif not version in titleIDEntry:
+				titleIDEntry.add({version: {filePath}})
 			else:
-				titleIDEntry[IdVersion[1]].add(filePath)
-			alreadyExists[IdVersion[0]] = titleIDEntry
+				titleIDEntry[version].add(filePath)
+			alreadyExists[titleID] = titleIDEntry
+			Print.info('=> {0} {1}'.format(titleID, version))
 	return(filesAtTarget, alreadyExists)
 
 

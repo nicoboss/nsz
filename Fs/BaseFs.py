@@ -138,10 +138,10 @@ class BaseFs(File):
 		'''
 		return super(BaseFs, self).read(size, direct)
 		
-	def getVersion(self):
+	def getCnmt(self):
 		for f in self:
 			if isinstance(f, Fs.Cnmt.Cnmt):
-				return f.version
+				return f
 		raise("No Cnmt found!")
 	
 	def printInfo(self, maxDepth = 3, indent = 0):
