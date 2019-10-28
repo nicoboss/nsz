@@ -22,8 +22,8 @@ def ExtractTitleIDAndVersion(gamePath):
 	if versionResult:
 		version = int(versionResult.group()[2:-1])
 	
-	if titleId != "" and version > -1 and version%65536 == 0:
-		return(titleId, version)
+	#if titleId != "" and version > -1 and version%65536 == 0:
+	#	return(titleId, version)
 	
 	gamePath = os.path.abspath(gamePath)
 	container = Fs.factory(gamePath)
@@ -35,6 +35,12 @@ def ExtractTitleIDAndVersion(gamePath):
 					Cnmt = section.getCnmt()
 					titleId = Cnmt.titleId
 					version = Cnmt.version
+					for entry in Cnmt.contentEntries:
+						print(os.path.basename(gamePath))
+						print(entry.hash.hex())
+						print(entry.ncaId)
+						print(entry.size)
+						print(entry.type)
 	
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
