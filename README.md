@@ -114,4 +114,3 @@ optional arguments:
 
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
 
-nicoboss for the original awesome idea. https://github.com/nicoboss/nsZip/
