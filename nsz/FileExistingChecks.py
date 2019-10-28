@@ -28,6 +28,7 @@ def ExtractTitleIDAndVersion(gamePath):
 	gamePath = os.path.abspath(gamePath)
 	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
+	Print.info("")
 	for nspf in container:
 		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 			for section in nspf:
@@ -36,11 +37,12 @@ def ExtractTitleIDAndVersion(gamePath):
 					titleId = Cnmt.titleId
 					version = Cnmt.version
 					for entry in Cnmt.contentEntries:
-						print(os.path.basename(gamePath))
-						print(entry.hash.hex())
-						print(entry.ncaId)
-						print(entry.size)
-						print(entry.type)
+						Print.info("File:  " + os.path.basename(gamePath))
+						Print.info("Hash:  " + str(entry.hash.hex()))
+						Print.info("ncaId: " + str(entry.ncaId))
+						Print.info("Size:  " + str(entry.size))
+						Print.info("Type:  " + str(entry.type))
+						Print.info("")
 	
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
