@@ -3,14 +3,14 @@ from nsz import BlockCompressor
 from nsz import SolidCompressor
 from nsz import NszDecompressor
 
-def compress(filePath, args, filesAtTarget):
+def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
 	if args.threads < 1:
 		threads = multiprocessing.cpu_count()
 	if args.block:
 		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs)
 	else:
-		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads, args.overwrite, filesAtTarget)
+		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads, args.overwrite)
 	if args.verify:
 		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)

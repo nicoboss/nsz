@@ -99,17 +99,14 @@ if __name__ == '__main__':
 			nsp.pack(args.file)
 		
 		if args.C:
-			filesAtTarget = set()
-			for file in os.scandir(outfolder):
-				if file.name.endswith(".nsz"):
-					filesAtTarget.add(file.name.lower())
+			targetDict = FileExistingChecks.CreateTargetDict(outfolder, ".nsz")
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", filesAtTarget, args.rm_old_version, args.overwrite):
+							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite):
 								continue
-							nsz.compress(filePath, args, filesAtTarget)
+							nsz.compress(filePath, args)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -119,15 +116,12 @@ if __name__ == '__main__':
 						#raise
 						
 		if args.D:
-			filesAtTarget = set()
-			for file in os.scandir(outfolder):
-				if file.name.endswith(".nsp"):
-					filesAtTarget.add(file.name.lower())
+			targetDict = FileExistingChecks.CreateTargetDict(outfolder, ".nsp")
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
-							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", filesAtTarget, args.rm_old_version, args.overwrite):
+							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.decompress(filePath, args.output)
 					except KeyboardInterrupt:

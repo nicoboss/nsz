@@ -7,9 +7,12 @@ import glob
 import re
 from nut import Print
 
+
 def ExtractTitleIDAndVersion(gamePath):
 	titleId = ""
 	version = -1
+	
+	#If filename includes titleID this will speed up skipping existing files immensely.
 	gameName = os.path.basename(gamePath)
 	titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}', gameName)
 	if titleIdResult:
@@ -39,50 +42,67 @@ def ExtractTitleIDAndVersion(gamePath):
 	raise("Failed to determinate TitleID/Version!")
 
 
-def AllowedToWriteOutfile(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
-	print(ExtractTitleIDAndVersion(filePath))
-	# If filename includes titleID this will speed up skipping existing files immensely.
+def CreateTargetDict(targetFolder, extension):
+	filesAtTarget = set()
+	alreadyExists = {}
+	for file in os.scandir(targetFolder):
+		filePath = os.path.join(targetFolder, file)
+		if file.name.endswith(extension):
+			filesAtTarget.add(file.name.lower())
+			IdVersion = ExtractTitleIDAndVersion(file)
+			titleIDEntry = alreadyExists.get(IdVersion[0])
+			if titleIDEntry == None:
+				titleIDEntry = {IdVersion[1]: {filePath}}
+			elif not IdVersion[1] in titleIDEntry:
+				titleIDEntry.add({IdVersion[1]: {filePath}})
+			else:
+				titleIDEntry[IdVersion[1]].add(filePath)
+			alreadyExists[IdVersion[0]] = titleIDEntry
+	return(filesAtTarget, alreadyExists)
+
+
+def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite):
+	(titleID, version) = ExtractTitleIDAndVersion(filePath)
+	(filesAtTarget, alreadyExists) = targetDict
+	
+	if removeOld:
+		titleIDEntry = alreadyExists.get(titleID)
+		if not titleIDEntry == None:
+			exitFlag = False
+			for versionEntry in titleIDEntry:
+				if versionEntry < titleIDEntry:
+					for filePath in fileList:
+						Print.info('Delete outdated version: {0}'.format(filePath))
+						fileList.remove(filePath)
+						filesAtTarget.remove(os.path.basename(filePath).name.lower())
+						#os.remove(file)
+				else:
+					exitFlag = True
+			if exitFlag:
+				Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
+				'If you want to process it do not use --rm-old-version!'.format(filePath))
+				return False
+	
+	titleIDEntry = alreadyExists.get(titleID)
+	if not titleIDEntry == None:
+		for versionEntry in titleIDEntry:
+			if versionEntry == titleIDEntry:
+				if overwrite:
+					for filePath in fileList:
+						Print.info('Delete dublicate: {0}'.format(filePath))
+						fileList.remove(filePath)
+						filesAtTarget.remove(os.path.basename(filePath).name.lower())
+						#os.remove(file)
+				else:
+					Print.info('{0} with the same ID and version already exists in the output directory.\n'\
+					'If you want to overwrite it use the -w parameter!'.format(filePath))
+					return False
+	
+	
 	outFile = (os.path.splitext(os.path.basename(filePath))[0]+targetFileExtension).lower()
 	if not overwrite and outFile in filesAtTarget:
 		Print.info('{0} with the same file name already exists in the output directory.\n'\
 		'If you want to overwrite it use the -w parameter!'.format(filePath))
 		return False
 	
-	return True
-	
-	
-	
-	titleIdResult = re.search(r'0100[0-9A-Fa-f]{12}', filePath)
-	if not titleIdResult:
-		return True
-	titleId = titleIdResult.group()
-	
-	versionResult = re.search(r'\[v\d+\]', filePath)
-	potentiallyExistingFile = ''
-	if versionResult:
-		versionNumber = int(versionResult.group()[2:-1])
-		for file in filesAtTarget:
-			if re.match(r'.*%s.*\[v%s\]\%s' % (titleId, versionNumber, targetFileExtension), file, re.IGNORECASE):
-				potentiallyExistingFile = file
-				break
-			elif re.match(r'.*%s.*\%s' % (titleId, targetFileExtension), file, re.IGNORECASE):
-				targetVersionResult = re.search(r'\[v\d+\]',file)
-				if targetVersionResult:
-					targetVersionNumber = int(targetVersionResult.group()[2:-1])
-					Print.info('Target Version: {0}'.format(targetVersionNumber))
-					if targetVersionNumber < versionNumber:
-						Print.info('Target file is an old update')
-						if removeOld:
-							Print.info('Deleting old update of the file...')
-							os.remove(file)
-
-	if not overwrite:
-		# While we could also move filename check here, it doesn't matter much, because
-		# we check filename without reading anything from nsp/nsz so it's fast enough
-		if potentiallyExistingFile:
-			potentiallyExistingFileName = os.path.basename(potentiallyExistingFile)
-			Print.info('{0} with the same title ID {1} but a different filename already exists in the output directory.\n'\
-			'If you want to continue with {2} keeping both files use the -w parameter!'
-			.format(potentiallyExistingFileName, titleId, potentiallyExistingFile))
-			return False
 	return True
