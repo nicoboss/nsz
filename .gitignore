@@ -9,3 +9,5 @@
 *.keys
 *keys.txt
 .vscode/
+nsz.build/
+nsz.dist/
