@@ -14,6 +14,10 @@ from time import sleep
 from tqdm import tqdm
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
+import gc
+import tracemalloc
+
+tracemalloc.start()
 
 
 def decompress(filePath, outputDir = None):
@@ -26,6 +30,10 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 	
 	ncaHeaderSize = 0x4000
 	CHUNK_SZ = 0x100000
+	#gc.enable()
+	#gc.set_debug(gc.DEBUG_UNCOLLECTABLE)
+	
+	tracemalloc.start()
 	
 	if write:
 		if outputDir is None:
@@ -125,19 +133,26 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 					else:
 						inputChunk = decompressor.read(chunkSz)
 					
-					if not len(inputChunk):
+					if not len(inputChunk) or i > 0x10000000:
+						snapshot = tracemalloc.take_snapshot()
+						top_stats = snapshot.statistics('lineno')
+						print("[ Top 10 ]")
+						for stat in top_stats[:10]:
+							print(stat)
 						break
 					
 					if not useBlockCompression:
 						decompressor.flush()
 					if s.cryptoType in (3, 4):
-						inputChunk = crypto.encrypt(inputChunk)
+						pass
+						#inputChunk = crypto.encrypt(inputChunk)
 					if write:
 						f.write(inputChunk)
 					bar.update(len(inputChunk))
 					hash.update(inputChunk)
 					
 					i += len(inputChunk)
+					#gc.collect()
 
 		hexHash = hash.hexdigest()[0:32]
 		if hexHash + '.nca' == newFileName:
