@@ -24,9 +24,8 @@ class BlockDecompressorReader:
 			raise EOFError("BlockID exceeds the amounts of compressed blocks in that file!")
 		self.nspf.seek(self.CompressedBlockOffsetList[blockID])
 		if self.CompressedBlockSizeList[blockID] < self.BlockSize:
-			decompressor = self.dctx.stream_reader(self.nspf)
-			inputChunk = decompressor.read(self.BlockSize)
-			decompressor.flush()
+			dctx = zstandard.ZstdDecompressor()
+			inputChunk = dctx.decompress(self.nspf.read(self.BlockSize))
 			#print('Block', str(blockID+1)+'/'+str(len(self.CompressedBlockOffsetList)))
 			return inputChunk
 		else:
