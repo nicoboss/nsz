@@ -309,14 +309,12 @@ class BufferedFile(BaseFile):
 
 		if self._bufferOffset == None or self._buffer == None or self._relativePos < self._bufferOffset or (self._relativePos + size)  > self._bufferOffset + len(self._buffer):
 			self.flushBuffer()
-			#self._bufferOffset = self._relativePos & ~(self._bufferAlign-1)
-			self._bufferOffset = (int(self._relativePos / self._bufferAlign) * self._bufferAlign)
-
-			pageReadSize = self._bufferSize
-
-			while self._relativePos + size > self._bufferOffset + pageReadSize:
-				pageReadSize += self._bufferSize
-
+			self._bufferOffset = (self._relativePos // self._bufferAlign) * self._bufferAlign
+			dataOffset = self._relativePos - self._bufferOffset
+			offsetModSize = (dataOffset + size) % self._bufferSize
+			garbageAtEnd = 0 if offsetModSize == 0 else self._bufferSize - offsetModSize
+			pageReadSize = dataOffset + size + garbageAtEnd
+			
 			if pageReadSize > self.size - self._bufferOffset:
 				pageReadSize = self.size - self._bufferOffset
 
@@ -330,6 +328,7 @@ class BufferedFile(BaseFile):
 		offset = self._relativePos - self._bufferOffset
 		r = self._buffer[offset:offset+size]
 		self._relativePos += size
+		#Print.info(self._relativePos)
 		return r
 
 	def write(self, value, size = None):
@@ -404,7 +403,7 @@ class BufferedFile(BaseFile):
 				self._relativePos += offset
 				return
 			
-			r = f.seek(self.offset + offset)				
+			r = f.seek(self.offset + offset)
 			return r
 
 		elif from_what == 2:
