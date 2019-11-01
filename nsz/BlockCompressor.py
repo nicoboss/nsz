@@ -17,6 +17,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import traceback
 import fnmatch
+import tracemalloc
 
 def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYourself):
 	while True:
@@ -44,7 +45,7 @@ def compressBlockTask(in_queue, out_list, blockSize, readyForWork, pleaseKillYou
 
 
 def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threads = 32, outputDir = None, overwrite = False, filesAtTarget = []):
-	
+	tracemalloc.start()
 	ncaHeaderSize = 0x4000
 	
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
@@ -180,6 +181,11 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 									f.write(results[i])
 									results[i] = b""
 								if len(buffer) == 0:
+									snapshot = tracemalloc.take_snapshot()
+									top_stats = snapshot.statistics('lineno')
+									print("[ Top 10 ]")
+									for stat in top_stats[:10]:
+										print(stat)
 									pleaseKillYourself.increment()
 									for i in range(readyForWork.value()):
 										work.put(None)

@@ -16,16 +16,21 @@ from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import traceback
 import fnmatch
+import tracemalloc
+import gc
+
 
 def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False):
-
+	#gc.enable()
+	#gc.set_debug(gc.DEBUG_LEAK)
+	tracemalloc.start()
 	ncaHeaderSize = 0x4000
 	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 	container.open(filePath, 'rb')
 	
-	CHUNK_SZ = 0x100000
+	CHUNK_SZ = 100000000
 	
 	if outputDir is None:
 		nszPath = filePath[0:-1] + 'z'
@@ -103,7 +108,7 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 						
 						partitions = []
 						for section in sections:
-							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+							print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
 							partitions.append(nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
 							
 						
@@ -113,22 +118,33 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 							cctx = zstandard.ZstdCompressor(level=compressionLevel, threads=threads)
 						else:
 							cctx = zstandard.ZstdCompressor(level=compressionLevel)
-						compressor = cctx.stream_writer(f)
+							
+							
+						lol = 0
+						print("Partitions:", len(partitions))
 						while True:
-						
-							buffer = partitions[partNr].read(CHUNK_SZ)
+							buffer = bytearray(partitions[partNr].read(CHUNK_SZ))
+							print("partNr:", partNr)
+							print("Pre While", len(buffer))
 							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
 								partNr += 1
-								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
-							if len(buffer) == 0:
+								buffer.extend(partitions[partNr].read(CHUNK_SZ - len(buffer)))
+							print("Post While", len(buffer))
+							lol += 1
+							if lol > 10 or len(buffer) == 0:
+								snapshot = tracemalloc.take_snapshot()
+								top_stats = snapshot.statistics('lineno')
+								print("[ Top 10 ]")
+								for stat in top_stats[:10]:
+									print(stat)
 								break
-							compressor.write(buffer)
+							f.write(cctx.compress(buffer))
 							
 							decompressedBytes += len(buffer)
 							bar.update(len(buffer))
 					
-					compressor.flush(zstandard.FLUSH_FRAME)
-					compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
+					cctx.flush(zstandard.FLUSH_FRAME)
+					cctx.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
 					
 					written = f.tell() - start
 					print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
