@@ -65,6 +65,7 @@ if __name__ == '__main__':
 		parser.add_argument('-o', '--output', default="", help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
 		parser.add_argument('-r', '--rm-old-version', action="store_true", default=False, help='Removes older version if found')
+		parser.add_argument('--rm-source', action="store_true", default=False, help='Deleted source file after compressing/decompressing. Its recommended to only use this in combination with --verify')
 		parser.add_argument('-i', '--info', help='Show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
@@ -107,6 +108,9 @@ if __name__ == '__main__':
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.compress(filePath, args)
+							if args.rm_source:
+								print("[DELETE NSP] {0}".format(i))
+								os.remove(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -124,6 +128,9 @@ if __name__ == '__main__':
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.decompress(filePath, args.output)
+							if args.rm_source:
+								print("[DELETE NSZ] {0}".format(i))
+								os.remove(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
