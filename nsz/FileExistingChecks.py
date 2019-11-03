@@ -14,7 +14,6 @@ def ExtractHashes(gamePath):
 	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
 	try:
-		Print.info("")
 		for nspf in container:
 			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 				for section in nspf:
@@ -42,8 +41,8 @@ def ExtractTitleIDAndVersion(gamePath):
 	if versionResult:
 		version = int(versionResult.group()[2:-1])
 	
-	#if titleId != "" and version > -1 and version%65536 == 0:
-	#	return(titleId, version)
+	if titleId != "" and version > -1 and version%65536 == 0:
+		return(titleId, version)
 	
 	gamePath = os.path.abspath(gamePath)
 	container = Fs.factory(gamePath)
