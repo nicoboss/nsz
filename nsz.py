@@ -108,7 +108,7 @@ if __name__ == '__main__':
 								continue
 							nsz.compress(filePath, args)
 
-							if args.remove_source:
+							if args.rm_source:
 								FileExistingChecks.delete_source_file(filePath)
 
 					except KeyboardInterrupt:
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.decompress(filePath, args.output)
-							if args.remove_source:
+							if args.rm_source:
 								FileExistingChecks.delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
