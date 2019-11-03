@@ -130,3 +130,11 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 		return False
 	
 	return True
+
+
+def delete_source_file(source_file_path):
+	if os.path.exists(source_file_path):
+		Print.info("Deleting source file {0}".format(source_file_path))
+		os.remove(source_file_path)
+	else:
+		Print.warning("{0} was already removed.".format(source_file_path))

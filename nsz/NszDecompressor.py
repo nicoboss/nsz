@@ -159,3 +159,4 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 
 	if write:
 		newNsp.close()
+		container.close()

@@ -69,7 +69,7 @@ if __name__ == '__main__':
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
-		
+		parser.add_argument('--rm-source', action='store_true', default=False, help='Deletes source file/s after compressing/decompressing. It\'s recommended to only use this in combination with --verify')
 
 		
 		args = parser.parse_args()
@@ -107,6 +107,10 @@ if __name__ == '__main__':
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.compress(filePath, args)
+
+							if args.remove_source:
+								FileExistingChecks.delete_source_file(filePath)
+
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -124,6 +128,8 @@ if __name__ == '__main__':
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite):
 								continue
 							nsz.decompress(filePath, args.output)
+							if args.remove_source:
+								FileExistingChecks.delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
