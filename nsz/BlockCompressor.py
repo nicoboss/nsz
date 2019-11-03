@@ -214,19 +214,15 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 				buffer = nspf.read(CHUNK_SZ)
 				f.write(buffer)
 		
-		newNsp.close()
-		container.close()
-		
 	except KeyboardInterrupt:
-		newNsp.close()
-		container.close()
 		os.remove(nszPath)
 		raise KeyboardInterrupt
 
 	except BaseException as e:
 		Print.error(traceback.format_exc())
+		os.remove(nszPath)
+	finally:
 		newNsp.close()
 		container.close()
-		os.remove(nszPath)
 		
 	return nszPath
