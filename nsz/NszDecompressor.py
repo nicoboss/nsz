@@ -1,5 +1,6 @@
 from nut import Print, aes128
 from nsz import Header, SectionFs, BlockDecompressorReader
+from nsz import FileExistingChecks
 import os
 import json
 import Fs
@@ -39,6 +40,9 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		
 		newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
 	
+	
+	fileHashes = FileExistingChecks.ExtractHashes(filePath)
+	
 	filePath = os.path.abspath(filePath)
 	container = Fs.factory(filePath)
 	
@@ -61,9 +65,8 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 				hash.update(inputChunk)
 				if write:
 					f.write(inputChunk)
-			hexHash = hash.hexdigest()[0:32]
 			if verifyFile:
-				if hexHash + '.nca' == nspf._path:
+				if hash.hexdigest() in fileHashes:
 					Print.error('[VERIFIED]   {0}'.format(nspf._path))
 				else:
 					Print.info('[CORRUPTED]  {0}'.format(nspf._path))
@@ -139,8 +142,7 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 					
 					i += len(inputChunk)
 
-		hexHash = hash.hexdigest()[0:32]
-		if hexHash + '.nca' == newFileName:
+		if hash.hexdigest() in fileHashes:
 			Print.error('[VERIFIED]   {0}'.format(nspf._path))
 		else:
 			Print.info('[CORRUPTED]  {0}'.format(nspf._path))

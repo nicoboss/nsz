@@ -8,6 +8,26 @@ import re
 from nut import Print
 
 
+def ExtractHashes(gamePath):
+	fileHashes = set()
+	gamePath = os.path.abspath(gamePath)
+	container = Fs.factory(gamePath)
+	container.open(gamePath, 'rb')
+	try:
+		Print.info("")
+		for nspf in container:
+			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
+				for section in nspf:
+					if isinstance(section, Fs.Pfs0.Pfs0):
+						Cnmt = section.getCnmt()
+						for entry in Cnmt.contentEntries:
+							fileHashes.add(entry.hash.hex())
+	finally:
+		container.close()
+	
+	return fileHashes
+
+
 def ExtractTitleIDAndVersion(gamePath):
 	titleId = ""
 	version = -1
@@ -22,14 +42,13 @@ def ExtractTitleIDAndVersion(gamePath):
 	if versionResult:
 		version = int(versionResult.group()[2:-1])
 	
-	if titleId != "" and version > -1 and version%65536 == 0:
-		return(titleId, version)
+	#if titleId != "" and version > -1 and version%65536 == 0:
+	#	return(titleId, version)
 	
 	gamePath = os.path.abspath(gamePath)
 	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
 	try:
-		Print.info("")
 		for nspf in container:
 			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 				for section in nspf:
@@ -39,7 +58,6 @@ def ExtractTitleIDAndVersion(gamePath):
 						version = Cnmt.version
 	finally:
 		container.close()
-
 	
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
