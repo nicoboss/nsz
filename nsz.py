@@ -69,7 +69,7 @@ if __name__ == '__main__':
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
 		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
-		parser.add_argument('--remove-source', action='store_true', default=False, help='Removes the source NSP or NSZ file after compression or decompression.')
+		parser.add_argument('--rm-source', action='store_true', default=False, help='Deletes source file/s after compressing/decompressing. It\'s recommended to only use this in combination with --verify')
 
 		
 		args = parser.parse_args()
