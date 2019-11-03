@@ -215,15 +215,18 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 				f.write(buffer)
 		
 		newNsp.close()
+		container.close()
 		
 	except KeyboardInterrupt:
 		newNsp.close()
+		container.close()
 		os.remove(nszPath)
 		raise KeyboardInterrupt
 
 	except BaseException as e:
 		Print.error(traceback.format_exc())
 		newNsp.close()
+		container.close()
 		os.remove(nszPath)
 		
 	return nszPath
