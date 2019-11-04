@@ -71,36 +71,40 @@ def masterKey(masterKeyIndex):
 	return getKey('master_key_0' + str(masterKeyIndex))
 
 def load(fileName):
-	global keyAreaKeys
-	global titleKeks
-
-	with open(fileName, encoding="utf8") as f:
-		for line in f.readlines():
-			r = re.match('\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
-			if r:
-				keys[r.group(1)] = r.group(2)
+	try:
+		global keyAreaKeys
+		global titleKeks
 	
-
-	aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])
-	aes_key_generation_source = uhx(keys['aes_key_generation_source'])
-
-	keyAreaKeys = []
-	for i in range(10):
-		keyAreaKeys.append([None, None, None])
-
+		with open(fileName, encoding="utf8") as f:
+			for line in f.readlines():
+				r = re.match('\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
+				if r:
+					keys[r.group(1)] = r.group(2)
+		
 	
-	for i in range(10):
-		masterKeyName = 'master_key_0' + str(i)
-		if masterKeyName in keys.keys():
+		aes_kek_generation_source = uhx(keys['aes_kek_generation_source'])
+		aes_key_generation_source = uhx(keys['aes_key_generation_source'])
+	
+		keyAreaKeys = []
+		for i in range(10):
+			keyAreaKeys.append([None, None, None])
+	
+		
+		for i in range(10):
+			masterKeyName = 'master_key_0' + str(i)
+			if masterKeyName in keys.keys():
+	
+				masterKey = uhx(keys[masterKeyName])
+				crypto = aes128.AESECB(masterKey)
+				titleKeks.append(crypto.decrypt(uhx(keys['titlekek_source'])).hex())
+				keyAreaKeys[i][0] = generateKek(uhx(keys['key_area_key_application_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][1] = generateKek(uhx(keys['key_area_key_ocean_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][2] = generateKek(uhx(keys['key_area_key_system_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
+			else:
+				titleKeks.append('0' * 32)
+	except BaseException as e:
+		Print.error(str(e))
 
-			masterKey = uhx(keys[masterKeyName])
-			crypto = aes128.AESECB(masterKey)
-			titleKeks.append(crypto.decrypt(uhx(keys['titlekek_source'])).hex())
-			keyAreaKeys[i][0] = generateKek(uhx(keys['key_area_key_application_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][1] = generateKek(uhx(keys['key_area_key_ocean_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][2] = generateKek(uhx(keys['key_area_key_system_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
-		else:
-			titleKeks.append('0' * 32) 
 
 
 keyScriptPath = os.path.dirname(os.path.abspath(__file__))
