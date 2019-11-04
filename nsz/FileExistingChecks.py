@@ -2,6 +2,7 @@ import Fs
 import Fs.Pfs0
 import Fs.Nca
 import Fs.Type
+import traceback
 import os
 import glob
 import re
@@ -61,27 +62,32 @@ def ExtractTitleIDAndVersion(gamePath):
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
 		
-	raise("Failed to determinate TitleID/Version!")
+	raise EOFError("Failed to determinate TitleID/Version!")
 
 
 def CreateTargetDict(targetFolder, extension):
 	filesAtTarget = set()
 	alreadyExists = {}
 	for file in os.scandir(targetFolder):
-		filePath = os.path.join(targetFolder, file)
-		if file.name.endswith(extension):
-			Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
-			filesAtTarget.add(file.name.lower())
-			(titleID, version) = ExtractTitleIDAndVersion(file)
-			titleIDEntry = alreadyExists.get(titleID)
-			if titleIDEntry == None:
-				titleIDEntry = {version: {filePath}}
-			elif not version in titleIDEntry:
-				titleIDEntry.add({version: {filePath}})
-			else:
-				titleIDEntry[version].add(filePath)
-			alreadyExists[titleID] = titleIDEntry
-			Print.info('=> {0} {1}'.format(titleID, version))
+		try:
+			filePath = os.path.join(targetFolder, file)
+			if file.name.endswith(extension):
+				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
+				filesAtTarget.add(file.name.lower())
+				(titleID, version) = ExtractTitleIDAndVersion(file)
+				titleIDEntry = alreadyExists.get(titleID)
+				if titleIDEntry == None:
+					titleIDEntry = {version: {filePath}}
+				elif not version in titleIDEntry:
+					titleIDEntry.add({version: {filePath}})
+				else:
+					titleIDEntry[version].add(filePath)
+				alreadyExists[titleID] = titleIDEntry
+				Print.info('=> {0} {1}'.format(titleID, version))
+		except BaseException as e:
+			Print.info("")
+			traceback.print_exc()
+			Print.error('Error: ' + str(e))
 	return(filesAtTarget, alreadyExists)
 
 
