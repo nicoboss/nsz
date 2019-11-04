@@ -1,4 +1,4 @@
-import re
+import os, re
 from nut import aes128
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import Print
@@ -103,8 +103,14 @@ def load(fileName):
 			titleKeks.append('0' * 32) 
 
 
-try:			
-	load('keys.txt')
-except BaseException as e:
-	Print.error(str(e))
+keyScriptPath = os.path.dirname(os.path.abspath(__file__))
+keypath = os.path.join(keyScriptPath, '..', 'keys.txt')
+dumpedKeys = os.path.join(os.getenv('USERPROFILE'), ".switch", "prod.keys")
+if os.path.isfile(keypath):
+	load(keypath)
+elif os.path.isfile(dumpedKeys):
+	load(dumpedKeys)
+else:
+	errorMsg = "{0} or {1} not found!\nPlease dump your keys using https://github.com/shchmue/Lockpick_RCM/releases".format(keypath, dumpedKeys)
+	raise FileNotFoundError(errorMsg)
 

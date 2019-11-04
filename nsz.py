@@ -8,10 +8,6 @@ import re
 import pathlib
 import json
 import traceback
-
-if not getattr(sys, 'frozen', False):
-	os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
 import Fs
 import Fs.Nsp
 from nut import Hex
