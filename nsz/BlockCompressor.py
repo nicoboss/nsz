@@ -169,6 +169,8 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 						while True:
 							buffer = partitions[partNr].read(blockSize)
 							while (len(buffer) < blockSize and partNr < len(partitions)-1):
+								partitions[partNr].close()
+								partitions[partNr] = None
 								partNr += 1
 								buffer += partitions[partNr].read(blockSize - len(buffer))
 							
@@ -194,6 +196,8 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 							decompressedBytes += len(buffer)
 							bar.update(len(buffer))
 					
+					partitions[partNr].close()
+					partitions[partNr] = None
 					f.seek(blocksHeaderFilePos+24)
 					header = b""
 					for compressedblockSize in compressedblockSizeList:

@@ -128,6 +128,8 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 							
 							decompressedBytes += len(buffer)
 							bar.update(len(buffer))
+						partitions[partNr].close()
+						partitions[partNr] = None
 					
 					compressor.flush(zstandard.FLUSH_FRAME)
 					compressor.flush(zstandard.COMPRESSOBJ_FLUSH_FINISH)
