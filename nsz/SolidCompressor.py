@@ -25,7 +25,7 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 	container = Fs.factory(filePath)
 	container.open(filePath, 'rb')
 	
-	CHUNK_SZ = 0x100000
+	CHUNK_SZ = 0x1000000
 	
 	if outputDir is None:
 		nszPath = filePath[0:-1] + 'z'
@@ -118,6 +118,8 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 						
 							buffer = partitions[partNr].read(CHUNK_SZ)
 							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
+								partitions[partNr].close()
+								partitions[partNr] = None
 								partNr += 1
 								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
 							if len(buffer) == 0:
