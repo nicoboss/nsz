@@ -118,6 +118,8 @@ def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -
 						
 							buffer = partitions[partNr].read(CHUNK_SZ)
 							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
+								partitions[partNr].close()
+								partitions[partNr] = None
 								partNr += 1
 								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
 							if len(buffer) == 0:
