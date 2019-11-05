@@ -20,6 +20,7 @@ import queue
 import nut
 import nsz
 from nsz import FileExistingChecks
+import multiprocessing
 import glob
 
 # I think we should definitely change the code below.
@@ -43,6 +44,7 @@ def expandFiles(path):
 err = []
 
 if __name__ == '__main__':
+	multiprocessing.freeze_support()
 	try:
 
 		#signal.signal(signal.SIGINT, handler)
