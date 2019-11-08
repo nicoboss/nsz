@@ -156,7 +156,7 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 					
 					decompressedBytes = ncaHeaderSize
 					
-					with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+					with tqdm(total=nspf.size, unit_scale=True, unit="B") as bar:
 						
 						partitions = []
 						for section in sections:
