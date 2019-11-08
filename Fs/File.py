@@ -16,6 +16,8 @@ class BaseFile:
 		self.cryptoKey = None
 		self.cryptoType = Fs.Type.Crypto.NONE
 		self.cryptoCounter = None
+		self.cryptoOffset = 0
+		self.ctr_val = 0
 		self.isPartition = False
 		self._children = []
 		self._path = None
@@ -175,7 +177,7 @@ class BaseFile:
 		if cryptoCounter != -1:
 			self.cryptoCounter = cryptoCounter
 			
-		if self.cryptoType == Fs.Type.Crypto.CTR:
+		if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 			if self.cryptoKey:
 				self.crypto = aes128.AESCTR(self.cryptoKey, nonce = self.cryptoCounter.copy())
 				self.cryptoType = Fs.Type.Crypto.CTR
@@ -256,6 +258,19 @@ class BaseFile:
 			ofs >>= 8
 		return bytes(ctr)
 		
+	def setBktrCounter(self, ctr_val, ofs):
+		ctr = self.cryptoCounter.copy()
+		ofs >>= 4
+		for j in range(8):
+			ctr[0x10-j-1] = ofs & 0xFF
+			ofs >>= 8
+			
+		for j in range(4):
+			ctr[0x8-j-1] = ctr_val & 0xFF
+			ctr_val >>= 8
+			
+		return bytes(ctr)
+		
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		if self._path:
@@ -294,14 +309,12 @@ class BufferedFile(BaseFile):
 
 		if self._bufferOffset == None or self._buffer == None or self._relativePos < self._bufferOffset or (self._relativePos + size)  > self._bufferOffset + len(self._buffer):
 			self.flushBuffer()
-			#self._bufferOffset = self._relativePos & ~(self._bufferAlign-1)
-			self._bufferOffset = (int(self._relativePos / self._bufferAlign) * self._bufferAlign)
-
-			pageReadSize = self._bufferSize
-
-			while self._relativePos + size > self._bufferOffset + pageReadSize:
-				pageReadSize += self._bufferSize
-
+			self._bufferOffset = (self._relativePos // self._bufferAlign) * self._bufferAlign
+			dataOffset = self._relativePos - self._bufferOffset
+			offsetModSize = (dataOffset + size) % self._bufferSize
+			garbageAtEnd = 0 if offsetModSize == 0 else self._bufferSize - offsetModSize
+			pageReadSize = dataOffset + size + garbageAtEnd
+			
 			if pageReadSize > self.size - self._bufferOffset:
 				pageReadSize = self.size - self._bufferOffset
 
@@ -315,6 +328,7 @@ class BufferedFile(BaseFile):
 		offset = self._relativePos - self._bufferOffset
 		r = self._buffer[offset:offset+size]
 		self._relativePos += size
+		#Print.info(self._relativePos)
 		return r
 
 	def write(self, value, size = None):
@@ -348,11 +362,10 @@ class BufferedFile(BaseFile):
 	def getPageFlushBuffer(self, buffer):
 		if self.crypto:
 			if self.cryptoType == Fs.Type.Crypto.CTR:
-				#Print.info('reading ctr from ' + hex(self._bufferOffset))
 				self.crypto.seek(self.offset + self._bufferOffset)
-			else:
-				pass
-				#Print.info('reading from ' + hex(self._bufferOffset))
+			elif self.cryptoType == Fs.Type.Crypto.BKTR:
+				self.crypto.seek(self.offset + self._bufferOffset)
+
 			return self.crypto.encrypt(buffer)
 		return buffer
 
@@ -390,7 +403,7 @@ class BufferedFile(BaseFile):
 				self._relativePos += offset
 				return
 			
-			r = f.seek(self.offset + offset)				
+			r = f.seek(self.offset + offset)
 			return r
 
 		elif from_what == 2:
@@ -408,7 +421,7 @@ class File(BufferedFile):
 
 	def pageRefreshed(self):
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR:
+			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 				#Print.info('reading ctr from ' + hex(self._bufferOffset))
 				self.crypto.seek(self.offset + self._bufferOffset)
 			else:
@@ -426,7 +439,7 @@ class MemoryFile(File):
 		self.setupCrypto(cryptoType = cryptoType, cryptoKey = cryptoKey, cryptoCounter = cryptoCounter)
 
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR:
+			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
 				self.crypto.seek(offset)
 
 			self.buffer = self.crypto.decrypt(self.buffer)

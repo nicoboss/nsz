@@ -19,14 +19,14 @@ class Pfs0Stream():
 	def __init__(self, path):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		self.path = path
-		self.f = open(path, 'wb')
+		self.f = open(path, 'wb+')
 		self.offset = 0x8000
 		self.files = []
 
 		self.f.seek(self.offset)
 
 	def add(self, name, size):
-		Print.info('Adding file %s %d bytes to NSP' % (name, int(size)))
+		Print.info('[ADDING]     %s %d bytes to NSP' % (name, int(size)))
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
 		t = {'name': name, 'size': size, 'offset': self.f.tell()}
 		return self.f
@@ -170,14 +170,21 @@ class Pfs0(BaseFs):
 			if ticket.titleKey() != ('0' * 32):
 				Titles.get(ticket.titleId()).key = ticket.titleKey()
 		except:
-			raise
+			pass
 
 		for i in range(fileCount):
 			if self.files[i] != ticket:
-				self.files[i].open(None, None)
+				try:
+					self.files[i].open(None, None)
+				except:
+					pass
 
 		self.files.reverse()
 				
+	
+	def getCnmt(self):
+		return super(Pfs0, self).getCnmt()
+	
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sPFS0\n' % (tabs))

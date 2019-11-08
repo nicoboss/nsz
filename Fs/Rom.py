@@ -10,7 +10,6 @@ from nut import Print
 from Fs.BaseFs import BaseFs
 from Fs.Ivfc import Ivfc
 from nut import Hex
-from Fs import Bktr
 
 MEDIA_SIZE = 0x200
 		
@@ -20,14 +19,11 @@ class Rom(BaseFs):
 		if buffer:
 			self.ivfc = Ivfc(MemoryFile(buffer[0x8:]), 'rb')
 			self.magic = buffer[0x8:0xC]
-			self.bktr1 = Bktr.Header(MemoryFile(buffer[0x100:0x120]), 'rb')
-			self.bktr2 = Bktr.Header(MemoryFile(buffer[0x120:0x140]), 'rb')
+			
 			#Hex.dump(buffer)
 			#self.sectionStart = self.ivfc.levels[5].offset
 		else:
 			self.ivfc = None
-			self.bktr1 = None
-			self.bktr2 = None
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(Rom, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -46,8 +42,6 @@ class Rom(BaseFs):
 					Print.info('%sLevel%d size = %d' % (tabs, i, level.size))
 					Print.info('%sLevel%d blockSize = %d' % (tabs, i, level.blockSize))
 
-		self.bktr1.printInfo(maxDepth, indent)
-		self.bktr2.printInfo(maxDepth, indent)
 		'''
 		self.seek(0)
 		level1 = self.read(0x4000)

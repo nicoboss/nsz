@@ -1,0 +1,13 @@
+*.pyc
+*.nsp
+*.nca
+*.tik
+*.cert
+*.nsz
+*.xcz
+*.ncz
+*.keys
+*keys.txt
+.vscode/
+nsz.build/
+nsz.dist/
