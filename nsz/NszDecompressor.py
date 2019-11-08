@@ -108,7 +108,7 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 			decompressor = dctx.stream_reader(nspf)
 
 		hash = hashlib.sha256()
-		with tqdm(total=nspf.size, unit_scale=True, unit="B/s") as bar:
+		with tqdm(total=nspf.size, unit_scale=True, unit="B") as bar:
 			if write:
 				f.write(header)
 			bar.update(len(header))
