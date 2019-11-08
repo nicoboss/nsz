@@ -2,6 +2,7 @@ import os, re
 from nut import aes128
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import Print
+from pathlib import Path
 
 keys = {}
 titleKeks = []
@@ -109,7 +110,7 @@ def load(fileName):
 
 keyScriptPath = os.path.dirname(os.path.abspath(__file__))
 keypath = os.path.join(keyScriptPath, '..', 'keys.txt')
-dumpedKeys = os.path.join(os.getenv('USERPROFILE'), ".switch", "prod.keys")
+dumpedKeys = os.path.join(Path.home(), ".switch", "prod.keys")
 if os.path.isfile(keypath):
 	load(keypath)
 elif os.path.isfile(dumpedKeys):
