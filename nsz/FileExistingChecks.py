@@ -110,7 +110,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 					for (fileName, filePath) in filesAtTarget:
 						Print.info('Delete outdated version: {0}'.format(filePath))
 						filesAtTarget.remove(os.path.basename(filePath).name.lower())
-						#os.remove(file)
+						os.remove(file)
 				else:
 					exitFlag = True
 			if exitFlag:
@@ -126,7 +126,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 					for (fileName, filePath) in filesAtTarget:
 						Print.info('Delete dublicate: {0}'.format(filePath))
 						filesAtTarget.remove(os.path.basename(filePath).name.lower())
-						#os.remove(filePath)
+						os.remove(filePath)
 				else:
 					Print.info('{0} with the same ID and version already exists in the output directory.\n'\
 					'If you want to overwrite it use the -w parameter!'.format(os.path.basename(filePath)))
@@ -143,7 +143,7 @@ def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overw
 		return True
 	
 	if overwrite:
-		#os.remove(filePath)
+		os.remove(filePath)
 		return True
 	
 	Print.info('{0} with the same file name already exists in the output directory.\n'\
