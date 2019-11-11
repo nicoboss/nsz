@@ -69,9 +69,9 @@ py -3 -m pip install -r requirements.txt
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-t THREADS]
-              [-o OUTPUT] [-w] [-i INFO] [--depth DEPTH]
-              [-x EXTRACT [EXTRACT ...]] [-c CREATE]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-p] [-t THREADS]
+              [-o OUTPUT] [-w] [-r] [-i INFO] [--depth DEPTH]
+              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [--rm-source]
               [file [file ...]]
 
 positional arguments:
@@ -94,20 +94,29 @@ optional arguments:
   -V, --verify          Verifies files after compression raising an unhandled
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter
+  -p, --parseCnmt       Extract TitleId/Version from Cnmt if this information
+                        cannot be obtained from the filename. Required for
+                        skipping/overwriting existing files and --rm-old-
+                        version to work properly if some not every file is
+                        named properly. Supported filenames:
+                        *TitleID*[vVersion]*
   -t THREADS, --threads THREADS
-                        Number of threads to compress with. Usless without
-                        enabeling block compression using -B. Numbers < 1
+                        Number of threads to compress with. Numbers < 1
                         corresponds to the number of logical CPU cores.
   -o OUTPUT, --output OUTPUT
                         Directory to save the output NSZ files
   -w, --overwrite       Continues even if there already is a file with the
                         same name or title id inside the output directory
+  -r, --rm-old-version  Removes older version if found
   -i INFO, --info INFO  Show info about title or file
   --depth DEPTH         Max depth for file info and extraction
   -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
                         extract / unpack a NSP
   -c CREATE, --create CREATE
                         create / pack a NSP
+  --rm-source           Deletes source file/s after compressing/decompressing.
+                        It's recommended to only use this in combination with
+                        --verify
 ```
 
 ## Credits
