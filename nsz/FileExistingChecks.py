@@ -28,7 +28,7 @@ def ExtractHashes(gamePath):
 	return fileHashes
 
 
-def ExtractTitleIDAndVersion(gamePath):
+def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 	titleId = ""
 	version = -1
 	
@@ -44,6 +44,8 @@ def ExtractTitleIDAndVersion(gamePath):
 	
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
+	elif not parseCnmt:
+		return None
 	
 	gamePath = os.path.abspath(gamePath)
 	container = Fs.factory(gamePath)
@@ -62,19 +64,19 @@ def ExtractTitleIDAndVersion(gamePath):
 	if titleId != "" and version > -1 and version%65536 == 0:
 		return(titleId, version)
 		
-	raise EOFError("Failed to determinate TitleID/Version!")
+	return None
 
 
-def CreateTargetDict(targetFolder, extension):
-	filesAtTarget = set()
+def CreateTargetDict(targetFolder, parseCnmt, extension):
+	filesAtTarget = {}
 	alreadyExists = {}
 	for file in os.scandir(targetFolder):
 		try:
 			filePath = os.path.join(targetFolder, file)
 			if file.name.endswith(extension):
 				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
-				filesAtTarget.add(file.name.lower())
-				(titleID, version) = ExtractTitleIDAndVersion(file)
+				filesAtTarget[file.name.lower()] = filePath
+				(titleID, version) = ExtractTitleIDAndVersion(file, True)
 				titleIDEntry = alreadyExists.get(titleID)
 				if titleIDEntry == None:
 					titleIDEntry = {version: {filePath}}
@@ -91,9 +93,13 @@ def CreateTargetDict(targetFolder, extension):
 	return(filesAtTarget, alreadyExists)
 
 
-def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite):
-	(titleID, version) = ExtractTitleIDAndVersion(filePath)
+def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite, parseCnmt):
 	(filesAtTarget, alreadyExists) = targetDict
+	extractedIdVersion = ExtractTitleIDAndVersion(filePath, parseCnmt)
+	if extractedIdVersion == None:
+		Print.error("Failed to extract TitleID/Version from filename {0}. Use -p to extract from Cnmt.".format(os.path.basename(filePath)))
+		return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
+	(titleID, version) = extractedIdVersion
 	
 	if removeOld:
 		titleIDEntry = alreadyExists.get(titleID)
@@ -101,16 +107,15 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 			exitFlag = False
 			for versionEntry in titleIDEntry:
 				if versionEntry < titleIDEntry:
-					for filePath in fileList:
+					for (fileName, filePath) in filesAtTarget:
 						Print.info('Delete outdated version: {0}'.format(filePath))
-						fileList.remove(filePath)
 						filesAtTarget.remove(os.path.basename(filePath).name.lower())
 						#os.remove(file)
 				else:
 					exitFlag = True
 			if exitFlag:
 				Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
-				'If you want to process it do not use --rm-old-version!'.format(filePath))
+				'If you want to process it do not use --rm-old-version!'.format(os.path.basename(filePath)))
 				return False
 	
 	titleIDEntry = alreadyExists.get(titleID)
@@ -118,24 +123,32 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 		for versionEntry in titleIDEntry:
 			if versionEntry == titleIDEntry:
 				if overwrite:
-					for filePath in fileList:
+					for (fileName, filePath) in filesAtTarget:
 						Print.info('Delete dublicate: {0}'.format(filePath))
-						fileList.remove(filePath)
 						filesAtTarget.remove(os.path.basename(filePath).name.lower())
-						#os.remove(file)
+						#os.remove(filePath)
 				else:
 					Print.info('{0} with the same ID and version already exists in the output directory.\n'\
-					'If you want to overwrite it use the -w parameter!'.format(filePath))
+					'If you want to overwrite it use the -w parameter!'.format(os.path.basename(filePath)))
 					return False
 	
+	return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
 	
+	
+def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
 	outFile = (os.path.splitext(os.path.basename(filePath))[0]+targetFileExtension).lower()
-	if not overwrite and outFile in filesAtTarget:
-		Print.info('{0} with the same file name already exists in the output directory.\n'\
-		'If you want to overwrite it use the -w parameter!'.format(filePath))
-		return False
+	filePath = filesAtTarget.get(outFile)
 	
-	return True
+	if filePath == None:
+		return True
+	
+	if overwrite:
+		#os.remove(filePath)
+		return True
+	
+	Print.info('{0} with the same file name already exists in the output directory.\n'\
+	'If you want to overwrite it use the -w parameter!'.format(os.path.basename(filePath)))
+	return False
 
 
 def delete_source_file(source_file_path):
