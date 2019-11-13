@@ -1,32 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from nsz import *
-import argparse
-import sys
 import os
+import sys
+scriptPath = os.path.realpath(__file__)
+importPath = os.path.dirname(scriptPath)
+print(importPath)
+sys.path.append(importPath)
+
+import argparse
 import re
 import pathlib
 import json
 import traceback
-import nsz.Fs
-import nsz.Fs.Nsp
-import nsz.nut
-from nsz.nut import Hex
-from nsz.nut import Print
+import Fs
+import Fs.Nsp
+import nut
+from nut import Hex
+from nut import Print
 import time
 import colorama
 import pprint
 import random
 import queue
-import nsz
-from nsz import FileExistingChecks
+import FileExistingChecks
 import multiprocessing
 import glob
 import multiprocessing
-from nsz import BlockCompressor
-from nsz import SolidCompressor
-from nsz import NszDecompressor
+import BlockCompressor
+import SolidCompressor
+import NszDecompressor
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
@@ -109,7 +112,7 @@ def main():
 
 		if args.extract:
 			for filePath in args.extract:
-				f = nsz.Fs.factory(filePath)
+				f = Fs.factory(filePath)
 				f.open(filePath, 'rb')
 				dir = os.path.splitext(os.path.basename(filePath))[0]
 				f.unpack(dir)
@@ -117,7 +120,7 @@ def main():
 
 		if args.create:
 			Print.info('creating ' + args.create)
-			nsp = nsz.Fs.Nsp.Nsp(None, None)
+			nsp = Fs.Nsp.Nsp(None, None)
 			nsp.path = args.create
 			nsp.pack(args.file)
 		
@@ -162,7 +165,7 @@ def main():
 						#raise
 		
 		if args.info:
-			f = nsz.Fs.factory(args.info)
+			f = Fs.factory(args.info)
 			f.open(args.info, 'r+b')
 
 			f.printInfo(args.depth+1)

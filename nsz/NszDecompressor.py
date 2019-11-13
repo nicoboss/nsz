@@ -1,6 +1,8 @@
 from nut import Print, aes128
-from nsz import Header, SectionFs, BlockDecompressorReader
-from nsz import FileExistingChecks
+import Header
+import SectionFs
+import BlockDecompressorReader
+import FileExistingChecks
 import os
 import json
 import Fs

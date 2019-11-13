@@ -1,5 +1,5 @@
 from nut import Print, aes128
-from nsz import SectionFs
+import SectionFs
 import os
 import json
 import Fs
