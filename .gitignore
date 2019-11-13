@@ -9,5 +9,8 @@
 *.keys
 *keys.txt
 .vscode/
+build/
+dist/
+nsz.egg-info/
 nsz.build/
 nsz.dist/
