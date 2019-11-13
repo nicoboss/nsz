@@ -5,7 +5,6 @@ import os
 import sys
 scriptPath = os.path.realpath(__file__)
 importPath = os.path.dirname(scriptPath)
-print(importPath)
 sys.path.append(importPath)
 
 import argparse
