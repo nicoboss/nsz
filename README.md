@@ -54,24 +54,25 @@ if blockCompression:
 
 ## How to install
 
-Install Python from  
-pip install nsz  
+Install Python from<br/>
+pip install nsz<br/>
+
 or just use the windows portable builds.
 
 ## Compressor script
 
-Requires latest hactool compatible prod.keys at  
-Windows: %userprofile%\.switch\ (enter .switch. as foldername to get a folder named .switch)  
-Linux: $HOME/.switch/  
-or keys.txt at the location of nsz.py/nsz.exe  
-Please dump your keys using https://github.com/shchmue/Lockpick_RCM/releases  
-Always keep your keys up to date as otherwise newer can't be decrypted anymore.  
+Requires latest hactool compatible prod.keys at<br/>
+Windows: %userprofile%\.switch\ (enter .switch. as foldername to get a folder named .switch)<br/>
+Linux: $HOME/.switch/<br/>
+or keys.txt at the location of nsz.py/nsz.exe<br/>
+Please dump your keys using https://github.com/shchmue/Lockpick_RCM/releases<br/>
+Always keep your keys up to date as otherwise newer games can't be decrypted anymore.<br/>
 
-Example usage:  
-nsz --level 18 -C title1.nsp title2.nsp title3.nsp  
-will generate title1.nsz title2.nsz title3.nsz
+Example usage:<br/>
+nsz --level 18 -C title1.nsp title2.nsp title3.nsp<br/>
+will generate title1.nsz title2.nsz title3.nsz<br/>
 
-This tool was only tested with base games, updates, and DLCs.
+This tool was only tested with base games, updates, and DLCs.<br/>
 
 ## Usage
 ```
