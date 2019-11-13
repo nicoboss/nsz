@@ -151,7 +151,7 @@ class Pfs0(BaseFs):
 
 			self.readInt32() # junk data
 
-			f = Fs.factory(name)
+			f = nsz.Fs.factory(name)
 
 			f._path = name
 			f.offset = offset

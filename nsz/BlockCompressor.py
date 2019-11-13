@@ -52,7 +52,7 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 	blockSize = 2**blockSizeExponent
 	
 	filePath = os.path.abspath(filePath)
-	container = Fs.factory(filePath)
+	container = nsz.Fs.factory(filePath)
 	container.open(filePath, 'rb')
 
 	CHUNK_SZ = 0x100000
@@ -71,14 +71,14 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 	# filename.
 	titleId = ''
 	for nspf in container:
-		if isinstance(nspf, Fs.Ticket.Ticket):
+		if isinstance(nspf, nsz.Fs.Ticket.Ticket):
 			nspf.getRightsId()
 			titleId = nspf.titleId()
 			break # No need to go for other objects
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
-	newNsp = Fs.Pfs0.Pfs0Stream(nszPath)
+	newNsp = nsz.Fs.Pfs0.Pfs0Stream(nszPath)
 
 	try:
 	
@@ -97,11 +97,11 @@ def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, threa
 			pool.append(p)
 	
 		for nspf in container:
-			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
+			if isinstance(nspf, nsz.Fs.Nca.Nca) and nspf.header.contentType == nsz.Fs.Type.Content.DATA:
 				Print.info('skipping delta fragment')
 				continue
 				
-			if isinstance(nspf, Fs.Nca.Nca) and (nspf.header.contentType == Fs.Type.Content.PROGRAM or nspf.header.contentType == Fs.Type.Content.PUBLICDATA):
+			if isinstance(nspf, nsz.Fs.Nca.Nca) and (nspf.header.contentType == nsz.Fs.Type.Content.PROGRAM or nspf.header.contentType == nsz.Fs.Type.Content.PUBLICDATA):
 				if SectionFs.isNcaPacked(nspf, ncaHeaderSize):
 					
 					newFileName = nspf._path[0:-1] + 'z'
