@@ -72,7 +72,7 @@ Example usage:<br/>
 nsz --level 18 -C title1.nsp title2.nsp title3.nsp<br/>
 will generate title1.nsz title2.nsz title3.nsz<br/>
 
-This tool was only tested with base games, updates, and DLCs.<br/>
+This tool was only tested with base games, updates and DLCs.<br/>
 
 ## Usage
 ```
