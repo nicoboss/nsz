@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from nsz import *
 import argparse
 import sys
 import os
@@ -22,6 +23,29 @@ import nsz
 from nsz import FileExistingChecks
 import multiprocessing
 import glob
+import multiprocessing
+from nsz import BlockCompressor
+from nsz import SolidCompressor
+from nsz import NszDecompressor
+
+def compress(filePath, args):
+	compressionLevel = 18 if args.level is None else args.level
+	if args.threads < 1:
+		threads = multiprocessing.cpu_count()
+	if args.block:
+		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs)
+	else:
+		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads, args.overwrite)
+	if args.verify:
+		print("[VERIFY NSZ] {0}".format(outFile))
+		verify(outFile, True)
+
+def decompress(filePath, outputDir = None):
+	NszDecompressor.decompress(filePath, outputDir)
+
+def verify(filePath, raiseVerificationException):
+	NszDecompressor.verify(filePath, raiseVerificationException)
+
 
 # I think we should definitely change the code below.
 # If nsz.py executed like this:
@@ -45,7 +69,6 @@ err = []
 
 
 def main():
-	multiprocessing.freeze_support()
 	try:
 
 		#signal.signal(signal.SIGINT, handler)
@@ -86,7 +109,7 @@ def main():
 
 		if args.extract:
 			for filePath in args.extract:
-				f = Fs.factory(filePath)
+				f = nsz.Fs.factory(filePath)
 				f.open(filePath, 'rb')
 				dir = os.path.splitext(os.path.basename(filePath))[0]
 				f.unpack(dir)
@@ -94,7 +117,7 @@ def main():
 
 		if args.create:
 			Print.info('creating ' + args.create)
-			nsp = Fs.Nsp.Nsp(None, None)
+			nsp = nsz.Fs.Nsp.Nsp(None, None)
 			nsp.path = args.create
 			nsp.pack(args.file)
 		
@@ -106,7 +129,7 @@ def main():
 						if filePath.endswith('.nsp'):
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-							nsz.compress(filePath, args)
+							compress(filePath, args)
 
 							if args.rm_source:
 								FileExistingChecks.delete_source_file(filePath)
@@ -127,7 +150,7 @@ def main():
 						if filePath.endswith('.nsz'):
 							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-							nsz.decompress(filePath, args.output)
+							decompress(filePath, args.output)
 							if args.rm_source:
 								FileExistingChecks.delete_source_file(filePath)
 					except KeyboardInterrupt:
@@ -139,7 +162,7 @@ def main():
 						#raise
 		
 		if args.info:
-			f = Fs.factory(args.info)
+			f = nsz.Fs.factory(args.info)
 			f.open(args.info, 'r+b')
 
 			f.printInfo(args.depth+1)
@@ -153,7 +176,7 @@ def main():
 								print("[VERIFY NSP] {0}".format(i))
 							if filePath.endswith('.nsz'):
 								print("[VERIFY NSZ] {0}".format(i))
-							nsz.verify(filePath, False)
+							verify(filePath, False)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -182,4 +205,5 @@ def main():
 
 
 if __name__ == '__main__':
+	multiprocessing.freeze_support()
 	main()
