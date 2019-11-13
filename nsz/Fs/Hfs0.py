@@ -58,7 +58,7 @@ class Hfs0(Pfs0):
 				f = Hfs0(None)
 				#f = factory(name)
 			else:
-				f = nsz.Fs.factory(name)
+				f = Fs.factory(name)
 
 			f._path = name
 			f.offset = offset

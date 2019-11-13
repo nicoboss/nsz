@@ -38,19 +38,19 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		
 		Print.info('decompressing %s -> %s' % (filePath, nspPath))
 		
-		newNsp = nsz.Fs.Pfs0.Pfs0Stream(nspPath)
+		newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
 	
 	
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	
 	filePath = os.path.abspath(filePath)
-	container = nsz.Fs.factory(filePath)
+	container = Fs.factory(filePath)
 	
 	container.open(filePath, 'rb')
 	
 	
 	for nspf in container:
-		if isinstance(nspf, nsz.Fs.Nca.Nca) and nspf.header.contentType == nsz.Fs.Type.Content.DATA:
+		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
 			Print.info('skipping delta fragment')
 			continue
 

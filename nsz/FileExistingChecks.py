@@ -12,13 +12,13 @@ from nsz.nut import Print
 def ExtractHashes(gamePath):
 	fileHashes = set()
 	gamePath = os.path.abspath(gamePath)
-	container = nsz.Fs.factory(gamePath)
+	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
 	try:
 		for nspf in container:
-			if isinstance(nspf, nsz.Fs.Nca.Nca) and nspf.header.contentType == nsz.Fs.Type.Content.META:
+			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 				for section in nspf:
-					if isinstance(section, nsz.Fs.Pfs0.Pfs0):
+					if isinstance(section, Fs.Pfs0.Pfs0):
 						Cnmt = section.getCnmt()
 						for entry in Cnmt.contentEntries:
 							fileHashes.add(entry.hash.hex())
@@ -48,13 +48,13 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 		return None
 	
 	gamePath = os.path.abspath(gamePath)
-	container = nsz.Fs.factory(gamePath)
+	container = Fs.factory(gamePath)
 	container.open(gamePath, 'rb')
 	try:
 		for nspf in container:
-			if isinstance(nspf, nsz.Fs.Nca.Nca) and nspf.header.contentType == nsz.Fs.Type.Content.META:
+			if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.META:
 				for section in nspf:
-					if isinstance(section, nsz.Fs.Pfs0.Pfs0):
+					if isinstance(section, Fs.Pfs0.Pfs0):
 						Cnmt = section.getCnmt()
 						titleId = Cnmt.titleId
 						version = Cnmt.version

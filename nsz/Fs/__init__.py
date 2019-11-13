@@ -8,24 +8,24 @@ import nsz.Fs.File
 
 def factory(name):
 	if name.endswith('.xci'):
-		f = nsz.Fs.Xci.Xci()
+		f = Fs.Xci.Xci()
 	elif name.endswith('.xcz'):
-		f = nsz.Fs.Xci.Xci()
+		f = Fs.Xci.Xci()
 	elif name.endswith('.nsp'):
-		f = nsz.Fs.Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nsz'):
-		f = nsz.Fs.Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nsx'):
-		f = nsz.Fs.Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nca'):
-		f =  nsz.Fs.Nca.Nca()
+		f =  Fs.Nca.Nca()
 	elif name.endswith('.nacp'):
-		f =  nsz.Fs.Nacp.Nacp()
+		f =  Fs.Nacp.Nacp()
 	elif name.endswith('.tik'):
-		f =  nsz.Fs.Ticket.Ticket()
+		f =  Fs.Ticket.Ticket()
 	elif name.endswith('.cnmt'):
-		f =  nsz.Fs.Cnmt.Cnmt()
+		f =  Fs.Cnmt.Cnmt()
 	else:
-		f = nsz.Fs.File.File()
+		f = Fs.File.File()
 
 	return f

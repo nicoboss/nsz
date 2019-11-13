@@ -23,19 +23,19 @@ class Ticket(File):
 		self.accountId = None
 
 		self.signatureSizes = {}
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.RSA_4096_SHA1] = 0x200
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.RSA_2048_SHA1] = 0x100
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.ECDSA_SHA1] = 0x3C
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.RSA_4096_SHA256] = 0x200
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.RSA_2048_SHA256] = 0x100
-		self.signatureSizes[nsz.Fs.Type.TicketSignature.ECDSA_SHA256] = 0x3C
+		self.signatureSizes[Fs.Type.TicketSignature.RSA_4096_SHA1] = 0x200
+		self.signatureSizes[Fs.Type.TicketSignature.RSA_2048_SHA1] = 0x100
+		self.signatureSizes[Fs.Type.TicketSignature.ECDSA_SHA1] = 0x3C
+		self.signatureSizes[Fs.Type.TicketSignature.RSA_4096_SHA256] = 0x200
+		self.signatureSizes[Fs.Type.TicketSignature.RSA_2048_SHA256] = 0x100
+		self.signatureSizes[Fs.Type.TicketSignature.ECDSA_SHA256] = 0x3C
 
 	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Ticket, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()
 		self.signatureType = self.readInt32()
 		try:
-			self.signatureType = nsz.Fs.Type.TicketSignature(self.signatureType)
+			self.signatureType = Fs.Type.TicketSignature(self.signatureType)
 		except:
 			raise IOError('Invalid ticket format')
 

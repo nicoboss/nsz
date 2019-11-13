@@ -34,10 +34,10 @@ class SectionTableEntry:
 	
 def GetSectionFilesystem(buffer, cryptoKey):
 	fsType = buffer[0x3]
-	if fsType == nsz.Fs.Type.nsz.Fs.PFS0:
+	if fsType == Fs.Type.Fs.PFS0:
 		return Pfs0(buffer, cryptoKey = cryptoKey)
 		
-	if fsType == nsz.Fs.Type.nsz.Fs.ROMFS:
+	if fsType == Fs.Type.Fs.ROMFS:
 		return Rom(buffer, cryptoKey = cryptoKey)
 		
 	return BaseFs(buffer, cryptoKey = cryptoKey)
@@ -74,7 +74,7 @@ class NcaHeader(File):
 		self.contentType = self.readInt8()
 
 		try:
-			self.contentType = nsz.Fs.Type.Content(self.contentType)
+			self.contentType = Fs.Type.Content(self.contentType)
 		except:
 			pass
 
@@ -212,7 +212,7 @@ class Nca(File):
 		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
 
 		self.header = NcaHeader()
-		self.partition(0x0, 0xC00, self.header, nsz.Fs.Type.Crypto.XTS, uhx(Keys.get('header_key')))
+		self.partition(0x0, 0xC00, self.header, Fs.Type.Crypto.XTS, uhx(Keys.get('header_key')))
 		#Print.info('partition complete, seeking')
 		self.header.seek(0x400)
 		#Print.info('reading')
@@ -252,7 +252,7 @@ class Nca(File):
 		return max(self.header.cryptoType, self.header.cryptoType2)
 
 	def buildId(self):
-		if self.header.contentType != nsz.Fs.Type.Content.PROGRAM:
+		if self.header.contentType != Fs.Type.Content.PROGRAM:
 			return None
 
 		try:
@@ -291,5 +291,5 @@ class Nca(File):
 			for s in self:
 				s.printInfo(maxDepth, indent+1)
 
-		if self.header.contentType == nsz.Fs.Type.Content.PROGRAM:
+		if self.header.contentType == Fs.Type.Content.PROGRAM:
 			Print.info(tabs + 'build Id: ' + str(self.buildId()))
