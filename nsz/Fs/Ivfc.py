@@ -1,15 +1,15 @@
-from nut import aes128
-from nut import Hex
+from nsz.nut import aes128
+from nsz.nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
-from Fs.File import File
+from nsz.Fs.File import File
 from hashlib import sha256
-import  Fs.Type
+import nsz.Fs.Type
 import os
 import re
 import pathlib
-from nut import Keys
-from nut import Print
+from nsz.nut import Keys
+from nsz.nut import Print
 
 MEDIA_SIZE = 0x200
 

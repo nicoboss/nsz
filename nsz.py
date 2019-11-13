@@ -8,16 +8,16 @@ import re
 import pathlib
 import json
 import traceback
-import Fs
-import Fs.Nsp
-from nut import Hex
-from nut import Print
+import nsz.Fs
+import nsz.Fs.Nsp
+import nsz.nut
+from nsz.nut import Hex
+from nsz.nut import Print
 import time
 import colorama
 import pprint
 import random
 import queue
-import nut
 import nsz
 from nsz import FileExistingChecks
 import multiprocessing
@@ -43,7 +43,8 @@ def expandFiles(path):
 	
 err = []
 
-if __name__ == '__main__':
+
+def main():
 	multiprocessing.freeze_support()
 	try:
 
@@ -179,3 +180,6 @@ if __name__ == '__main__':
 
 	Print.info('fin')
 
+
+if __name__ == '__main__':
+	main()

@@ -1,10 +1,10 @@
-import Fs.Nsp
-import Fs.Xci
-import Fs.Nca
-import Fs.Nacp
-import Fs.Ticket
-import Fs.Cnmt
-import Fs.File
+import nsz.Fs.Nsp
+import nsz.Fs.Xci
+import nsz.Fs.Nca
+import nsz.Fs.Nacp
+import nsz.Fs.Ticket
+import nsz.Fs.Cnmt
+import nsz.Fs.File
 
 def factory(name):
 	if name.endswith('.xci'):

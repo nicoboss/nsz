@@ -1,12 +1,12 @@
-import Fs
-import Fs.Pfs0
-import Fs.Nca
-import Fs.Type
+import nsz.Fs
+import nsz.Fs.Pfs0
+import nsz.Fs.Nca
+import nsz.Fs.Type
 import traceback
 import os
 import glob
 import re
-from nut import Print
+from nsz.nut import Print
 
 
 def ExtractHashes(gamePath):
