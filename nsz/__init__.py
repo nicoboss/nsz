@@ -100,7 +100,8 @@ def main():
 		args = parser.parse_args()
 		outfolder = args.output if args.output else os.path.join(os.path.abspath('.'))
 
-		Print.info('                        ,;:;;,')
+		Print.info('')
+		Print.info('             NSZ v2.1   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
@@ -108,6 +109,7 @@ def main():
 		Print.info('                _(\.=  ;:;;\'')
 		Print.info('               `"_(  _/="`')
 		Print.info('                `"\'')
+		Print.info('')
 
 		if args.extract:
 			for filePath in args.extract:
@@ -203,7 +205,7 @@ def main():
 			Print.info(e["error"])
 			
 
-	Print.info('fin')
+	Print.info('Done!')
 
 
 if __name__ == '__main__':
