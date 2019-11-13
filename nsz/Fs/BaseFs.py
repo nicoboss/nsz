@@ -1,9 +1,9 @@
-import Fs
-from Fs.File import File
-from Fs import Type
-from nut import Print
-from Fs.File import MemoryFile
-from Fs import Bktr
+from .. import Fs
+from .File import File
+from . import Type
+from ..nut import Print
+from .File import MemoryFile
+from . import Bktr
 from binascii import hexlify as hx, unhexlify as uhx
 
 class EncryptedSection:

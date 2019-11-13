@@ -1,7 +1,7 @@
 import os, re
-from nut import aes128
+from . import aes128
 from binascii import hexlify as hx, unhexlify as uhx
-from nut import Print
+from . import Print
 from pathlib import Path
 
 keys = {}

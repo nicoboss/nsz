@@ -1,20 +1,20 @@
-from nut import aes128
-from nut import Hex
+from ..nut import aes128
+from ..nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
 from hashlib import sha256
-import Fs.Type
+from . import Type
 import os
 import re
 import pathlib
-from nut import Keys
-from nut import Print
-import Fs
-from Fs.File import File
-from Fs.Rom import Rom
-from Fs.Pfs0 import Pfs0
-from Fs.BaseFs import BaseFs
-from nut import Titles
+from ..nut import Keys
+from ..nut import Print
+from .. import Fs
+from .File import File
+from .Rom import Rom
+from .Pfs0 import Pfs0
+from .BaseFs import BaseFs
+from ..nut import Titles
 
 MEDIA_SIZE = 0x200
 

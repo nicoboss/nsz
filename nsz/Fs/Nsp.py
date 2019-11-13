@@ -1,18 +1,18 @@
-from nut import aes128
-from nut import Hex
+from ..nut import aes128
+from ..nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
-from Fs.File import File
+from .File import File
 from hashlib import sha256
-import Fs.Type
+from . import Type
 import os
 import re
 import pathlib
-from nut import Keys
-from nut import Print
-from Fs.Pfs0 import Pfs0
-from Fs.Ticket import Ticket
-from Fs.Nca import Nca
+from ..nut import Keys
+from ..nut import Print
+from .Pfs0 import Pfs0
+from .Ticket import Ticket
+from .Nca import Nca
 import shutil
 from tqdm import tqdm
 

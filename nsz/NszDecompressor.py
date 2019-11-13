@@ -1,13 +1,13 @@
-from nut import Print, aes128
-from nsz import Header, SectionFs, BlockDecompressorReader
-from nsz import FileExistingChecks
+from nsz.nut import Print, aes128
+from . import Header, SectionFs, BlockDecompressorReader
+from . import FileExistingChecks
 import os
 import json
-import Fs
-import Fs.Pfs0
-import Fs.Type
-import Fs.Nca
-import Fs.Type
+import nsz.Fs
+import nsz.Fs.Pfs0
+import nsz.Fs.Type
+import nsz.Fs.Nca
+import nsz.Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard
@@ -38,19 +38,19 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		
 		Print.info('decompressing %s -> %s' % (filePath, nspPath))
 		
-		newNsp = Fs.Pfs0.Pfs0Stream(nspPath)
+		newNsp = nsz.Fs.Pfs0.Pfs0Stream(nspPath)
 	
 	
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	
 	filePath = os.path.abspath(filePath)
-	container = Fs.factory(filePath)
+	container = nsz.Fs.factory(filePath)
 	
 	container.open(filePath, 'rb')
 	
 	
 	for nspf in container:
-		if isinstance(nspf, Fs.Nca.Nca) and nspf.header.contentType == Fs.Type.Content.DATA:
+		if isinstance(nspf, nsz.Fs.Nca.Nca) and nspf.header.contentType == nsz.Fs.Type.Content.DATA:
 			Print.info('skipping delta fragment')
 			continue
 
