@@ -1,12 +1,12 @@
-from nsz.nut import Print, aes128
+from nut import Print, aes128
 from nsz import SectionFs
 import os
 import json
-import nsz.Fs
-import nsz.Fs.Pfs0
-import nsz.Fs.Type
-import nsz.Fs.Nca
-import nsz.Fs.Type
+import Fs
+import Fs.Pfs0
+import Fs.Type
+import Fs.Nca
+import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard

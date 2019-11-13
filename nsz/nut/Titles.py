@@ -4,9 +4,9 @@ import os
 import re
 import time
 import json
-import nsz.nut
+import nut
 import operator
-from nsz.nut import Print
+from nut import Print
 
 
 global titles

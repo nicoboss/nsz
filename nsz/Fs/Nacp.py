@@ -1,9 +1,9 @@
-from nsz.Fs.File import File
-import nsz.Fs.Type
+from Fs.File import File
+import Fs.Type
 from binascii import hexlify as hx, unhexlify as uhx
 from enum import IntEnum
-from nsz.nut import Print
-from nsz.nut import Keys
+from nut import Print
+from nut import Keys
 #Some of this may have changed in 7.x.x+
 
 class NacpLanguageType(IntEnum):
