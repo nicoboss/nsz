@@ -1,9 +1,9 @@
-from .File import File
-from . import Type
+from Fs.File import File
+import Fs.Type
 from binascii import hexlify as hx, unhexlify as uhx
 from enum import IntEnum
-from ..nut import Print
-from ..nut import Keys
+from nut import Print
+from nut import Keys
 #Some of this may have changed in 7.x.x+
 
 class NacpLanguageType(IntEnum):

@@ -6,7 +6,7 @@ import time
 import json
 import nut
 import operator
-from . import Print
+from nut import Print
 
 
 global titles

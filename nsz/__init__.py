@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from . import *
+from nsz import *
 import argparse
 import sys
 import os
@@ -20,13 +20,13 @@ import pprint
 import random
 import queue
 import nsz
-from . import FileExistingChecks
+from nsz import FileExistingChecks
 import multiprocessing
 import glob
 import multiprocessing
-from . import BlockCompressor
-from . import SolidCompressor
-from . import NszDecompressor
+from nsz import BlockCompressor
+from nsz import SolidCompressor
+from nsz import NszDecompressor
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level

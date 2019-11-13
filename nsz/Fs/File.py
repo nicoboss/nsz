@@ -1,8 +1,8 @@
 from enum import IntEnum
-from . import Type
-from ..nut import aes128
-from ..nut import Print
-from ..nut import Hex
+import Fs.Type
+from nut import aes128
+from nut import Print
+from nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import os.path

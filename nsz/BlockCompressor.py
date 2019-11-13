@@ -1,11 +1,11 @@
-from .nut import Print, aes128
-from . import SectionFs, ThreadSafeCounter
+from nut import Print, aes128
+from nsz import SectionFs, ThreadSafeCounter
 import os
 import json
-from . import Fs
-from .Fs import Pfs0
-from .Fs import Nca
-from .Fs import Type
+import Fs
+import Fs.Pfs0
+import Fs.Nca
+import Fs.Type
 import subprocess
 from contextlib import closing
 import zstandard

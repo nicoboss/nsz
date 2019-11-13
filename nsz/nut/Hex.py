@@ -1,5 +1,5 @@
 from string import ascii_letters, digits, punctuation
-from . import Print
+from nut import Print
 
 def bufferToHex(buffer, start, count):
     accumulator = ''

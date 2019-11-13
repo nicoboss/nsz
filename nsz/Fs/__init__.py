@@ -1,10 +1,10 @@
-from . import Nsp
-from . import Xci
-from . import Nca
-from . import Nacp
-from . import Ticket
-from . import Cnmt
-from . import File
+import Fs.Nsp
+import Fs.Xci
+import Fs.Nca
+import Fs.Nacp
+import Fs.Ticket
+import Fs.Cnmt
+import Fs.File
 
 def factory(name):
 	if name.endswith('.xci'):
