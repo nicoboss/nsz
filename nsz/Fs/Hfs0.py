@@ -1,4 +1,3 @@
-from .. import Fs
 from ..nut import aes128
 from ..nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
@@ -57,7 +56,7 @@ class Hfs0(Pfs0):
 			#if name in ['update', 'secure', 'normal']:
 			if name == 'secure':
 				f = Hfs0(None)
-				#f = Fs.factory(name)
+				#f = factory(name)
 			else:
 				f = Fs.factory(name)
 

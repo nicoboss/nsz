@@ -31,12 +31,12 @@ class BaseFs(File):
 		if buffer:
 			self.buffer = buffer
 			try:
-				self.fsType = Type.Fs(buffer[0x3])
+				self.fsType = Fs.Type.Fs(buffer[0x3])
 			except:
 				self.fsType = buffer[0x3]
 
 			try:
-				self.cryptoType = Type.Crypto(buffer[0x4])
+				self.cryptoType = Fs.Type.Crypto(buffer[0x4])
 			except:
 				self.cryptoType = buffer[0x4]
 			
@@ -140,7 +140,7 @@ class BaseFs(File):
 		
 	def getCnmt(self):
 		for f in self:
-			if isinstance(f, Cnmt.Cnmt):
+			if isinstance(f, Fs.Cnmt.Cnmt):
 				return f
 		raise("No Cnmt found!")
 	

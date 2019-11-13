@@ -8,24 +8,24 @@ from . import File
 
 def factory(name):
 	if name.endswith('.xci'):
-		f = Xci.Xci()
+		f = Fs.Xci.Xci()
 	elif name.endswith('.xcz'):
-		f = Xci.Xci()
+		f = Fs.Xci.Xci()
 	elif name.endswith('.nsp'):
-		f = Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nsz'):
-		f = Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nsx'):
-		f = Nsp.Nsp()
+		f = Fs.Nsp.Nsp()
 	elif name.endswith('.nca'):
-		f = Nca.Nca()
+		f =  Fs.Nca.Nca()
 	elif name.endswith('.nacp'):
-		f = Nacp.Nacp()
+		f =  Fs.Nacp.Nacp()
 	elif name.endswith('.tik'):
-		f = Ticket.Ticket()
+		f =  Fs.Ticket.Ticket()
 	elif name.endswith('.cnmt'):
-		f = Cnmt.Cnmt()
+		f =  Fs.Cnmt.Cnmt()
 	else:
-		f = File.File()
+		f = Fs.File.File()
 
 	return f

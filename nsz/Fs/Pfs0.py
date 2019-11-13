@@ -1,4 +1,3 @@
-from .. import Fs
 from ..nut import aes128
 from ..nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
