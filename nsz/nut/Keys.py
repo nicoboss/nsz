@@ -1,5 +1,4 @@
-import __main__
-import os, re
+import os, sys, re
 from nut import aes128
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import Print
@@ -109,9 +108,9 @@ def load(fileName):
 
 
 
-keyScriptPath = os.path.dirname(os.path.abspath(__main__.__file__))
-#WHile loop to get rid of things like C:\Python37\Scripts\nsz.exe\__main__.py after pip install
-while os.path.isfile(keyScriptPath):
+keyScriptPath = os.path.dirname(os.path.abspath(sys.argv[0]))
+#While loop to get rid of things like C:\Python37\Scripts\nsz.exe\__main__.py
+while not os.path.isdir(keyScriptPath):
 	keyScriptPath = os.path.dirname(keyScriptPath)
 keypath = os.path.join(keyScriptPath, 'keys.txt')
 dumpedKeys = os.path.join(Path.home(), ".switch", "prod.keys")
