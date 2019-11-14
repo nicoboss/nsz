@@ -1,8 +1,4 @@
 @echo OFF
-
-call test.cmd
-cls
-
 cd ..
 del keys.txt
 rmdir /s /q build
