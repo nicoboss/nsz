@@ -57,8 +57,11 @@ if blockCompression:
 Install Python from<br/>
 pip install nsz<br/>
 
-or just use the windows portable builds.
+or just use the windows portable builds.<br/>
 
+To update just use:<br/>
+pip install nsz --upgrade<br/>
+or download the latest windows portable build
 ## Compressor script
 
 Requires latest hactool compatible prod.keys at<br/>
