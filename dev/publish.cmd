@@ -10,11 +10,11 @@ rmdir /s /q nsz\nut\___init__.build
 python setup.py sdist bdist_wheel
 python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 ping 127.0.0.1 -n 31 >NUL
-call Test1
+call :Test1
 pause
 python -m twine upload dist/*
 ping 127.0.0.1 -n 31 >NUL
-call Test2
+call :Test2
 pause
 
 
