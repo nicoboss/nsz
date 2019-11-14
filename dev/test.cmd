@@ -3,9 +3,14 @@
 REM Tests
 cd ..
 call :Test1
+pause
+cls
 call :Test2
+pause
+cls
 call :Test3
 pause
+cls
 goto :eof
 
 
