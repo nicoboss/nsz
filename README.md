@@ -131,6 +131,10 @@ optional arguments:
                         --verify
 ```
 
+## References
+NSZ pip package: https://pypi.org/project/nsz/<br/>
+Forum thread: https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compressor-decompressor.550556/
+
 ## Credits
 
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
