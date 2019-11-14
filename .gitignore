@@ -9,8 +9,12 @@
 *.keys
 *keys.txt
 .vscode/
+ROMs/
 build/
 dist/
+nsz/__init__.dist/
+nsz/__init__.build
+nsz_win64_portable/
 nsz.egg-info/
 nsz.build/
 nsz.dist/
