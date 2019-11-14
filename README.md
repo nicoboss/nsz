@@ -59,6 +59,9 @@ pip install nsz<br/>
 
 or just use the windows portable builds.<br/>
 
+To manually install dependencies use:<br/>
+pip install -r requirements.txt
+
 To update just use:<br/>
 pip install nsz --upgrade<br/>
 or download the latest windows portable build
