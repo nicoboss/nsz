@@ -113,8 +113,6 @@ keyScriptPath = os.path.dirname(os.path.abspath(__main__.__file__))
 #WHile loop to get rid of things like C:\Python37\Scripts\nsz.exe\__main__.py after pip install
 while os.path.isfile(keyScriptPath):
 	keyScriptPath = os.path.dirname(keyScriptPath)
-print(os.path.abspath(__main__.__file__))
-print(keyScriptPath)
 keypath = os.path.join(keyScriptPath, 'keys.txt')
 dumpedKeys = os.path.join(Path.home(), ".switch", "prod.keys")
 if os.path.isfile(keypath):
