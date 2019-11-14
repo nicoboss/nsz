@@ -7,7 +7,7 @@ if __name__ == '__main__':
 	import sys
 	if sys.hexversion < 0x03060000:
 		raise ImportError("NSZ requires at least Python 3.6!\nCurrent python version is " + sys.version)
-	import nsz
 	import multiprocessing
 	multiprocessing.freeze_support()
+	import nsz
 	nsz.main()

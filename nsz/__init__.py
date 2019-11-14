@@ -23,7 +23,6 @@ import pprint
 import random
 import queue
 import FileExistingChecks
-import multiprocessing
 import glob
 import multiprocessing
 import BlockCompressor
