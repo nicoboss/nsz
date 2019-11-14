@@ -16,6 +16,7 @@ python -m twine upload dist/*
 ping 127.0.0.1 -n 31 >NUL
 call :Test2
 pause
+goto :eof
 
 
 :Test1
