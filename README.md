@@ -1,3 +1,14 @@
+## How to install:
+### Put dumped prod.keys to %userprofile%/.switch, install python, execute "pip install nsz" and use "nsz" like every other cmd command.
+or just use the windows portable build.<br/>
+
+To manually install dependencies use:<br/>
+pip install -r requirements.txt
+
+## How to Update
+pip install nsz --upgrade<br/>
+or download the latest windows portable build.
+
 ## NSZ
 NSZ files are not a real format, they are functionally identical to NSP files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
@@ -52,19 +63,6 @@ if blockCompression:
 	BlockHeader = Block(nspf)
 ```
 
-## How to install
-
-Install Python from<br/>
-pip install nsz<br/>
-
-or just use the windows portable builds.<br/>
-
-To manually install dependencies use:<br/>
-pip install -r requirements.txt
-
-To update just use:<br/>
-pip install nsz --upgrade<br/>
-or download the latest windows portable build
 ## Compressor script
 
 Requires latest hactool compatible prod.keys at<br/>
