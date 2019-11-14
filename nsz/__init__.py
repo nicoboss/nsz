@@ -102,7 +102,7 @@ def main():
 		outfolder = args.output if args.output else os.path.join(os.path.abspath('.'))
 
 		Print.info('')
-		Print.info('             NSZ v2.1   ,;:;;,')
+		Print.info('           NSZ v2.1.1   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
