@@ -1,5 +1,7 @@
 @echo OFF
+
 REM Tests
+cd ..
 call :Test1
 call :Test2
 call :Test3
@@ -32,10 +34,12 @@ goto :eof
 
 :Test3
 cd nsz
-call /wait nuitka __init__.py --standalone --plugin-enable=multiprocessing
+rmdir /s /q __init__.dist
+call nuitka __init__.py --standalone --plugin-enable=multiprocessing
 move __init__.dist\__init__.exe __init__.dist\nsz.exe
-del /F/Q/S ..\nsz_win64_portable\*.* > NUL
-move __init__.dist ..\nsz_win64_portable
+rename __init__.dist nsz_win64_portable
+rmdir /s /q ..\nsz_win64_portable
+move nsz_win64_portable ..
 cd ..
 cd ROMs
 del *.nsz
