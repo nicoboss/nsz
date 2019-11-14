@@ -32,12 +32,14 @@ import NszDecompressor
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
-	if args.threads < 1:
-		threads = multiprocessing.cpu_count()
+	threadsToUse = args.threads if args.threads > 0 else multiprocessing.cpu_count()
 	if args.block:
-		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs)
+		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs, args.output, threadsToUse)
 	else:
-		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, args.threads, args.overwrite)
+		# Only use 1 thread for solid compression if not specified otherwise untill the visual processbar issue is fixed
+		if args.threads < 0:
+			threadsToUse = 1
+		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, threadsToUse)
 	if args.verify:
 		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)

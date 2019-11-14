@@ -17,7 +17,7 @@ import hashlib
 import traceback
 import fnmatch
 
-def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1, overwrite = False):
+def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1):
 
 	ncaHeaderSize = 0x4000
 	
