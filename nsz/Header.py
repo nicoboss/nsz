@@ -1,4 +1,3 @@
-
 class Section:
 	def __init__(self, f):
 		self.f = f
@@ -19,6 +18,4 @@ class Block:
 		self.blockSizeExponent = f.readInt8()
 		self.numberOfBlocks = f.readInt32()
 		self.decompressedSize = f.readInt64()
-		self.compressedBlockSizeList = []
-		for i in range(self.numberOfBlocks):
-			self.compressedBlockSizeList.append(f.readInt32())
+		self.compressedBlockSizeList = [f.readInt32() for _ in range(self.numberOfBlocks)]

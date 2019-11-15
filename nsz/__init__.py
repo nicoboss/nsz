@@ -1,85 +1,63 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-scriptPath = os.path.realpath(__file__)
-importPath = os.path.dirname(scriptPath)
-sys.path.append(importPath)
+from sys import path
+from pathlib import Path
+scriptPath = str(Path(__file__).resolve())
+importPath = str(Path(scriptPath).parent)
+path.append(importPath)
 
-import argparse
-import re
-import pathlib
-import json
-import traceback
-import Fs
-import Fs.Nsp
-import nut
-from nut import Hex
+from sys import argv
 from nut import Print
-import time
-import colorama
-import pprint
-import random
-import queue
-import FileExistingChecks
-import glob
-import multiprocessing
-import BlockCompressor
-import SolidCompressor
-import NszDecompressor
+from os import listdir
+from Fs import Nsp, factory
+from argparse import ArgumentParser
+from BlockCompressor import blockCompress
+from SolidCompressor import solidCompress
+from traceback import print_exc, format_exc
+from NszDecompressor import verify as NszVerify, decompress as NszDecompress
+from multiprocessing import cpu_count, freeze_support
+from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
-	threadsToUse = args.threads if args.threads > 0 else multiprocessing.cpu_count()
+	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if args.block:
-		outFile = BlockCompressor.blockCompress(filePath, compressionLevel, args.bs, args.output, threadsToUse)
+		outFile = blockCompress(filePath, compressionLevel, args.bs, args.output, threadsToUse)
 	else:
-		# Only use 1 thread for solid compression if not specified otherwise untill the visual processbar issue is fixed
 		if args.threads < 0:
 			threadsToUse = 1
-		outFile = SolidCompressor.solidCompress(filePath, compressionLevel, args.output, threadsToUse)
+		outFile = solidCompress(filePath, compressionLevel, args.output, threadsToUse)
 	if args.verify:
 		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)
 
 def decompress(filePath, outputDir = None):
-	NszDecompressor.decompress(filePath, outputDir)
+	NszDecompress(filePath, outputDir)
 
 def verify(filePath, raiseVerificationException):
-	NszDecompressor.verify(filePath, raiseVerificationException)
+	NszVerify(filePath, raiseVerificationException)
 
-
-# I think we should definitely change the code below.
-# If nsz.py executed like this:
-# python /path/to/nsz/nsz.py -C -o /path/to/out file.nsp
-# This causes nsz.py to search the file in /path/to/nsz directory.
-# It should return ./file.nsp or /path/to/nsp/file.nsp
 def expandFiles(path):
 	files = []
-	path = os.path.abspath(path)
+	path = str(Path(path).resolve())
 
-	if os.path.isfile(path):
+	if Path(path).is_file():
 		files.append(path)
 	else:
-		for f in os.listdir(path):
-			f = os.path.join(path, f)
-			if os.path.isfile(f) and (f.endswith('.nsp') or f.endswith('.nsz')):
+		for f in listdir(path):
+			f = str(Path(path).joinpath(f))
+			if Path(f).is_file() and (f.endswith('.nsp') or f.endswith('.nsz')):
 				files.append(f)
 	return files
-	
+
 err = []
 
-
 def main():
+	global err
 	try:
-
-		#signal.signal(signal.SIGINT, handler)
-
-
-		parser = argparse.ArgumentParser()
+		parser = ArgumentParser()
 		parser.add_argument('file',nargs='*')
-
 		parser.add_argument('-C', action="store_true", help='Compress NSP')
 		parser.add_argument('-D', action="store_true", help='Decompress NSZ')
 		parser.add_argument('-l', '--level', type=int, default=18, help='Compression Level')
@@ -88,7 +66,7 @@ def main():
 		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter')
 		parser.add_argument('-p', '--parseCnmt', action="store_true", default=False, help='Extract TitleId/Version from Cnmt if this information cannot be obtained from the filename. Required for skipping/overwriting existing files and --rm-old-version to work properly if some not every file is named properly. Supported filenames: *TitleID*[vVersion]*')
 		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Numbers < 1 corresponds to the number of logical CPU cores.')
-		parser.add_argument('-o', '--output', default="", help='Directory to save the output NSZ files')
+		parser.add_argument('-o', '--output', nargs='?', help='Directory to save the output NSZ files')
 		parser.add_argument('-w', '--overwrite', action="store_true", default=False, help='Continues even if there already is a file with the same name or title id inside the output directory')
 		parser.add_argument('-r', '--rm-old-version', action="store_true", default=False, help='Removes older version if found')
 		parser.add_argument('-i', '--info', help='Show info about title or file')
@@ -97,12 +75,11 @@ def main():
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 		parser.add_argument('--rm-source', action='store_true', default=False, help='Deletes source file/s after compressing/decompressing. It\'s recommended to only use this in combination with --verify')
 
-		
 		args = parser.parse_args()
-		outfolder = args.output if args.output else os.path.join(os.path.abspath('.'))
+		outfolder = str(Path(args.output)) if args.output else str(Path('.'))
 
 		Print.info('')
-		Print.info('           NSZ v2.1.1   ,;:;;,')
+		Print.info('             NSZ v2.1   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
@@ -111,67 +88,61 @@ def main():
 		Print.info('               `"_(  _/="`')
 		Print.info('                `"\'')
 		Print.info('')
-
 		if args.extract:
 			for filePath in args.extract:
-				f = Fs.factory(filePath)
+				f = factory(filePath)
 				f.open(filePath, 'rb')
-				dir = os.path.splitext(os.path.basename(filePath))[0]
+				dir = Path(Path(filePath).name).suffix[0]
 				f.unpack(dir)
 				f.close()
-
 		if args.create:
 			Print.info('creating ' + args.create)
-			nsp = Fs.Nsp.Nsp(None, None)
+			nsp = Nsp.Nsp(None, None)
 			nsp.path = args.create
 			nsp.pack(args.file)
-		
 		if args.C:
-			targetDict = FileExistingChecks.CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
+			targetDict = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsp'):
-							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 							compress(filePath, args)
 
 							if args.rm_source:
-								FileExistingChecks.delete_source_file(filePath)
-
+								delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
 						Print.error('Error when compressing file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })
-						traceback.print_exc()
-						#raise
-						
+						err.append({"filename":filePath,"error":format_exc() })
+						print_exc()
+
+
 		if args.D:
-			targetDict = FileExistingChecks.CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
+			targetDict = CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
+
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if filePath.endswith('.nsz'):
-							if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 							decompress(filePath, args.output)
 							if args.rm_source:
-								FileExistingChecks.delete_source_file(filePath)
+								delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
 						Print.error('Error when decompressing file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })
-						traceback.print_exc()
-						#raise
-		
+						err.append({"filename":filePath,"error":format_exc() })
+						print_exc()
+
 		if args.info:
-			f = Fs.factory(args.info)
+			f = factory(args.info)
 			f.open(args.info, 'r+b')
-
 			f.printInfo(args.depth+1)
-
 		if args.verify and not args.C and not args.D:
 			for i in args.file:
 				for filePath in expandFiles(i):
@@ -186,14 +157,11 @@ def main():
 						raise
 					except BaseException as e:
 						Print.error('Error when verifying file: %s' % filePath)
-						err.append({"filename":filePath,"error":traceback.format_exc() })
-						traceback.print_exc()
-						#raise
-		
-		
-		if len(sys.argv) == 1:
-			pass
+						err.append({"filename":filePath,"error":format_exc() })
+						print_exc()
 
+		if len(argv) == 1:
+			pass
 	except KeyboardInterrupt:
 		Print.info('Keyboard exception')
 	except BaseException as e:
@@ -201,14 +169,13 @@ def main():
 		raise
 	if err:
 		Print.info('\033[93m\033[1mErrors:')
+		
 		for e in err:
 			Print.info('\033[0mError when processing %s' % e["filename"] )
 			Print.info(e["error"])
-			
 
 	Print.info('Done!')
 
-
 if __name__ == '__main__':
-	multiprocessing.freeze_support()
+	freeze_support()
 	main()
