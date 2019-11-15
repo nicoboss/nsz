@@ -32,7 +32,7 @@ class BlockDecompressorReader:
 		elif whence  == 1:
 			self.Position += offset
 		elif whence  == 2:
-			self.Position = decompressedSize - offset # BROKEN CODE, NEEDS TO BE FIXED
+			self.Position = decompressedSize - offset
 		else:
 			raise ValueError("whence argument must be 0, 1 or 2")
 
