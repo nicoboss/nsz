@@ -99,10 +99,10 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 						del filesAtTarget[Path(delFilePath).name.lower()]
 				else:
 					exitFlag = True
-				if exitFlag:
-					Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
-					'If you want to process it do not use --rm-old-version!'.format(Path(filePath).name))
-					return False
+			if exitFlag:
+				Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
+				'If you want to process it do not use --rm-old-version!'.format(Path(filePath).name))
+				return False
 
 	
 	if not titleIDEntry == None:
