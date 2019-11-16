@@ -56,11 +56,15 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		blockID = 0
 		nspf.seek(0)
 		header = nspf.read(ncaHeaderSize)
+
 		magic = nspf.read(8)
 		if not magic == b'NCZSECTN':
 			raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
 		sectionCount = nspf.readInt64()
 		sections = [Header.Section(nspf) for _ in range(sectionCount)]
+		nca_size = ncaHeaderSize
+		for i in range(sectionCount):
+			nca_size += sections[i].size
 		pos = nspf.tell()
 		blockMagic = nspf.read(8)
 		nspf.seek(pos)
@@ -73,7 +77,7 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		if not useBlockCompression:
 			decompressor = ZstdDecompressor().stream_reader(nspf)
 		hash = sha256()
-		with tqdm(total=nspf.size, unit_scale=True, unit="B") as bar:
+		with tqdm(total=nca_size, unit_scale=True, unit="B") as bar:
 			if write:
 				f.write(header)
 			bar.update(len(header))
@@ -90,7 +94,6 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 						inputChunk = blockDecompressorReader.read(chunkSz)
 					else:
 						inputChunk = decompressor.read(chunkSz)
-					bar.update(chunkSz/8)
 					if not len(inputChunk):
 						break
 					if not useBlockCompression:
@@ -101,6 +104,7 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 						f.write(inputChunk)
 					hash.update(inputChunk)
 					i += len(inputChunk)
+					bar.update(chunkSz)
 
 		if hash.hexdigest() in fileHashes:
 			Print.error('[VERIFIED]   {0}'.format(nspf._path))
