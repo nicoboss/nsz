@@ -112,6 +112,13 @@ def main():
 
 							if args.rm_source:
 								delete_source_file(filePath)
+						elif filePath.endswith('.xci'):
+							#if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".xcz", FileExistingChecks.CreateTargetDict(outfolder, ".xcz"), args.rm_old_version, args.overwrite):
+							#	continue
+							compress(filePath, args)
+
+							if args.rm_source:
+								delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:

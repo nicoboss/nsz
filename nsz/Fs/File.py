@@ -108,7 +108,7 @@ class BaseFile:
 		
 	def write(self, value, size = None):
 		if size != None:
-			value = value + '\0x00' * (size - len(value))
+			value = value + b'\0x00' * (size - len(value))
 		#Print.info('writing to ' + hex(self.f.tell()) + ' ' + self.f.__class__.__name__)
 		#Hex.dump(value)
 		return self.f.write(value)
@@ -244,6 +244,11 @@ class BaseFile:
 	def tell(self):
 		return self.f.tell() - self.offset
 
+	def tellAbsolute(self):
+		if self.isPartition:
+			return self.f.tellAbsolute()
+		return self.f.tell()
+
 	def eof(self):
 		return self.tell() >= self.size
 		
@@ -323,7 +328,7 @@ class BufferedFile(BaseFile):
 			self._buffer = super(BufferedFile, self).read(pageReadSize)
 			self.pageRefreshed()
 			if len(self._buffer) == 0:
-				raise IOError('read returned empty ' + hex(self.offset))
+				raise IOError('read returned empty ' + hex(self.tellAbsolute()))
 				
 		offset = self._relativePos - self._bufferOffset
 		r = self._buffer[offset:offset+size]

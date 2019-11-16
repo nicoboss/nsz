@@ -3,6 +3,7 @@ from nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
 from Fs.File import File
+from Fs.File import BaseFile
 from hashlib import sha256
 import Fs.Type
 import os
@@ -15,21 +16,32 @@ from nut import Titles
 
 MEDIA_SIZE = 0x200
 
-class Pfs0Stream():
-	def __init__(self, path):
+class Pfs0Stream(BaseFile):
+	def __init__(self, path, mode = 'wb'):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
-		self.path = path
-		self.f = open(path, 'wb+')
-		self.offset = 0x8000
+		super(Pfs0Stream, self).__init__(path, mode)
+		self.headerSize = 0x8000
 		self.files = []
+		
+		self.actualSize = 0
 
-		self.f.seek(self.offset)
+		self.f.seek(self.headerSize)
+
+	def __enter__(self):
+		return self
+		
+	def __exit__(self, type, value, traceback):
+		self.close()
+		
+	def write(self, value, size = None):
+		super(Pfs0Stream, self).write(value, len(value))
+		if self.tell() > self.actualSize:
+			self.actualSize = self.tell()
 
 	def add(self, name, size):
 		Print.info('[ADDING]     %s %d bytes to NSP' % (name, int(size)))
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
-		t = {'name': name, 'size': size, 'offset': self.f.tell()}
-		return self.f
+		return self.partition(self.f.tell(), size, n = BaseFile())
 
 	def get(self, name):
 		for i in self.files:
@@ -45,9 +57,10 @@ class Pfs0Stream():
 		return False
 
 	def close(self):
-		self.f.seek(0)
-		self.f.write(self.getHeader())
-		self.f.close()
+		if self.isOpen():
+			self.seek(0)
+			self.write(self.getHeader())
+			super(Pfs0Stream, self).close()
 
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
