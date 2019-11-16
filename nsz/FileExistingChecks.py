@@ -65,11 +65,11 @@ def CreateTargetDict(targetFolder, parseCnmt, extension):
 				(titleID, version) = ExtractTitleIDAndVersion(file, True)
 				titleIDEntry = alreadyExists.get(titleID)
 				if titleIDEntry == None:
-					titleIDEntry = {version: {filePath}}
+					titleIDEntry = {version: [filePath]}
 				elif not version in titleIDEntry:
-					titleIDEntry.add({version: {filePath}})
+					titleIDEntry[version] = [filePath]
 				else:
-					titleIDEntry[version].add(filePath)
+					titleIDEntry[version].append(filePath)
 				alreadyExists[titleID] = titleIDEntry
 				Print.info('=> {0} {1}'.format(titleID, version))
 		except BaseException as e:
@@ -84,32 +84,33 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 	if extractedIdVersion == None:
 		Print.error("Failed to extract TitleID/Version from filename {0}. Use -p to extract from Cnmt.".format(Path(filePath).name))
 		return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
-	(titleID, version) = extractedIdVersion # VERSION IS UNUSED VARIABLE
+	(titleIDExtracted, versionExtracted) = extractedIdVersion
+	titleIDEntry = alreadyExists.get(titleIDExtracted)
 
 	if removeOld:
-		titleIDEntry = alreadyExists.get(titleID)
-		if not titleIDEntry == None:
+		if titleIDEntry != None:
 			exitFlag = False
-			for versionEntry in titleIDEntry:
-				if versionEntry < titleIDEntry:
-					for (fileName, filePath) in filesAtTarget: # fileName IS UNUSED VARIABLE
-						Print.info('Delete outdated version: {0}'.format(filePath))
-						filesAtTarget.remove(Path(filePath).name.lower())
-						remove(file) # BROKEN CODE, NEEDS TO BE FIXED
+			for versionEntry in titleIDEntry.keys():
+				print(versionEntry, versionExtracted)
+				if versionEntry < versionExtracted:
+					for delFilePath in titleIDEntry[versionEntry]:
+						Print.info('Delete outdated version: {0}'.format(delFilePath))
+						remove(delFilePath)
+						del filesAtTarget[Path(delFilePath).name.lower()]
 				else:
 					exitFlag = True
-			if exitFlag:
-				Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
-				'If you want to process it do not use --rm-old-version!'.format(Path(filePath).name))
-				return False
+				if exitFlag:
+					Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
+					'If you want to process it do not use --rm-old-version!'.format(Path(filePath).name))
+					return False
 
-	titleIDEntry = alreadyExists.get(titleID)
+	
 	if not titleIDEntry == None:
 		for versionEntry in titleIDEntry:
 			if versionEntry == titleIDEntry:
 				if overwrite:
-					for (fileName, filePath) in filesAtTarget:
-						Print.info('Delete dublicate: {0}'.format(filePath))
+					for (fileName, filePath) in filesAtTarget: # NEEDS TO BE FIXED
+						Print.info('Delete duplicate: {0}'.format(filePath))
 						filesAtTarget.remove(Path(filePath).name.lower())
 						remove(filePath)
 				else:
