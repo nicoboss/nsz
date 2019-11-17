@@ -21,7 +21,7 @@ setuptools.setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	install_requires=['pycryptodome==3.9.0', 'zstandard', 'colorama', 'tqdm'],
+	install_requires=['pycryptodome>=3.9.0', 'zstandard', 'colorama', 'tqdm'],
 	entry_points = {'console_scripts': ['nsz = nsz:main']},
 	keywords = ['nsz', 'xcz', 'ncz', 'nsp', 'xci'],
 	python_requires='>=3.6',
