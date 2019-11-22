@@ -1,0 +1,38 @@
+<RootWidget>:
+	ScreenManager:
+		id: sm
+
+		Screen:
+			name: 'screen1'
+			BoxLayout:
+				pos_hint: {'x': .05, 'y': .05}
+				size_hint: (.9, .9)
+				orientation: 'vertical'
+				StackLayout:
+					size_hint_y: None
+					height: 50
+					Button:
+						#background_normal: ''
+						background_color: 0, .3, .4, .85
+						size_hint: (.5, .8)
+						text: 'Select Input File/Folder'
+						on_release: root.showInputFileFolderDialog()
+					Button:
+						#background_normal: ''
+						background_color: 0, .3, .4, .85
+						size_hint: (.5, .8)
+						text: 'Select Output File/Folder'
+						on_release: root.showOutputFileFolderDialog()
+	
+				BoxLayout:
+					id: inFilesLayout
+					canvas.before:
+						Color:
+							rgba: (0, 0, 0, 0.4)
+						Rectangle:
+							pos: self.pos
+							size: self.size
+		Screen:
+			name: 'screen2'
+		Screen:
+			name: 'screen3'
