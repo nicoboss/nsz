@@ -1,0 +1,37 @@
+[
+	{
+		"type": "numeric",
+		"title": "Threads",
+		"desc": "Number of threads to compress with. Numbers < 1 corresponds to the number of logical CPU cores",
+		"section": "Advanced",
+		"key": "threads"
+	},
+	{
+		"type": "bool",
+		"title": "Parse Cnmt",
+		"desc": "Extract TitleId/Version from Cnmt if this information cannot be obtained from the filename. Required for skipping/overwriting existing files and --rm-old-version to work properly if some not every file is named properly. Supported filenames: *TitleID*[vVersion]*",
+		"section": "Advanced",
+		"key": "parseCnmt"
+	},
+	{
+		"type": "bool",
+		"title": "Overwrite",
+		"desc": "Continues even if there already is a file with the same name or title id inside the output directory",
+		"section": "Advanced",
+		"key": "overwrite"
+	},
+	{
+		"type": "bool",
+		"title": "rm-old-version",
+		"desc": "Removes older versions if found",
+		"section": "Advanced",
+		"key": "rm_old_version"
+	},
+	{
+		"type": "bool",
+		"title": "rm-source",
+		"desc": "Deletes source file/s after compressing/decompressing. It's recommended to only use this in combination with --verify",
+		"section": "Advanced",
+		"key": "rm_source"
+	}
+]

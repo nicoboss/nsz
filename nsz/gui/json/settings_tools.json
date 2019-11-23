@@ -1,0 +1,9 @@
+[
+	{
+		"type": "numeric",
+		"title": "Info Depth",
+		"desc": "Max depth for file info and extraction",
+		"section": "Tools",
+		"key": "depth"
+	}
+]

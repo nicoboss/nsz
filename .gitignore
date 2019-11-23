@@ -18,3 +18,4 @@ nsz_win64_portable/
 nsz.egg-info/
 nsz.build/
 nsz.dist/
+nsz/gui/gui.ini

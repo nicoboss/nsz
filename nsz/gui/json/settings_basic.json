@@ -1,0 +1,30 @@
+[
+	{
+		"type": "numeric",
+		"title": "Compression Level",
+		"desc": "Trade-off between compression speed and compression ratio. Default: 18, Max: 22",
+		"section": "Settings",
+		"key": "level"
+	},
+	{
+		"type": "bool",
+		"title": "Use Blockcompression",
+		"desc": "Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost",
+		"section": "Settings",
+		"key": "block"
+	},
+	{
+		"type": "numeric",
+		"title": "Block Size",
+		"desc": "Block Size for random read access 2^x while x between 14 and 32. Default: 20 => 1 MB",
+		"section": "Settings",
+		"key": "bs"
+	},
+	{
+		"type": "bool",
+		"title": "Verify",
+		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter",
+		"section": "Settings",
+		"key": "verify"
+	}
+]

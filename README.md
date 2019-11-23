@@ -81,10 +81,11 @@ This tool was only tested with base games, updates and DLCs.<br/>
 ## Usage
 ```
 nsz.py --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-p] [-t THREADS]
-              [-o OUTPUT] [-w] [-r] [-i INFO] [--depth DEPTH]
-              [-x EXTRACT [EXTRACT ...]] [-c CREATE] [--rm-source]
-              [file [file ...]]
+usage: __init__.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-p]
+                   [-t THREADS] [-o [OUTPUT]] [-w] [-r] [--rm-source]
+                   [-i INFO] [--depth DEPTH] [-x EXTRACT [EXTRACT ...]]
+                   [-c CREATE]
+                   [file [file ...]]
 
 positional arguments:
   file
@@ -94,15 +95,14 @@ optional arguments:
   -C                    Compress NSP
   -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
-                        Compression Level
+                        Compression Level: Trade-off between compression speed
+                        and compression ratio. Default: 18, Max: 22
   -B, --block           Uses highly multithreaded block compression with
                         random read access allowing compressed games to be
                         played without decompression in the future however
-                        this comes with a low compression ratio cost. Current
-                        title installers do not support this yet.
+                        this comes with a low compression ratio cost
   -s BS, --bs BS        Block Size for random read access 2^x while x between
-                        14 and 32. Default is 20 => 1 MB. Current title
-                        installers do not support this yet.
+                        14 and 32. Default: 20 => 1 MB
   -V, --verify          Verifies files after compression raising an unhandled
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter
@@ -114,21 +114,21 @@ optional arguments:
                         *TitleID*[vVersion]*
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Numbers < 1
-                        corresponds to the number of logical CPU cores.
-  -o OUTPUT, --output OUTPUT
+                        corresponds to the number of logical CPU cores
+  -o [OUTPUT], --output [OUTPUT]
                         Directory to save the output NSZ files
   -w, --overwrite       Continues even if there already is a file with the
                         same name or title id inside the output directory
-  -r, --rm-old-version  Removes older version if found
+  -r, --rm-old-version  Removes older versions if found
+  --rm-source           Deletes source file/s after compressing/decompressing.
+                        It's recommended to only use this in combination with
+                        --verify
   -i INFO, --info INFO  Show info about title or file
   --depth DEPTH         Max depth for file info and extraction
   -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
                         extract / unpack a NSP
   -c CREATE, --create CREATE
                         create / pack a NSP
-  --rm-source           Deletes source file/s after compressing/decompressing.
-                        It's recommended to only use this in combination with
-                        --verify
 ```
 
 ## References
