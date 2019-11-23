@@ -2,20 +2,25 @@ from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
-from ShaderWidget import *
-from RootWidget import *
-from GameList import *
+from gui.ShaderWidget import *
+from gui.RootWidget import *
+from gui.GameList import *
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
 import os
 
 class GUI(App):
+	
+	def run(self):
+		super(GUI, self).run()
+		return arguments(self.config)
+	
 	def build(self):
-		Builder.load_file('layout/GUI.kv')
+		Builder.load_file('gui/layout/GUI.kv')
 		self.title = 'NSZ GUI'
 		root = FloatLayout()
-		with open("shaders/plasma.shader") as stream:
+		with open("gui/shaders/plasma.shader") as stream:
 			plasma_shader = stream.read()
 			root.add_widget(ShaderWidget(fs=plasma_shader))
 		gameList = GameList()
@@ -48,9 +53,9 @@ class GUI(App):
 		})
 
 	def build_settings(self, settings):
-		settings.add_json_panel('Settings', self.config, 'json/settings_basic.json')
-		settings.add_json_panel('Advanced', self.config, 'json/settings_advanced.json')
-		settings.add_json_panel('Tools', self.config, 'json/settings_tools.json')
+		settings.add_json_panel('Settings', self.config, 'gui/json/settings_basic.json')
+		settings.add_json_panel('Advanced', self.config, 'gui/json/settings_advanced.json')
+		settings.add_json_panel('Tools', self.config, 'gui/json/settings_tools.json')
 
 	def on_config_change(self, config, section, key, value):
 		Logger.info("main.py: App.on_config_change: {0}, {1}, {2}, {3}".format(
@@ -74,6 +79,27 @@ class MySettingsWithTabbedPanel(SettingsWithTabbedPanel):
 		Logger.info(
 			"main.py: MySettingsWithTabbedPanel.on_config_change: "
 			"{0}, {1}, {2}, {3}".format(config, section, key, value))
+
+
+class arguments:
+	def __init__(self, config):
+		self.file = []
+		self.C = None
+		self.D = None
+		self.output = None
+		self.info = None
+		self.extract = None
+		self.create = None
+		self.level = config.get('Settings', 'level')
+		self.block = config.get('Settings', 'block')
+		self.bs = config.get('Settings', 'bs')
+		self.verify = config.get('Settings', 'verify')
+		self.threads = config.get('Advanced', 'threads')
+		self.parseCnmt = config.get('Advanced', 'parseCnmt')
+		self.overwrite = config.get('Advanced', 'overwrite')
+		self.rm_old_version = config.get('Advanced', 'rm_old_version')
+		self.rm_source = config.get('Advanced', 'rm_source')
+		self.depth = config.get('Tools', 'depth')
 
 
 if __name__ == '__main__':

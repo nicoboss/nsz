@@ -3,7 +3,7 @@ from pathlib import Path
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
-from FileDialogs import *
+from gui.FileDialogs import *
 
 class RootWidget(FloatLayout):
 	loadfile = ObjectProperty(None)
@@ -12,7 +12,7 @@ class RootWidget(FloatLayout):
 	gameList = None
 	
 	def __init__(self, gameList, **kwargs):
-		Builder.load_file('layout/RootWidget.kv')
+		Builder.load_file('gui/layout/RootWidget.kv')
 		super(RootWidget, self).__init__(**kwargs)
 		self.ids.inFilesLayout.add_widget(gameList)
 		self.gameList = gameList

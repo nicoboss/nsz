@@ -11,7 +11,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.progressbar import ProgressBar
 from kivy.uix.slider import Slider
 from functools import partial
-from DraggableScrollbar import *
+from gui.DraggableScrollbar import *
 
 
 gameEntries = ([str(x) for x in range(1000)])
@@ -71,7 +71,7 @@ class GameList(StackLayout):
 	draggableScrollbar = None
 
 	def __init__(self, **kwargs):
-		Builder.load_file('layout/GameList.kv')
+		Builder.load_file('gui/layout/GameList.kv')
 		super(GameList, self).__init__(**kwargs)
 		self.recycleView = RV(gameEntries)
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)
