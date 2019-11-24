@@ -12,11 +12,46 @@ class RootWidget(FloatLayout):
 	text_input = ObjectProperty(None)
 	gameList = None
 	
+	hardExit = True
+	pathlist = []
+	filelist = []
+	C = False
+	D = False
+	output = False
+	info = False
+	extract = False
+	create = False
+	
 	def __init__(self, gameList, **kwargs):
 		Builder.load_file('gui/layout/RootWidget.kv')
 		super(RootWidget, self).__init__(**kwargs)
 		self.ids.inFilesLayout.add_widget(gameList)
 		self.gameList = gameList
+		
+	def Compress(self):
+		self.C = True
+		self.hardExit = False
+		App.get_running_app().stop()
+		
+	def Decompress(self):
+		self.D = True
+		self.hardExit = False
+		App.get_running_app().stop()
+	def Verify(self):
+		
+		self.C = True
+		self.hardExit = False
+		App.get_running_app().stop()
+		
+	def Info(self):
+		self.info = True
+		self.hardExit = False
+		App.get_running_app().stop()
+		
+	def Extract(self):
+		self.extract = True
+		self.hardExit = False
+		App.get_running_app().stop()
 
 	def dismissPopup(self):
 		self._popup.dismiss()
@@ -32,18 +67,22 @@ class RootWidget(FloatLayout):
 		self._popup.open()
 
 	def setInputFileFolder(self, path, filename):
-		fielist = []
+		self.pathlist.clear()
+		self.filelist.clear()
+		self.pathlist.append(path)
 		pathObj = Path(path)
 		if pathObj.is_file():
-			fielist.append(pathObj.name)
-		elif  pathObj.is_dir():
+			self.filelist.append((pathObj.name, pathObj.stat().st_size))
+		elif pathObj.is_dir():
 			for file in scandir(path):
-				fielist.append(Path(path).joinpath(file).name)
-		self.gameList.refresh(fielist)
+				filepath = Path(path).joinpath(file)
+				self.filelist.append((filepath.name, filepath.stat().st_size))
+		self.gameList.refresh(self.filelist)
 		self.dismissPopup()
 
 	def setOutputFileFolder(self, path, filename):
-		print(path)
+		self.output = path
+		print("Set --output to {0}".format(self.output))
 		self.dismissPopup()
 		
 	def showAboutDialog(self):

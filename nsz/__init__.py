@@ -18,7 +18,6 @@ from NszDecompressor import verify as NszVerify, decompress as NszDecompress
 from multiprocessing import cpu_count, freeze_support
 from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 from ParseArguments import *
-from gui.NSZ_GUI import GUI
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
@@ -61,7 +60,11 @@ def main():
 		if len(argv) > 1:
 			args = ParseArguments.parse()
 		else:
+			from gui.NSZ_GUI import GUI
 			args = GUI().run()
+			if args == None:
+				print("Done!")
+				return
 		
 		outfolder = str(Path(args.output)) if args.output else str(Path('.'))
 

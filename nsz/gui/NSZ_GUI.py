@@ -12,9 +12,14 @@ import os
 
 class GUI(App):
 	
+	rootWidget = None
+	
 	def run(self):
 		super(GUI, self).run()
-		return arguments(self.config)
+		if not self.rootWidget.hardExit:
+			return arguments(self.config, self.rootWidget)
+		else:
+			return None
 	
 	def build(self):
 		Builder.load_file('gui/layout/GUI.kv')
@@ -24,13 +29,9 @@ class GUI(App):
 			plasma_shader = stream.read()
 			root.add_widget(ShaderWidget(fs=plasma_shader))
 		gameList = GameList()
-		rootWidget = RootWidget(gameList)
-		root.add_widget(rootWidget)
+		self.rootWidget = RootWidget(gameList)
+		root.add_widget(self.rootWidget)
 		self.settings_cls = MySettingsWithTabbedPanel
-		#label = root.ids.label
-		#label.text = self.config.get('My Label', 'text')
-		#label.font_size = float(self.config.get('My Label', 'font_size'))
-		#print(self.config.get('My Label', 'text'))
 		return root
 
 	def build_config(self, config):
@@ -61,12 +62,6 @@ class GUI(App):
 		Logger.info("main.py: App.on_config_change: {0}, {1}, {2}, {3}".format(
 			config, section, key, value))
 
-		#if section == "My Label":
-		#	if key == "text":
-		#		self.root.ids.label.text = value
-		#	elif key == 'font_size':
-		#		self.root.ids.label.font_size = float(value)
-
 	def close_settings(self, settings=None):
 		Logger.info("main.py: App.close_settings: {0}".format(settings))
 		super(GUI, self).close_settings(settings)
@@ -82,19 +77,19 @@ class MySettingsWithTabbedPanel(SettingsWithTabbedPanel):
 
 
 class arguments:
-	def __init__(self, config):
-		self.file = []
-		self.C = None
-		self.D = None
-		self.output = None
-		self.info = None
-		self.extract = None
-		self.create = None
-		self.level = config.get('Settings', 'level')
+	def __init__(self, config, rootWidget):
+		self.file = rootWidget.pathlist
+		self.C = rootWidget.C
+		self.D = rootWidget.D
+		self.output = rootWidget.output
+		self.info = rootWidget.info
+		self.extract = rootWidget.extract
+		self.create = rootWidget.create
+		self.level = int(config.get('Settings', 'level'))
 		self.block = config.get('Settings', 'block')
-		self.bs = config.get('Settings', 'bs')
+		self.bs = int(config.get('Settings', 'bs'))
 		self.verify = config.get('Settings', 'verify')
-		self.threads = config.get('Advanced', 'threads')
+		self.threads = int(config.get('Advanced', 'threads'))
 		self.parseCnmt = config.get('Advanced', 'parseCnmt')
 		self.overwrite = config.get('Advanced', 'overwrite')
 		self.rm_old_version = config.get('Advanced', 'rm_old_version')

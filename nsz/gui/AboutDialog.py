@@ -28,5 +28,3 @@ class AboutDialog(FloatLayout):
 	def closeAboutDialog(self, **kwargs):
 		self.remove_widget_recursive(self.children)
 		self.cancel()
-		
-	

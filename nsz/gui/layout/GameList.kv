@@ -8,20 +8,20 @@
 			size: self.size
 	cover_source: ''
 	filename_text: ''
-	size_text: '0 KB'
-	label3_text: ''
-	percent_done: 50
+	filesize_text: '0 KB'
 	pos: self.pos
 	size: self.size
+	padding: 20
 	Label:
 		id: id_filename
+		halign: "left"
+		text_size: self.size
 		text: root.filename_text
 	Label:
 		id: id_size
-		text: root.size_text
-	ProgressBar:
-		id: id_ProgressBar
-		value: root.percent_done
+		halign: "right"
+		text_size: self.size
+		text: root.filesize_text
 
 
 <RV>:

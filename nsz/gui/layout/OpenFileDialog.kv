@@ -3,6 +3,13 @@
 		size: root.size
 		pos: root.pos
 		orientation: "vertical"
+		drives_list: drives_list
+		
+		BoxLayout:
+			size_hint_y: None
+			height: 30
+			id: drives_list
+		
 		FileChooserListView:
 			id: filechooser
 

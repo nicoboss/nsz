@@ -14,9 +14,6 @@ from functools import partial
 from gui.DraggableScrollbar import *
 
 
-gameEntries = ([str(x) for x in range(1000)])
-
-
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
 								 RecycleBoxLayout):
 	''' Adds selection and focus behaviour to the view. '''
@@ -32,7 +29,8 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 	def refresh_view_attrs(self, rv, index, data):
 		''' Catch and handle the view changes '''
 		self.index = index
-		self.filename_text = data['label2']['text']
+		self.filename_text = data['0']
+		self.filesize_text = data['1']
 		return super(SelectableLabel, self).refresh_view_attrs(
 			rv, index, data)
 
@@ -61,9 +59,15 @@ class RV(RecycleView):
 		
 	def refresh(self, items):
 		self.data = []
-		for i1 in items:
-			d = {'label2': {'text': i1}}
-			self.data.append(d)
+		for item in items:
+			self.data.append({'0': item[0], '1': self.sizeof_fmt(item[1])})
+			
+	def sizeof_fmt(self, num, suffix='B'):
+		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+			if abs(num) < 1024.0:
+				return "%3.1f %s%s" % (num, unit, suffix)
+			num /= 1024.0
+		return "%.1f%s%s" % (num, 'Yi', suffix)
 
 class GameList(StackLayout):
 
@@ -73,7 +77,7 @@ class GameList(StackLayout):
 	def __init__(self, **kwargs):
 		Builder.load_file('gui/layout/GameList.kv')
 		super(GameList, self).__init__(**kwargs)
-		self.recycleView = RV(gameEntries)
+		self.recycleView = RV([])
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)
 		self.add_widget(self.draggableScrollbar)
 		self.id = "gameList"
