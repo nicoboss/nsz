@@ -12,42 +12,52 @@
 					size_hint_y: None
 					height: 100
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
 						size_hint: (.29, .45)
 						text: 'Select Input File/Folder'
 						on_release: root.showInputFileFolderDialog()
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
 						size_hint: (.29, .45)
 						text: 'Select Output File/Folder'
 						on_release: root.showOutputFileFolderDialog()
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
-						size_hint: (.14, .45)
+						size_hint: (.21, .45)
 						text: 'Settings [F1]'
 						on_release: app.open_settings()
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
-						size_hint: (.14, .45)
-						text: 'Tools'
+						size_hint: (.21, .45)
+						text: 'About'
+						on_release: root.showAboutDialog()
+					Button:
+						background_color: 0, .3, .4, .85
+						size_hint: (.29, .45)
+						text: 'Compress NSP/XCI'
 						on_release: root.showOutputFileFolderDialog()
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
-						size_hint: (.14, .45)
-						text: 'About'
+						size_hint: (.29, .45)
+						text: 'Decompress NSZ/XCZ'
 						on_release: root.showOutputFileFolderDialog()
 					Button:
-						#background_normal: ''
 						background_color: 0, .3, .4, .85
 						size_hint: (.14, .45)
-						text: 'About'
+						text: 'Verify'
 						on_release: root.showOutputFileFolderDialog()
-	
+					Button:
+						background_color: 0, .3, .4, .85
+						size_hint: (.14, .45)
+						text: 'Info'
+						on_release: root.showOutputFileFolderDialog()
+					Button:
+						background_color: 0, .3, .4, .85
+						size_hint: (.14, .45)
+						text: 'Extract'
+						on_release: root.showOutputFileFolderDialog()
+
+
 				BoxLayout:
 					id: inFilesLayout
 					canvas.before:

@@ -4,6 +4,7 @@ from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from gui.FileDialogs import *
+from gui.AboutDialog import *
 
 class RootWidget(FloatLayout):
 	loadfile = ObjectProperty(None)
@@ -44,3 +45,8 @@ class RootWidget(FloatLayout):
 	def setOutputFileFolder(self, path, filename):
 		print(path)
 		self.dismissPopup()
+		
+	def showAboutDialog(self):
+		content = AboutDialog(cancel=self.dismissPopup)
+		self._popup = Popup(title="About", content=content, size_hint=(0.9, 0.9))
+		self._popup.open()

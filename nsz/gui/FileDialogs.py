@@ -3,7 +3,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 Builder.load_file('gui/layout/OpenFileDialog.kv')
-Builder.load_file('gui/layout/OpenFileDialog.kv')
+Builder.load_file('gui/layout/SaveFileDialog.kv')
 
 class OpenFileDialog(FloatLayout):
 	load = ObjectProperty(None)

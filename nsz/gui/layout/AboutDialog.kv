@@ -1,0 +1,64 @@
+<AboutDialog>:
+	BoxLayout:
+		size: root.size
+		pos: root.pos
+		orientation: "vertical"
+		
+		StackLayout:
+			size_hint: (1, .1)
+			padding: 21
+			spacing: [16, 16]
+			HyperlinkLabel:
+				id: GitHubUrl
+				url: "https://github.com/nicoboss/nsz"
+				url_text: "GitHub"
+			HyperlinkLabel:
+				id: PipUrl
+				url: "https://pypi.org/project/nsz/"
+				url_text: "Pip"
+			HyperlinkLabel:
+				id: GBAtempUrl
+				url: "https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compressor-decompressor.550556/"
+				url_text: "GBAtemp"
+			HyperlinkLabel:
+				id: ReleasesUrl
+				url: "https://github.com/nicoboss/nsz/releases"
+				url_text: "Releases"
+			HyperlinkLabel:
+				id: IssuesUrl
+				url: "https://github.com/nicoboss/nsz/issues"
+				url_text: "Issues"
+			HyperlinkLabel:
+				id: CommitsUrl
+				url: "https://github.com/nicoboss/nsz/commits/master"
+				url_text: "Commits"
+			HyperlinkLabel:
+				id: PullsUrl
+				url: "https://github.com/nicoboss/nsz/pulls"
+				url_text: "Pull requests"
+			HyperlinkLabel:
+				id: LicenseUrl
+				url: "https://github.com/nicoboss/nsz/blob/master/LICENSE"
+				url_text: "License"
+			HyperlinkLabel:
+				id: ContributorsUrl
+				url: "https://github.com/nicoboss/nsz/graphs/contributors"
+				url_text: "Contributors"
+			ScrollView:
+				id: license_text_scrlv
+				size_hint: (1, .8)
+				TextInput:
+					id: license_text
+					background_color: (0,0,0,1)
+					foreground_color: (1,1,1,1)
+					height: max(self.minimum_height, license_text_scrlv.height)
+					size_hint: 1, None
+					readonly: True
+					text: 'Failed to load license text!'
+
+			BoxLayout:
+				size_hint_y: None
+				size_hint: (1, .1)
+				Button:
+					text: "Cancel"
+					on_release: root.closeAboutDialog()
