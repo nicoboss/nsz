@@ -2,6 +2,7 @@ from nut import aes128
 from nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
+from Fs.File import BaseFile
 from Fs.File import File
 from hashlib import sha256
 import Fs.Type
@@ -16,6 +17,85 @@ import Fs
 
 MEDIA_SIZE = 0x200
 
+class Hfs0Stream(BaseFile):
+	def __init__(self, f, mode = 'wb'):
+		super(Hfs0Stream, self).__init__(f, mode)
+		self.headerSize = 0x8000
+		self.files = []
+
+		self.actualSize = 0
+
+		self.seek(self.headerSize)
+
+	def __enter__(self):
+		return self
+		
+	def __exit__(self, type, value, traceback):
+		self.close()
+
+	def write(self, value, size = None):
+		super(Hfs0Stream, self).write(value, len(value))
+		if self.tell() > self.actualSize:
+			self.actualSize = self.tell()
+
+	def add(self, name, size):
+		Print.info('[ADDING]     %s %d bytes to NSP' % (name, int(size)))
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
+		return self.partition(self.f.tell(), size, n = BaseFile())
+
+	def get(self, name):
+		for i in self.files:
+			if i['name'] == name:
+				return i
+		return None
+
+	def resize(self, name, size):
+		for i in self.files:
+			if i['name'] == name:
+				i['size'] = size
+				return True
+		return False
+		
+	def currentFileSize(self):
+		return self.f.tell() - self.files[-1]['offset']
+
+	def close(self):
+		if self.isOpen():
+			self.seek(0)
+			self.write(self.getHeader())
+			super(Hfs0Stream, self).close()
+
+	def getHeader(self):
+		stringTable = '\x00'.join(file['name'] for file in self.files)
+		
+		headerSize = 0x10 + len(self.files) * 0x40 + len(stringTable)
+		remainder = 0x10 - headerSize % 0x10
+		headerSize += remainder
+	
+		h = b''
+		h += b'HFS0'
+		h += len(self.files).to_bytes(4, byteorder='little')
+		h += (len(stringTable)+remainder).to_bytes(4, byteorder='little')
+		h += b'\x00\x00\x00\x00'
+		
+		stringOffset = 0
+
+		for f in self.files:
+			sizeOfHashedRegion = 0x200 if 0x200 < f['size'] else f['size']
+
+			h += (f['offset'] - headerSize).to_bytes(8, byteorder='little')
+			h += f['size'].to_bytes(8, byteorder='little')
+			h += stringOffset.to_bytes(4, byteorder='little')
+			h += sizeOfHashedRegion.to_bytes(4, byteorder='little')
+			h += b'\x00' * 8
+			h += b'\x00' * 0x20 # sha256 hash of region
+			
+			stringOffset += len(f['name']) + 1
+			
+		h += stringTable.encode()
+		h += remainder * b'\x00'
+		
+		return h
 
 class Hfs0(Pfs0):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
@@ -27,7 +107,7 @@ class Hfs0(Pfs0):
 
 		self.magic = self.read(0x4);
 		if self.magic != b'HFS0':
-			raise IOError('Not a valid HFS0 partition ' + str(self.magic))
+			raise IOError('Not a valid HFS0 partition %s @ %x' % (str(self.magic), self.tellAbsolute() - 4))
 			
 
 		fileCount = self.readInt32()

@@ -16,7 +16,7 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 	ncaHeaderSize = 0x4000
 	CHUNK_SZ = 0x100000
 	if write:
-		nspPath = Path(filePath[0:-1] + 'p') if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'p').name).resolve(strict=False)
+		nspPath = str(Path(filePath[0:-1] + 'p') if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'p').name).resolve(strict=False))
 		Print.info('decompressing %s -> %s' % (filePath, nspPath))
 		newNsp = Pfs0.Pfs0Stream(nspPath)
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
