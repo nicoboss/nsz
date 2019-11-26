@@ -4,9 +4,10 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.utils import platform
+from nsz.gui.GuiPath import *
 
-Builder.load_file('gui/layout/OpenFileDialog.kv')
-Builder.load_file('gui/layout/SaveFileDialog.kv')
+Builder.load_file(getGuiPath('layout/OpenFileDialog.kv'))
+Builder.load_file(getGuiPath('layout/SaveFileDialog.kv'))
 
 
 class OpenFileDialog(FloatLayout):

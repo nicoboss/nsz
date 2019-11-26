@@ -12,6 +12,7 @@ from kivy.uix.progressbar import ProgressBar
 from kivy.uix.slider import Slider
 from functools import partial
 from gui.DraggableScrollbar import *
+from nsz.gui.GuiPath import *
 
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
@@ -75,7 +76,7 @@ class GameList(StackLayout):
 	draggableScrollbar = None
 
 	def __init__(self, **kwargs):
-		Builder.load_file('gui/layout/GameList.kv')
+		Builder.load_file(getGuiPath('layout/GameList.kv'))
 		super(GameList, self).__init__(**kwargs)
 		self.recycleView = RV([])
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)

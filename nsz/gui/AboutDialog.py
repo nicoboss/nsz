@@ -4,9 +4,10 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from gui.Hyperlink import *
 from kivy.core.window import Window
+from nsz.gui.GuiPath import *
 import os
 
-Builder.load_file('gui/layout/AboutDialog.kv')
+Builder.load_file(getGuiPath('layout/AboutDialog.kv'))
 
 
 class AboutDialog(FloatLayout):
@@ -14,7 +15,7 @@ class AboutDialog(FloatLayout):
 	
 	def __init__(self, **kwargs):
 		super(AboutDialog, self).__init__(**kwargs)
-		with open("gui/txt/license.txt") as stream:
+		with open(getGuiPath("txt/license.txt")) as stream:
 			self.ids.license_text.text = stream.read()
 			
 	def remove_widget_recursive(self, children):

@@ -8,6 +8,7 @@ from gui.GameList import *
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
+from nsz.gui.GuiPath import *
 import os
 
 class GUI(App):
@@ -22,10 +23,10 @@ class GUI(App):
 			return None
 	
 	def build(self):
-		Builder.load_file('gui/layout/GUI.kv')
+		Builder.load_file(getGuiPath('layout/GUI.kv'))
 		self.title = 'NSZ GUI'
 		root = FloatLayout()
-		with open("gui/shaders/plasma.shader") as stream:
+		with open(getGuiPath('shaders/plasma.shader')) as stream:
 			plasma_shader = stream.read()
 			root.add_widget(ShaderWidget(fs=plasma_shader))
 		gameList = GameList()
@@ -54,9 +55,9 @@ class GUI(App):
 		})
 
 	def build_settings(self, settings):
-		settings.add_json_panel('Settings', self.config, 'gui/json/settings_basic.json')
-		settings.add_json_panel('Advanced', self.config, 'gui/json/settings_advanced.json')
-		settings.add_json_panel('Tools', self.config, 'gui/json/settings_tools.json')
+		settings.add_json_panel('Settings', self.config, getGuiPath('json/settings_basic.json'))
+		settings.add_json_panel('Advanced', self.config, getGuiPath('json/settings_advanced.json'))
+		settings.add_json_panel('Tools', self.config, getGuiPath('json/settings_tools.json'))
 
 	def on_config_change(self, config, section, key, value):
 		Logger.info("main.py: App.on_config_change: {0}, {1}, {2}, {3}".format(

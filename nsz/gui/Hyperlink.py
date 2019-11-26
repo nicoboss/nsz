@@ -12,9 +12,10 @@ from kivy.properties import ObjectProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.factory import Factory
 from kivy.lang import Builder
+from nsz.gui.GuiPath import *
 import webbrowser
 
-Builder.load_file('gui/layout/Hyperlink.kv')
+Builder.load_file(getGuiPath('layout/Hyperlink.kv'))
 
 
 class Tooltip(Label):
