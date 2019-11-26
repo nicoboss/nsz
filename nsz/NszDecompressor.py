@@ -148,7 +148,7 @@ def __decompressXcz(filePath, outputDir = None, write = True, raiseVerificationE
 		filename = changeExtension(filePath, '.xci')
 		outPath = str(filename) if outputDir == None else Path(outputDir).joinpath(filename).name.resolve(strict=False)
 		Print.info('decompressing %s -> %s' % (filePath, outPath))
-		with Xci.XciStream(outPath, originalXcipath = filePath) as xci: # need filepath to copy XCI container settings
+		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
 				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException)
 				xci.hfs0.resize('secure', secureOut.actualSize)

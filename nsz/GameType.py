@@ -16,14 +16,14 @@ def isXciXcz(filePath):
 	return filePath.endswith('.xci') or filePath.endswith('.xcz')
 
 def getExtension(filePath):
-	return Path(filePath).suffix
+	return str(Path(filePath).suffix)
 
 def getBasename(filePath):
-	return Path(filePath).stem
+	return str(Path(filePath).stem)
 
 def changeExtension(filePath, newExtension):
 	filePathObj = Path(filePath)
-	return filePathObj.parent.resolve().joinpath(filePathObj.stem + newExtension)
+	return str(filePathObj.parent.resolve().joinpath(filePathObj.stem + newExtension))
 
 def getExtensionName(filePath):
-	return Path(filePath).suffix[1:].upper()
+	return str(Path(filePath).suffix[1:].upper())

@@ -10,7 +10,7 @@ from nut import Print
 MEDIA_SIZE = 0x200
 
 class XciStream(BaseFile):
-	def __init__(self, path = None, mode = 'wb', originalXcipath = None):
+	def __init__(self, path = None, mode = 'wb', originalXciPath = None):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		super(XciStream, self).__init__(path, mode)
 		self.path = path
@@ -44,7 +44,7 @@ class XciStream(BaseFile):
 		#self.gamecardInfo = GamecardInfo(self.partition(self.tell(), 0x70))
 		#self.gamecardCert = GamecardCertificate(self.partition(0x7000, 0x200))
 
-		with open(originalXcipath, 'rb') as xf:
+		with open(originalXciPath, 'rb') as xf:
 			self.headerBuffer = xf.read(0x200) # gross hack just to get this working
 
 		self.f.seek(0xF000)

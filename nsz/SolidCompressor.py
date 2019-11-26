@@ -6,6 +6,7 @@ from traceback import format_exc
 from SectionFs import isNcaPacked, sortedFs
 from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
+from GameType import *
 
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
@@ -111,17 +112,14 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 				buffer = nspf.read(CHUNK_SZ)
 				f.write(buffer)
 
-		
+
 def solidCompressNsp(filePath, compressionLevel = 18, outputDir = None, threads = -1):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
-	nszPath = str(Path(filePath[0:-1] + 'z' if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'z').name)).resolve(strict=False))
-
-	for nspf in container:
-		if isinstance(nspf, Ticket.Ticket):
-			nspf.getRightsId()
-			break # No need to go for other objects
+	nszPath = changeExtension(filePath, '.nsz')
+	if not outputDir == None:
+		nszPath = Path(outputDir).joinpath(nszPath).resolve(strict=False)
 
 	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -143,35 +141,25 @@ def solidCompressXci(filePath, compressionLevel = 18, outputDir = None, threads 
 	container = factory(filePath)
 	container.open(filePath, 'rb')
 	secureIn = container.hfs0['secure']
-	nszPath = str(Path(filePath[0:-1] + 'z' if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'z').name)).resolve(strict=False))
+	xczPath = changeExtension(filePath, '.xcz')
+	if not outputDir == None:
+		xczPath = Path(outputDir).joinpath(xczPath).resolve(strict=False)
 
-	for nspf in secureIn:
-		if isinstance(nspf, Ticket.Ticket):
-			nspf.getRightsId()
-			break # No need to go for other objects
-	
-	
-	nszPath = str(Path(filePath[0:-1] + 'z' if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'z').name)).resolve(strict=False))
-	
-	for nspf in secureIn:
-		if isinstance(nspf, Ticket.Ticket):
-			nspf.getRightsId()
-			break # No need to go for other objects
-
-	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	
 	try:
-		with Xci.XciStream(nszPath, originalXcipath = filePath) as xci: # need filepath to copy XCI container settings
+		print(filePath)
+		with Xci.XciStream(xczPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
 				processContainer(secureIn, secureOut, compressionLevel, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except KeyboardInterrupt:
-		remove(nszPath)
+		remove(xczPath)
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		remove(nszPath)
+		remove(xczPath)
 
 	container.close()
-	return nszPath
+	return xczPath
