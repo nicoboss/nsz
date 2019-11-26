@@ -18,6 +18,7 @@ from NszDecompressor import verify as NszVerify, decompress as NszDecompress
 from multiprocessing import cpu_count, freeze_support
 from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 from ParseArguments import *
+from GameType import *
 
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
@@ -91,24 +92,22 @@ def main():
 			nsp.path = args.create
 			nsp.pack(args.file)
 		if args.C:
-			targetDict = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
+			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
+			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xcz")
 			for i in args.file:
 				for filePath in expandFiles(i):
+					if not isUncompressedGame(filePath):
+						continue
 					try:
 						if filePath.endswith('.nsp'):
-							if not AllowedToWriteOutfile(filePath, ".nsz", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-							compress(filePath, args)
-
-							if args.rm_source:
-								delete_source_file(filePath)
 						elif filePath.endswith('.xci'):
-							#if not FileExistingChecks.AllowedToWriteOutfile(filePath, ".xcz", FileExistingChecks.CreateTargetDict(outfolder, ".xcz"), args.rm_old_version, args.overwrite):
-							#	continue
-							compress(filePath, args)
-
-							if args.rm_source:
-								delete_source_file(filePath)
+							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
+								continue
+						compress(filePath, args)
+						if args.rm_source:
+							delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -118,17 +117,22 @@ def main():
 
 
 		if args.D:
-			targetDict = CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
-
+			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
+			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xci")
 			for i in args.file:
 				for filePath in expandFiles(i):
+					if not isCompressedGame(filePath):
+						continue
 					try:
 						if filePath.endswith('.nsz'):
-							if not AllowedToWriteOutfile(filePath, ".nsp", targetDict, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-							decompress(filePath, args.output)
-							if args.rm_source:
-								delete_source_file(filePath)
+						elif filePath.endswith('.xcz'):
+							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
+								continue
+						decompress(filePath, args.output)
+						if args.rm_source:
+							delete_source_file(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -144,11 +148,8 @@ def main():
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
-						if filePath.endswith('.nsp') or filePath.endswith('.nsz'):
-							if filePath.endswith('.nsp'):
-								print("[VERIFY NSP] {0}".format(i))
-							if filePath.endswith('.nsz'):
-								print("[VERIFY NSZ] {0}".format(i))
+						if isGame(filePath):
+							print("[VERIFY {0}] {1}".format(getExtensionName(filePath),i))
 							verify(filePath, False)
 					except KeyboardInterrupt:
 						raise
@@ -172,6 +173,8 @@ def main():
 			Print.info(e["error"])
 
 	Print.info('Done!')
+	
+
 
 if __name__ == '__main__':
 	freeze_support()

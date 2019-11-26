@@ -3,35 +3,33 @@ from pathlib import Path
 from hashlib import sha256
 from nut import Print, aes128
 from zstandard import ZstdDecompressor
-from Fs import factory, Type, Pfs0, Nca
+from Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
+from GameType import *
 import Header, BlockDecompressorReader, FileExistingChecks
 
 def decompress(filePath, outputDir = None):
-	__decompress(filePath, outputDir, True, False)
+	if filePath.endswith('.nsz'):
+		__decompressNsz(filePath, outputDir, True, False)
+	elif filePath.endswith('.xcz'):
+		__decompressXcz(filePath, outputDir, True, False)
 
 def verify(filePath, raiseVerificationException):
-	__decompress(filePath, None, False, raiseVerificationException)
+	if isNspNsz(filePath):
+		__decompressNsz(filePath, None, False, raiseVerificationException)
+	elif isXciXcz(filePath):
+		__decompressXcz(filePath, None, False, raiseVerificationException)
 
-def __decompress(filePath, outputDir = None, write = True, raiseVerificationException = False):
+def __decompressContainer(readContainer, writeContainer, fileHashes, write = True, raiseVerificationException = False):
 	ncaHeaderSize = 0x4000
 	CHUNK_SZ = 0x100000
-	if write:
-		nspPath = str(Path(filePath[0:-1] + 'p') if outputDir == None else Path(outputDir).joinpath(Path(filePath[0:-1] + 'p').name).resolve(strict=False))
-		Print.info('decompressing %s -> %s' % (filePath, nspPath))
-		newNsp = Pfs0.Pfs0Stream(nspPath)
-	fileHashes = FileExistingChecks.ExtractHashes(filePath)
-	filePath = str(Path(filePath).resolve())
-	container = factory(filePath)
-	container.open(filePath, 'rb')
-
-	for nspf in container:
+	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 			Print.info('skipping delta fragment')
 			continue
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
 			if write:
-				f = newNsp.add(nspf._path, nspf.size)
+				f = writeContainer.add(nspf._path, nspf.size)
 			hash = sha256()
 			nspf.seek(0)
 			while not nspf.eof():
@@ -49,9 +47,9 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 			elif not write:
 				Print.info('[EXISTS]     {0}'.format(nspf._path))
 			continue
-		newFileName = nspf._path[0:-1] + 'a'
+		newFileName = getBasename(nspf._path) + '.nca'
 		if write:
-			f = newNsp.add(newFileName, nspf.size)
+			f = writeContainer.add(newFileName, nspf.size)
 			start = f.tell()
 		blockID = 0
 		nspf.seek(0)
@@ -115,9 +113,47 @@ def __decompress(filePath, outputDir = None, write = True, raiseVerificationExce
 		if write:
 			end = f.tell()
 			written = (end - start)
-			newNsp.resize(newFileName, written)
+			writeContainer.resize(newFileName, written)
 		continue
+		
 
+
+def __decompressNsz(filePath, outputDir = None, write = True, raiseVerificationException = False):
+	fileHashes = FileExistingChecks.ExtractHashes(filePath)
+	filePath = str(Path(filePath).resolve())
+	container = factory(filePath)
+	container.open(filePath, 'rb')
+	
 	if write:
-		newNsp.close()
-		container.close()
+		filename = changeExtension(filePath, '.nsp')
+		outPath = str(filename) if outputDir == None else Path(outputDir).joinpath(filename).name.resolve(strict=False)
+		Print.info('decompressing %s -> %s' % (filePath, outPath))
+		newNsp = Pfs0.Pfs0Stream(outPath)
+		with Pfs0.Pfs0Stream(newNsp) as nsp:
+			__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException)
+	else:
+		__decompressContainer(container, None, fileHashes, write, raiseVerificationException)
+
+	container.close()
+
+
+def __decompressXcz(filePath, outputDir = None, write = True, raiseVerificationException = False):
+	fileHashes = FileExistingChecks.ExtractHashes(filePath)
+	filePath = str(Path(filePath).resolve())
+	container = factory(filePath)
+	container.open(filePath, 'rb')
+	secureIn = container.hfs0['secure']
+	
+	if write:
+		filename = changeExtension(filePath, '.xci')
+		outPath = str(filename) if outputDir == None else Path(outputDir).joinpath(filename).name.resolve(strict=False)
+		Print.info('decompressing %s -> %s' % (filePath, outPath))
+		with Xci.XciStream(outPath, originalXcipath = filePath) as xci: # need filepath to copy XCI container settings
+			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
+				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException)
+				xci.hfs0.resize('secure', secureOut.actualSize)
+	else:
+		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException)
+
+	container.close()
+

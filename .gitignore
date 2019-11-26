@@ -1,5 +1,6 @@
 *.pyc
 *.nsp
+*.xci
 *.nca
 *.tik
 *.cert
@@ -19,3 +20,6 @@ nsz.egg-info/
 nsz.build/
 nsz.dist/
 nsz/gui/gui.ini
+normal
+secure
+update

@@ -4,12 +4,15 @@ from os import scandir, remove
 from pathlib import Path
 from re import search
 from nut import Print
+from GameType import *
 
 def ExtractHashes(gamePath):
 	fileHashes = set()
 	gamePath = str(Path(gamePath).resolve())
 	container = factory(gamePath)
 	container.open(gamePath, 'rb')
+	if isXciXcz(gamePath):
+		container = container.hfs0['secure']
 	try:
 		for nspf in container:
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.META:
@@ -38,7 +41,10 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 		return None
 	gamePath = str(Path(gamePath).resolve())
 	container = factory(gamePath)
+	print(gamePath)
 	container.open(gamePath, 'rb')
+	if isXciXcz(gamePath):
+		container = container.hfs0['secure']
 	try:
 		for nspf in container:
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.META:
