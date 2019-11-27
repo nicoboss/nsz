@@ -21,5 +21,6 @@ nsz.build/
 nsz.dist/
 nsz/gui/gui.ini
 normal
-secure
+logo
 update
+secure

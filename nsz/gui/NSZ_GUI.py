@@ -40,6 +40,7 @@ class GUI(App):
 		'Settings', {
 			'level': 18,
 			'block': False,
+			'solid': False,
 			'bs': 20,
 			'verify': False,
 		})
@@ -88,6 +89,7 @@ class arguments:
 		self.create = rootWidget.create
 		self.level = int(config.get('Settings', 'level'))
 		self.block = config.get('Settings', 'block')
+		self.solid = config.get('Settings', 'solid')
 		self.bs = int(config.get('Settings', 'bs'))
 		self.verify = config.get('Settings', 'verify')
 		self.threads = int(config.get('Advanced', 'threads'))

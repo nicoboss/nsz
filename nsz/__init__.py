@@ -23,7 +23,7 @@ from GameType import *
 def compress(filePath, args):
 	compressionLevel = 18 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
-	if args.block:
+	if filePath.endswith(".xci") and not args.solid or args.block:
 		outFile = blockCompress(filePath, compressionLevel, args.bs, args.output, threadsToUse)
 	else:
 		if args.threads < 0:

@@ -8,10 +8,17 @@
 	},
 	{
 		"type": "bool",
-		"title": "Use Blockcompression",
-		"desc": "Uses highly multithreaded block compression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost",
+		"title": "[NSZ] Use Block Compression",
+		"desc": "NSZ: Use block compression instead of solid compression. Block compression allows highly multithreaded compression/decompression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Block compression is the default option for XCZ.",
 		"section": "Settings",
 		"key": "block"
+	},
+	{
+		"type": "bool",
+		"title": "[XCZ] Use Solid Compression",
+		"desc": "XCZ: Use solid instead of block compression. XCZ produced that way will never be mountable. Solid compression is the default option for NSZ.",
+		"section": "Settings",
+		"key": "solid"
 	},
 	{
 		"type": "numeric",

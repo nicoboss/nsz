@@ -121,7 +121,7 @@ def solidCompressNsp(filePath, compressionLevel = 18, outputDir = None, threads 
 	if not outputDir == None:
 		nszPath = Path(outputDir).joinpath(nszPath).resolve(strict=False)
 
-	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
 	try:
 		with Pfs0.Pfs0Stream(nszPath) as nsp:
@@ -145,10 +145,9 @@ def solidCompressXci(filePath, compressionLevel = 18, outputDir = None, threads 
 	if not outputDir == None:
 		xczPath = Path(outputDir).joinpath(xczPath).resolve(strict=False)
 
-	Print.info('compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
+	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	
 	try:
-		print(filePath)
 		with Xci.XciStream(xczPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
 				processContainer(secureIn, secureOut, compressionLevel, threads)
