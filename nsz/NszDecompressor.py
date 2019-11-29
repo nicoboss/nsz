@@ -128,8 +128,7 @@ def __decompressNsz(filePath, outputDir = None, write = True, raiseVerificationE
 		filename = changeExtension(filePath, '.nsp')
 		outPath = str(filename) if outputDir == None else Path(outputDir).joinpath(filename).name.resolve(strict=False)
 		Print.info('decompressing %s -> %s' % (filePath, outPath))
-		newNsp = Pfs0.Pfs0Stream(outPath)
-		with Pfs0.Pfs0Stream(newNsp) as nsp:
+		with Pfs0.Pfs0Stream(outPath) as nsp:
 			__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException)
 	else:
 		__decompressContainer(container, None, fileHashes, write, raiseVerificationException)
