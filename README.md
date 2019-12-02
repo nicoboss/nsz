@@ -1,8 +1,8 @@
 ## How to install:
 ### Put dumped prod.keys to %userprofile%/.switch, install python, execute "pip install nsz" and use "nsz" like every other cmd command.
-or just use the windows portable build.<br/>
-
 Python 3.6 or later is required. Python 3.8 and later requires Buildtools for Visual Studio 2019 from https://visualstudio.microsoft.com/de/downloads/ on Windows.
+
+###or just use windows portable builds.<br/>
 
 To manually install dependencies use:<br/>
 pip install -r requirements.txt
