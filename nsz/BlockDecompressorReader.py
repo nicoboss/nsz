@@ -38,13 +38,17 @@ class BlockDecompressorReader:
 
 	def read(self, length):
 		buffer = b""
-		while(len(buffer) < length):
-			blockID = self.Position//self.BlockSize
-			blockOffset = self.Position % self.BlockSize
+		blockOffset = self.Position%self.BlockSize
+		blockID = self.Position//self.BlockSize
+
+		while(len(buffer) - blockOffset < length):
 			if blockID >= len(self.CompressedBlockOffsetList):
 				break
-			newData = self.__decompressBlock(blockID)[blockOffset:blockOffset+length]
-			self.Position += len(newData)
-			buffer += newData
+
+			buffer += self.__decompressBlock(blockID)
 			blockID += 1
+
+		buffer = buffer[blockOffset:blockOffset+length]
+		self.Position += length
+
 		return buffer
