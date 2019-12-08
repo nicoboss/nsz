@@ -9,6 +9,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
 from nsz.gui.GuiPath import *
+from nsz.gui.SettingScrollOptions import *
 import os
 
 class GUI(App):
@@ -41,7 +42,7 @@ class GUI(App):
 			'level': 18,
 			'block': False,
 			'solid': False,
-			'bs': 20,
+			'bs': "1 MB (default)",
 			'verify': False,
 		})
 		config.setdefaults('Advanced', {
@@ -56,6 +57,7 @@ class GUI(App):
 		})
 
 	def build_settings(self, settings):
+		settings.register_type('scrolloptions', SettingScrollOptions)
 		settings.add_json_panel('Settings', self.config, getGuiPath('json/settings_basic.json'))
 		settings.add_json_panel('Advanced', self.config, getGuiPath('json/settings_advanced.json'))
 		settings.add_json_panel('Tools', self.config, getGuiPath('json/settings_tools.json'))
@@ -80,6 +82,17 @@ class MySettingsWithTabbedPanel(SettingsWithTabbedPanel):
 
 class arguments:
 	def __init__(self, config, rootWidget):
+		bs_scrolloptions = {
+			"64 KB": 16,
+			"128 KB": 17,
+			"256 KB": 18,
+			"512 KB": 19,
+			"1 MB (default)": 20,
+			"2 MB": 21,
+			"4 MB": 22,
+			"8 MB": 23,
+			"16 MB": 24,
+		}
 		self.file = rootWidget.pathlist
 		self.C = rootWidget.C
 		self.D = rootWidget.D
@@ -90,7 +103,7 @@ class arguments:
 		self.level = int(config.get('Settings', 'level'))
 		self.block = config.get('Settings', 'block')
 		self.solid = config.get('Settings', 'solid')
-		self.bs = int(config.get('Settings', 'bs'))
+		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
 		self.verify = config.get('Settings', 'verify')
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.parseCnmt = config.get('Advanced', 'parseCnmt')
