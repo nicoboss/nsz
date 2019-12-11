@@ -39,7 +39,7 @@ class GUI(App):
 	def build_config(self, config):
 		config.setdefaults(
 		'Settings', {
-			'level': 18,
+			'level': '[Lv. 22] Ultra (default)',
 			'block': False,
 			'solid': False,
 			'bs': "1 MB (default)",
@@ -82,6 +82,14 @@ class MySettingsWithTabbedPanel(SettingsWithTabbedPanel):
 
 class arguments:
 	def __init__(self, config, rootWidget):
+		level_scrolloptions = {
+			"[Lv. 01] Debugging": 0,
+			"[Lv. 08] Faster": 8,
+			"[Lv. 12] Fast": 12,
+			"[Lv. 14] Normal": 14,
+			"[Lv. 18] Great": 18,
+			"[Lv. 22] Ultra (default)": 22,
+		}
 		bs_scrolloptions = {
 			"64 KB": 16,
 			"128 KB": 17,
@@ -100,7 +108,7 @@ class arguments:
 		self.info = rootWidget.info
 		self.extract = rootWidget.extract
 		self.create = rootWidget.create
-		self.level = int(config.get('Settings', 'level'))
+		self.level = level_scrolloptions.get(config.get('Settings', 'level'), 22)
 		self.block = config.get('Settings', 'block')
 		self.solid = config.get('Settings', 'solid')
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
