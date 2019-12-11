@@ -83,11 +83,10 @@ This tool was only tested with base games, updates and DLCs.<br/>
 ## Usage
 ```
 nsz.py --help
-usage: __init__.py [-h] [-C] [-D] [-l LEVEL] [-B] [-s BS] [-V] [-p]
-                   [-t THREADS] [-o [OUTPUT]] [-w] [-r] [--rm-source]
-                   [-i INFO] [--depth DEPTH] [-x EXTRACT [EXTRACT ...]]
-                   [-c CREATE]
-                   [file [file ...]]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p]
+              [-t THREADS] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i INFO]
+              [--depth DEPTH] [-x EXTRACT [EXTRACT ...]] [-c CREATE]
+              [file [file ...]]
 
 positional arguments:
   file
@@ -98,11 +97,17 @@ optional arguments:
   -D                    Decompress NSZ
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
-                        and compression ratio. Default: 18, Max: 22
-  -B, --block           Uses highly multithreaded block compression with
-                        random read access allowing compressed games to be
-                        played without decompression in the future however
-                        this comes with a low compression ratio cost
+                        and compression ratio. Default: 22, Max: 22
+  -B, --block           NSZ: Use block compression instead of solid
+                        compression. Block compression allows highly
+                        multithreaded compression/decompression with random
+                        read access allowing compressed games to be played
+                        without decompression in the future however this comes
+                        with a low compression ratio cost. Block compression
+                        is the default option for XCZ.
+  -S, --solid           XCZ: Use solid instead of block compression. XCZ
+                        produced that way will never be mountable. Solid
+                        compression is the default option for NSZ.
   -s BS, --bs BS        Block Size for random read access 2^x while x between
                         14 and 32. Default: 20 => 1 MB
   -V, --verify          Verifies files after compression raising an unhandled
