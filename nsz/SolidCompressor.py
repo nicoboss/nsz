@@ -11,7 +11,7 @@ from GameType import *
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
 
-def solidCompress(filePath, compressionLevel = 18, outputDir = None, threads = -1):
+def solidCompress(filePath, compressionLevel = 22, outputDir = None, threads = -1):
 	if filePath.endswith('.nsp'):
 		return solidCompressNsp(filePath, compressionLevel, outputDir, threads)
 	elif filePath.endswith('.xci'):
@@ -113,7 +113,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel = 18, outputDir = None, threads = -1):
+def solidCompressNsp(filePath, compressionLevel = 22, outputDir = None, threads = -1):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
@@ -136,7 +136,7 @@ def solidCompressNsp(filePath, compressionLevel = 18, outputDir = None, threads 
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel = 18, outputDir = None, threads = -1):
+def solidCompressXci(filePath, compressionLevel = 22, outputDir = None, threads = -1):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')

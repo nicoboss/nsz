@@ -24,7 +24,7 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		compressed = ZstdCompressor(level=compressionLevel).compress(buffer)
 		out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
-def blockCompress(filePath, compressionLevel = 18, blockSizeExponent = 20, outputDir = None, threads = -1):
+def blockCompress(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
 	if filePath.endswith('.nsp'):
 		return blockCompressNsp(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
 	elif filePath.endswith('.xci'):
@@ -159,7 +159,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 			f.write(buffer)
 
 
-def blockCompressNsp(filePath, compressionLevel = 18, blockSizeExponent = 20, outputDir = None, threads = -1):
+def blockCompressNsp(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
@@ -182,7 +182,7 @@ def blockCompressNsp(filePath, compressionLevel = 18, blockSizeExponent = 20, ou
 	container.close()
 	return nszPath
 	
-def blockCompressXci(filePath, compressionLevel = 18, blockSizeExponent = 20, outputDir = None, threads = -1):
+def blockCompressXci(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
