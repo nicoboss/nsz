@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from sys import argv
+from pathlib import Path
+from hashlib import sha256
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from binascii import hexlify as hx
@@ -61,75 +63,72 @@ class Block:
 		self.numberOfBlocks = readInt32(f)
 		self.decompressedSize = readInt64(f)
 		self.compressedBlockSizeList = [readInt32(f) for _ in range(self.numberOfBlocks)]
+		
+
+def __decompressNcz(nspf, f):
+	ncaHeaderSize = 0x4000
+	blockID = 0
+	nspf.seek(0)
+	header = nspf.read(ncaHeaderSize)
+	start = f.tell()
+
+	magic = nspf.read(8)
+	if not magic == b'NCZSECTN':
+		raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
+	sectionCount = readInt64(nspf)
+	sections = [Section(nspf) for _ in range(sectionCount)]
+	nca_size = ncaHeaderSize
+	for i in range(sectionCount):
+		nca_size += sections[i].size
+	pos = nspf.tell()
+	blockMagic = nspf.read(8)
+	nspf.seek(pos)
+	useBlockCompression = blockMagic == b'NCZBLOCK'
+	blockSize = -1
+	if useBlockCompression:
+		BlockHeader = Block(nspf)
+		blockDecompressorReader = BlockDecompressorReader.BlockDecompressorReader(nspf, BlockHeader)
+	pos = nspf.tell()
+	if not useBlockCompression:
+		decompressor = ZstdDecompressor().stream_reader(nspf)
+	hash = sha256()
+	f.write(header)
+	hash.update(header)
+
+	for s in sections:
+		i = s.offset
+		crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
+		end = s.offset + s.size
+		while i < end:
+			crypto.seek(i)
+			chunkSz = 0x10000 if end - i > 0x10000 else end - i
+			if useBlockCompression:
+				inputChunk = blockDecompressorReader.read(chunkSz)
+			else:
+				inputChunk = decompressor.read(chunkSz)
+			if not len(inputChunk):
+				break
+			if not useBlockCompression:
+				decompressor.flush()
+			if s.cryptoType in (3, 4):
+				inputChunk = crypto.encrypt(inputChunk)
+			f.write(inputChunk)
+			hash.update(inputChunk)
+			i += len(inputChunk)
+
+	hexHash = hash.hexdigest()
+	end = f.tell()
+	written = (end - start)
+	return (written, hexHash)
+
 
 if __name__ == '__main__':
-	CHUNK_SZ = 16384
-	with open(argv[1], 'rb') as f:
-		header = f.read(0x4000)
-		magic = f.read(8)
-		if not magic == b'NCZSECTN':
-			raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
-		sectionCount = readInt64(f)
-		sections = [Section(f) for _ in range(sectionCount)]
-		pos = f.tell()
-		blockMagic = f.read(8)
-		f.seek(pos)
-		useBlockCompression = blockMagic == b'NCZBLOCK'
-		if useBlockCompression:
-			BlockHeader = Block(f)
-			if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
-				raise ValueError("Corrupted NCZBLOCK header: Block size must be between 14 and 32")
-			blockSize = 2**BlockHeader.blockSizeExponent
-		pos = f.tell()
-		with open(argv[2], 'wb+') as o:
-			o.write(header)
-			decompressedBytes = 0
-			blockID = 0
-			dctx = ZstdDecompressor()
-			if not useBlockCompression:
-				decompressor = dctx.stream_reader(f)
-			while True:
-				if useBlockCompression:
-					if BlockHeader.compressedBlockSizeList[blockID] < blockSize:
-						decompressor = dctx.stream_reader(f)
-						inputChunk = decompressor.read(blockSize)
-						decompressedBytes += len(inputChunk)
-						o.write(inputChunk)
-						decompressor.flush()
-						o.flush()
-						print('Block', str(blockID+1)+'/'+str(BlockHeader.numberOfBlocks))
-					else:
-						o.write(f.read(blockSize))
-						decompressedBytes += blockSize
-					pos += BlockHeader.compressedBlockSizeList[blockID]
-					f.seek(pos)
-					blockID += 1
-					if(blockID >= len(BlockHeader.compressedBlockSizeList)):
-						break
-				else:
-					inputChunk = decompressor.read(CHUNK_SZ)
-					if not inputChunk:
-						break
-					o.write(inputChunk)
-			if useBlockCompression and not decompressedBytes == BlockHeader.decompressedSize:
-					raise EOFError("Something went wrong! decompressedBytes != BlockHeader.decompressedSize: " + str(decompressedBytes) + " vs. " + str(BlockHeader.decompressedSize))
-			
-			for section in sections:
-				if section.cryptoType == 1: #plain text
-					continue
-				if section.cryptoType not in (3, 4):
-					raise IOError('unknown crypto type: %d' % section.cryptoType)
-				print('%x - %d bytes, type %d, key: %s, iv: %s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoKey)), str(hx(section.cryptoCounter))))
-				i = section.offset
-				crypto = AESCTR(section.cryptoKey, section.cryptoCounter)
-				end = section.offset + section.size
-				while i < end:
-					o.seek(i)
-					crypto.seek(i)
-					chunkSz = 0x10000 if end - i > 0x10000 else end - i
-					buf = o.read(chunkSz)
-					if not len(buf):
-						break
-					o.seek(i)
-					o.write(crypto.encrypt(buf))
-					i += chunkSz
+	with open(argv[1], 'rb') as nspf:
+		with open(argv[2], 'wb+') as f:
+			written, hexHash = __decompressNcz(nspf, f)
+			fileNameHash = Path(argv[1]).stem.lower()
+			if hexHash[:32] == fileNameHash:
+				print('[VERIFIED]   {0}'.format(Path(argv[2]).name))
+			else:
+				print('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]))
+	print("Done!")
