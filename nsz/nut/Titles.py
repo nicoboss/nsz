@@ -73,6 +73,6 @@ def keys(region = None, language = None):
 	if region:
 		return regionTitles[region][language].keys()
 
-	return titles.keys()
+	return titles.keys() if titles != None else {}
 
 
