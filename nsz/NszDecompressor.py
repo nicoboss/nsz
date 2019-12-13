@@ -21,7 +21,6 @@ def decompress(filePath, outputDir = None):
 		with open(outPath, 'wb') as outFile:
 			written, hexHash = __decompressNcz(container, outFile)
 		container.close()
-		print(hexHash)
 		fileNameHash = Path(filePath).stem.lower()
 		if hexHash[:32] == fileNameHash:
 			Print.error('[VERIFIED]   {0}'.format(filename))
