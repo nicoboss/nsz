@@ -20,20 +20,20 @@ from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_s
 from ParseArguments import *
 from GameType import *
 
-def compress(filePath, args):
+def compress(filePath, outputDir, args):
 	compressionLevel = 22 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if filePath.endswith(".xci") and not args.solid or args.block:
-		outFile = blockCompress(filePath, compressionLevel, args.bs, args.output, threadsToUse)
+		outFile = blockCompress(filePath, compressionLevel, args.bs, outputDir, threadsToUse)
 	else:
 		if args.threads < 0:
 			threadsToUse = 1
-		outFile = solidCompress(filePath, compressionLevel, args.output, threadsToUse)
+		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse)
 	if args.verify:
 		print("[VERIFY NSZ] {0}".format(outFile))
 		verify(outFile, True)
 
-def decompress(filePath, outputDir = None):
+def decompress(filePath, outputDir):
 	NszDecompress(filePath, outputDir)
 
 def verify(filePath, raiseVerificationException):
@@ -67,8 +67,16 @@ def main():
 				print("Done!")
 				return
 		
-		outfolder = str(Path(args.output)) if args.output else str(Path('.'))
-
+		if args.output:
+			outfolderToPharse = args.output
+			if not outfolderToPharse.endswith('/') and not outfolderToPharse.endswith('\\'):
+				outfolderToPharse += "/"
+			if not Path(outfolderToPharse).is_dir():
+				Print.error('Error: Output directory "{0}" does not exist!'.format(args.output))
+				return
+		outfolder = str(Path(outfolderToPharse)) if args.output else str(Path('.'))
+		
+			
 		Print.info('')
 		Print.info('             NSZ v2.1   ,;:;;,')
 		Print.info('                       ;;;;;')
@@ -105,7 +113,7 @@ def main():
 						elif filePath.endswith('.xci'):
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-						compress(filePath, args)
+						compress(filePath, outfolder, args)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:
@@ -121,7 +129,7 @@ def main():
 			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xci")
 			for i in args.file:
 				for filePath in expandFiles(i):
-					if not isCompressedGame(filePath):
+					if not isCompressedGame(filePath) and not isCompressedGameFile(filePath):
 						continue
 					try:
 						if filePath.endswith('.nsz'):
@@ -130,7 +138,13 @@ def main():
 						elif filePath.endswith('.xcz'):
 							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-						decompress(filePath, args.output)
+						elif filePath.endswith('.ncz'):
+							outfile = changeExtension(Path(outfolder).joinpath(Path(filePath).name), ".nca")
+							if not args.overwrite and Path(outfile).is_file():
+								Print.info('{0} with the same file name already exists in the output directory.\n'\
+								'If you want to overwrite it use the -w parameter!'.format(Path(outfile).name))
+								continue
+						decompress(filePath, outfolder)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:
@@ -166,7 +180,7 @@ def main():
 		Print.info('nut exception: ' + str(e))
 		raise
 	if err:
-		Print.info('\033[93m\033[1mErrors:')
+		Print.info('\n\033[93m\033[1mSummary of errors which occurred while processing files:')
 		
 		for e in err:
 			Print.info('\033[0mError when processing %s' % e["filename"] )

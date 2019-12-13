@@ -9,6 +9,9 @@ def isUncompressedGame(filePath):
 def isCompressedGame(filePath):
 	return filePath.endswith('.nsz') or filePath.endswith('.xcz')
 
+def isCompressedGameFile(filePath):
+	return filePath.endswith('.ncz')
+
 def isNspNsz(filePath):
 	return filePath.endswith('.nsp') or filePath.endswith('.nsz')
 
