@@ -127,7 +127,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 	return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
 
 def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
-	outFile = (Path(filePath).suffix[0] + targetFileExtension).lower()
+	outFile = str(Path(changeExtension(filePath, targetFileExtension)).name).lower()
 	filePath = filesAtTarget.get(outFile)
 	if filePath == None:
 		return True
