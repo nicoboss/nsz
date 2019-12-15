@@ -165,7 +165,7 @@ def blockCompressNsp(filePath, compressionLevel = 22, blockSizeExponent = 20, ou
 	container.open(filePath, 'rb')
 	nszPath = changeExtension(filePath, '.nsz')
 	if not outputDir == None:
-		nszPath = Path(outputDir).joinpath(nszPath).resolve(strict=False)
+		nszPath = str(Path(outputDir).joinpath(nszPath).resolve(strict=False))
 
 	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -189,7 +189,7 @@ def blockCompressXci(filePath, compressionLevel = 22, blockSizeExponent = 20, ou
 	secureIn = container.hfs0['secure']
 	xczPath = changeExtension(filePath, '.xcz')
 	if not outputDir == None:
-		xczPath = Path(outputDir).joinpath(xczPath).resolve(strict=False)
+		xczPath = str(Path(outputDir).joinpath(xczPath).resolve(strict=False))
 
 	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	
