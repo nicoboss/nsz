@@ -1,0 +1,7 @@
+global-exclude *
+global-include *.py
+include nsz/gui/json/*.json
+include nsz/gui/layout/*.kv
+include nsz/gui/shaders/*.shader
+include nsz/gui/txt/*.txt
+include nsz/gui/ico/*.ico

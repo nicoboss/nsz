@@ -15,7 +15,7 @@ setuptools.setup(
 	long_description=long_description,
 	long_description_content_type="text/markdown",
 	url="https://github.com/nicoboss/nsz",
-	packages=['nsz', 'nsz/Fs', 'nsz/nut'],
+	packages=['nsz', 'nsz/Fs', 'nsz/nut', 'nsz/gui'],
 	classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",
@@ -23,7 +23,8 @@ setuptools.setup(
 	],
 	install_requires=['pycryptodome>=3.9.0', 'zstandard', 'colorama', 'tqdm', 'kivy_deps.sdl2==0.1.22', 'kivy_deps.glew==0.1.12', 'kivy==1.11.1'],
 	entry_points = {'console_scripts': ['nsz = nsz:main']},
-	keywords = ['nsz', 'xcz', 'ncz', 'nsp', 'xci'],
+	keywords = ['nsz', 'xcz', 'ncz', 'nsp', 'xci', 'nca', 'Switch'],
 	python_requires='>=3.6',
 	zip_safe=False,
+	include_package_data=True,
  )
