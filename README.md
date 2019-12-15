@@ -93,8 +93,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -C                    Compress NSP
-  -D                    Decompress NSZ
+  -C                    Compress NSP/XCI
+  -D                    Decompress NSZ/XCZ/NCZ
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
                         and compression ratio. Default: 22, Max: 22
