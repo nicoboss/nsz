@@ -25,7 +25,8 @@ class GUI(App):
 	
 	def build(self):
 		Builder.load_file(getGuiPath('layout/GUI.kv'))
-		self.title = 'NSZ GUI'
+		self.title = 'NSZ GUI 3.0'
+		self.icon = 'nsZip.png'
 		root = FloatLayout()
 		with open(getGuiPath('shaders/plasma.shader')) as stream:
 			plasma_shader = stream.read()
@@ -102,23 +103,23 @@ class arguments:
 			"16 MB": 24,
 		}
 		self.file = rootWidget.pathlist
-		self.C = rootWidget.C
-		self.D = rootWidget.D
+		self.C = True if rootWidget.C is True else None
+		self.D = True if rootWidget.D is True else None
 		self.output = rootWidget.output
-		self.info = rootWidget.info
-		self.extract = rootWidget.extract
-		self.create = rootWidget.create
+		self.info = True if rootWidget.info is True else None
+		self.extract = True if rootWidget.extract is True else None
+		self.create = True if rootWidget.create is True else None
 		self.level = level_scrolloptions.get(config.get('Settings', 'level'), 22)
-		self.block = config.get('Settings', 'block')
-		self.solid = config.get('Settings', 'solid')
+		self.block = True if config.get('Settings', 'block') is True else None
+		self.solid = True if config.get('Settings', 'solid') is True else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
-		self.verify = config.get('Settings', 'verify')
+		self.verify = True if config.get('Settings', 'verify') is True else None
 		self.threads = int(config.get('Advanced', 'threads'))
-		self.parseCnmt = config.get('Advanced', 'parseCnmt')
-		self.overwrite = config.get('Advanced', 'overwrite')
-		self.rm_old_version = config.get('Advanced', 'rm_old_version')
-		self.rm_source = config.get('Advanced', 'rm_source')
-		self.depth = config.get('Tools', 'depth')
+		self.parseCnmt = True if config.get('Advanced', 'parseCnmt') is True else None
+		self.overwrite = True if config.get('Advanced', 'overwrite') is True else None
+		self.rm_old_version = True if config.get('Advanced', 'rm_old_version') is True else None
+		self.rm_source = True if config.get('Advanced', 'rm_source') is True else None
+		self.depth = int(config.get('Tools', 'depth'))
 
 
 if __name__ == '__main__':
