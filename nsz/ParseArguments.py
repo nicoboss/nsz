@@ -20,7 +20,7 @@ class ParseArguments:
 		parser.add_argument('--rm-source', action='store_true', default=False, help='Deletes source file/s after compressing/decompressing. It\'s recommended to only use this in combination with --verify')
 		parser.add_argument('-i', '--info', help='Show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
-		parser.add_argument('-x', '--extract', nargs='+', help='extract / unpack a NSP')
+		parser.add_argument('-x', '--extract', action="store_true", help='extract / unpack a NSP')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 	
 		args = parser.parse_args()

@@ -87,13 +87,17 @@ def main():
 		Print.info('               `"_(  _/="`')
 		Print.info('                `"\'')
 		Print.info('')
+		
 		if args.extract:
-			for filePath in args.extract:
-				f = factory(filePath)
-				f.open(filePath, 'rb')
-				dir = Path(Path(filePath).name).suffix[0]
-				f.unpack(dir)
-				f.close()
+			Print.info(args.file)
+			for i in args.file:
+				for filePath in expandFiles(i):
+					Print.info(filePath)
+					f = factory(filePath)
+					f.open(filePath, 'rb')
+					dir = Path(Path(filePath).name).suffix[0]
+					f.unpack(dir)
+					f.close()
 		if args.create:
 			Print.info('creating ' + args.create)
 			nsp = Nsp.Nsp(None, None)
@@ -155,15 +159,19 @@ def main():
 						print_exc()
 
 		if args.info:
-			f = factory(args.info)
-			f.open(args.info, 'r+b')
-			f.printInfo(args.depth+1)
+			for i in args.file:
+				for filePath in expandFiles(i):
+					Print.info(filePath)
+					f = factory(filePath)
+					f.open(filePath, 'r+b')
+					f.printInfo(args.depth+1)
+					f.close()
 		if args.verify and not args.C and not args.D:
 			for i in args.file:
 				for filePath in expandFiles(i):
 					try:
 						if isGame(filePath):
-							print("[VERIFY {0}] {1}".format(getExtensionName(filePath),i))
+							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath),i))
 							verify(filePath, False)
 					except KeyboardInterrupt:
 						raise
