@@ -31,7 +31,8 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True,
+          icon='C:\\Users\\Administrator\\Documents\\nsz\\nsz\\nsZip.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
