@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  name: default
+  name: Default
   #vmImage: 'windows-latest'
 strategy:
   matrix:
