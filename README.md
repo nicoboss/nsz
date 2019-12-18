@@ -85,7 +85,7 @@ This tool was only tested with base games, updates and DLCs.<br/>
 nsz.py --help
 usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p]
               [-t THREADS] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i INFO]
-              [--depth DEPTH] [-x EXTRACT [EXTRACT ...]] [-c CREATE]
+              [--depth DEPTH] [-x] [-c CREATE]
               [file [file ...]]
 
 positional arguments:
@@ -98,16 +98,17 @@ optional arguments:
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
                         and compression ratio. Default: 22, Max: 22
-  -B, --block           NSZ: Use block compression instead of solid
-                        compression. Block compression allows highly
-                        multithreaded compression/decompression with random
+  -B, --block           Use block compression option. This mode allows highly
+                        multi-threaded compression/decompression with random
                         read access allowing compressed games to be played
                         without decompression in the future however this comes
-                        with a low compression ratio cost. Block compression
-                        is the default option for XCZ.
-  -S, --solid           XCZ: Use solid instead of block compression. XCZ
-                        produced that way will never be mountable. Solid
-                        compression is the default option for NSZ.
+                        with a slightly lower compression ratio cost. This is
+                        the default option for XCZ.
+  -S, --solid           Use solid compression option. Slightly higher
+                        compression ratio but won't allow for random read
+                        access. File compressed this way will never be
+                        mountable (have to be installed or decompressed first
+                        to run). This is the default option for NSZ.
   -s BS, --bs BS        Block Size for random read access 2^x while x between
                         14 and 32. Default: 20 => 1 MB
   -V, --verify          Verifies files after compression raising an unhandled
@@ -132,8 +133,7 @@ optional arguments:
                         --verify
   -i INFO, --info INFO  Show info about title or file
   --depth DEPTH         Max depth for file info and extraction
-  -x EXTRACT [EXTRACT ...], --extract EXTRACT [EXTRACT ...]
-                        extract / unpack a NSP
+  -x, --extract         extract / unpack a NSP
   -c CREATE, --create CREATE
                         create / pack a NSP
 ```
