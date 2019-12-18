@@ -113,14 +113,11 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel = 22, outputDir = None, threads = -1):
+def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
 	nszPath = changeExtension(filePath, '.nsz')
-	nszFilename = Path(nszPath).name
-	if not outputDir == None:
-		nszPath = str(Path(outputDir).resolve().joinpath(nszFilename).resolve())
 
 	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -137,15 +134,12 @@ def solidCompressNsp(filePath, compressionLevel = 22, outputDir = None, threads 
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel = 22, outputDir = None, threads = -1):
+def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
 	secureIn = container.hfs0['secure']
 	xczPath = changeExtension(filePath, '.xcz')
-	xczFilename = Path(xczPath).name
-	if not outputDir == None:
-		xczPath = str(Path(outputDir).resolve().joinpath(xczFilename).resolve())
 
 	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	

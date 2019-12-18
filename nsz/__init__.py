@@ -74,9 +74,9 @@ def main():
 			if not Path(outfolderToPharse).is_dir():
 				Print.error('Error: Output directory "{0}" does not exist!'.format(args.output))
 				return
-		outfolder = str(Path(outfolderToPharse)) if args.output else str(Path('.'))
+		outfolder = str(Path(outfolderToPharse).resolve()) if args.output else str(Path('.').resolve())
 		
-			
+		
 		Print.info('')
 		Print.info('             NSZ v2.1   ,;:;;,')
 		Print.info('                       ;;;;;')
@@ -95,7 +95,7 @@ def main():
 					Print.info(filePath)
 					f = factory(filePath)
 					f.open(filePath, 'rb')
-					dir = Path(Path(filePath).name).suffix[0]
+					dir = str(Path(outfolder).joinpath(Path(filePath).stem))
 					f.unpack(dir)
 					f.close()
 		if args.create:
