@@ -10,6 +10,7 @@ from SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
 from Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
 from GameType import *
+#import sys
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 	while True:
@@ -22,6 +23,7 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		if buffer == 0:
 			return
 		compressed = ZstdCompressor(level=compressionLevel).compress(buffer)
+		#sys.stdout.write(str(len(compressed) - len(buffer)) + "\n")
 		out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
 def blockCompress(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
@@ -138,6 +140,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 						bar.update(len(buffer))
 				partitions[partNr].close()
 				partitions[partNr] = None
+				written = f.tell() - start
 				f.seek(blocksHeaderFilePos+24)
 				header = b""
 
@@ -146,7 +149,6 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 				f.write(header)
 				f.seek(0, 2) #Seek to end of file.
-				written = f.tell() - start
 				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 				writeContainer.resize(newFileName, written)
 				continue
