@@ -5,12 +5,13 @@ from pathlib import Path
 from re import search
 from nut import Print
 from GameType import *
+import os
 
 def ExtractHashes(gamePath):
 	fileHashes = set()
-	gamePath = str(Path(gamePath).resolve())
+	gamePath = gamePath.resolve()
 	container = factory(gamePath)
-	container.open(gamePath, 'rb')
+	container.open(str(gamePath), 'rb')
 	if isXciXcz(gamePath):
 		container = container.hfs0['secure']
 	try:
@@ -31,7 +32,7 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 	gameName = Path(gamePath).name
 	titleIdResult = search(r'0100[0-9A-Fa-f]{12}', gameName)
 	if titleIdResult:
-		titleId = titleIdResult.group()
+		titleId = titleIdResult.group().upper()
 	versionResult = search(r'\[v\d+\]', gameName)
 	if versionResult:
 		version = int(versionResult.group()[2:-1])
@@ -39,10 +40,9 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 		return(titleId, version)
 	elif not parseCnmt:
 		return None
-	gamePath = str(Path(gamePath).resolve())
+	gamePath = Path(gamePath).resolve()
 	container = factory(gamePath)
-	print(gamePath)
-	container.open(gamePath, 'rb')
+	container.open(str(gamePath), 'rb')
 	if isXciXcz(gamePath):
 		container = container.hfs0['secure']
 	try:
@@ -51,7 +51,7 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 				for section in nspf:
 					if isinstance(section, Pfs0.Pfs0):
 						Cnmt = section.getCnmt()
-						titleId = Cnmt.titleId
+						titleId = Cnmt.titleId.upper()
 						version = Cnmt.version
 	finally:
 		container.close()
@@ -62,20 +62,21 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 def CreateTargetDict(targetFolder, parseCnmt, extension):
 	filesAtTarget = {}
 	alreadyExists = {}
-	for file in scandir(targetFolder):
+	for file in scandir(str(targetFolder)):
 		try:
-			filePath = Path(targetFolder).joinpath(file)
-			if file.name.endswith(extension):
+			filePath = Path(targetFolder).joinpath(file.name)
+			filePath_str = str(filePath)
+			if filePath.suffix == extension:
 				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
-				filesAtTarget[file.name.lower()] = filePath
+				filesAtTarget[file.name.lower()] = filePath_str
 				(titleID, version) = ExtractTitleIDAndVersion(file, True)
 				titleIDEntry = alreadyExists.get(titleID)
 				if titleIDEntry == None:
-					titleIDEntry = {version: [filePath]}
+					titleIDEntry = {version: [filePath_str]}
 				elif not version in titleIDEntry:
-					titleIDEntry[version] = [filePath]
+					titleIDEntry[version] = [filePath_str]
 				else:
-					titleIDEntry[version].append(filePath)
+					titleIDEntry[version].append(filePath_str)
 				alreadyExists[titleID] = titleIDEntry
 				Print.info('=> {0} {1}'.format(titleID, version))
 		except BaseException as e:
@@ -93,36 +94,43 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 	(titleIDExtracted, versionExtracted) = extractedIdVersion
 	titleIDEntry = alreadyExists.get(titleIDExtracted)
 
-	if removeOld:
-		if titleIDEntry != None:
-			exitFlag = False
-			for versionEntry in titleIDEntry.keys():
-				print(versionEntry, versionExtracted)
-				if versionEntry < versionExtracted:
-					for delFilePath in titleIDEntry[versionEntry]:
-						Print.info('Delete outdated version: {0}'.format(delFilePath))
-						remove(delFilePath)
-						del filesAtTarget[Path(delFilePath).name.lower()]
-				else:
-					exitFlag = True
-			if exitFlag:
-				Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
-				'If you want to process it do not use --rm-old-version!'.format(Path(filePath).name))
-				return False
-
-	
-	if not titleIDEntry == None:
-		for versionEntry in titleIDEntry:
-			if versionEntry == titleIDEntry:
+	if titleIDEntry != None:
+		DuplicateEntriesToDelete = []
+		OutdatedEntriesToDelete = []
+		exitFlag = False
+		for versionEntry in titleIDEntry.keys():
+			if versionEntry == versionExtracted:
 				if overwrite:
-					for (fileName, filePath) in filesAtTarget: # NEEDS TO BE FIXED
-						Print.info('Delete duplicate: {0}'.format(filePath))
-						filesAtTarget.remove(Path(filePath).name.lower())
-						remove(filePath)
+					DuplicateEntriesToDelete.append(versionEntry)
 				else:
 					Print.info('{0} with the same ID and version already exists in the output directory.\n'\
-					'If you want to overwrite it use the -w parameter!'.format(Path(filePath).name))
+					'If you want to overwrite it use the -w parameter!'.format(titleIDEntry[versionEntry]))
 					return False
+			elif versionEntry < versionExtracted:
+				if removeOld:
+					if versionEntry == 0:
+						raise ValueError("rm-old-version: A titleID containing updates should never have any version v0 with the same titleID!")
+					OutdatedEntriesToDelete.append(versionEntry)
+			else: #versionEntry > versionExtracted
+				if removeOld:
+					exitFlag = True
+		if exitFlag:
+			Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
+			'If you want to process it do not use --rm-old-version!'.format(titleIDEntry[versionEntry]))
+			return False
+		
+		for versionEntry in DuplicateEntriesToDelete:
+			for delFilePath in titleIDEntry[versionEntry]:
+				Print.info('Delete duplicate: {0}'.format(delFilePath))
+				remove(delFilePath)
+				del filesAtTarget[Path(delFilePath).name.lower()]
+			del titleIDEntry[versionEntry]
+		for versionEntry in OutdatedEntriesToDelete:
+			for delFilePath in titleIDEntry[versionEntry]:
+				Print.info('Delete outdated version: {0}'.format(delFilePath))
+				remove(delFilePath)
+				del filesAtTarget[Path(delFilePath).name.lower()]
+			del titleIDEntry[versionEntry]
 	
 	return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
 
