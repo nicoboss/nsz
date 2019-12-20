@@ -166,7 +166,7 @@ def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, 
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
-	nszPath = outputDir + Path(filePath).stem + '.nsz'
+	nszPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.nsz'))
 
 	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -174,11 +174,13 @@ def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, 
 		with Pfs0.Pfs0Stream(nszPath) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, blockSizeExponent, threads)
 	except KeyboardInterrupt:
-		remove(nszPath)
+		if Path(nszPath).is_file():
+			Path(nszPath).unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		remove(nszPath)
+		if Path(nszPath).is_file():
+			Path(nszPath).unlink()
 
 	container.close()
 	return nszPath
@@ -188,7 +190,7 @@ def blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, t
 	container = factory(filePath)
 	container.open(filePath, 'rb')
 	secureIn = container.hfs0['secure']
-	xczPath = outputDir + Path(filePath).stem + '.xcz'
+	xczPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.xcz'))
 
 	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	
@@ -199,11 +201,13 @@ def blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, t
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except KeyboardInterrupt:
-		remove(xczPath)
+		if Path(xczPath).is_file():
+			Path(xczPath).unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		remove(xczPath)
+		if Path(xczPath).is_file():
+			Path(xczPath).unlink()
 
 	container.close()
 	return xczPath

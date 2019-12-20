@@ -117,7 +117,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	filePath = str(Path(filePath).resolve())
 	container = factory(filePath)
 	container.open(filePath, 'rb')
-	nszPath = outputDir + Path(filePath).stem + '.nsz'
+	nszPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.nsz'))
 
 	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
 	
@@ -125,11 +125,13 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 		with Pfs0.Pfs0Stream(nszPath) as nsp:
 			processContainer(container, nsp, compressionLevel, threads)
 	except KeyboardInterrupt:
-		remove(nszPath)
+		if Path(nszPath).is_file():
+			Path(nszPath).unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		remove(nszPath)
+		if Path(nszPath).is_file():
+			Path(nszPath).unlink()
 
 	container.close()
 	return nszPath
@@ -139,7 +141,7 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 	container = factory(filePath)
 	container.open(filePath, 'rb')
 	secureIn = container.hfs0['secure']
-	xczPath = outputDir + Path(filePath).stem + '.xcz'
+	xczPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.xcz'))
 
 	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
 	
@@ -150,11 +152,13 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except KeyboardInterrupt:
-		remove(xczPath)
+		if Path(xczPath).is_file():
+			Path(xczPath).unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		remove(xczPath)
+		if Path(xczPath).is_file():
+			Path(xczPath).unlink()
 
 	container.close()
 	return xczPath
