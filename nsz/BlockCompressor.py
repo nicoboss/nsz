@@ -61,7 +61,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 			if isNcaPacked(nspf, ncaHeaderSize):
 				newFileName = nspf._path[0:-1] + 'z'
 				f = writeContainer.add(newFileName, nspf.size)
-				start = f.tell()
+				startPos = f.tell()
 				nspf.seek(0)
 				f.write(nspf.read(ncaHeaderSize))
 				sections = []
@@ -140,7 +140,8 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 						bar.update(len(buffer))
 				partitions[partNr].close()
 				partitions[partNr] = None
-				written = f.tell() - start
+				endPos = f.tell()
+				written = endPos - startPos
 				f.seek(blocksHeaderFilePos+24)
 				header = b""
 
@@ -148,7 +149,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 					header += compressedblockSize.to_bytes(4, 'little')
 
 				f.write(header)
-				f.seek(0, 2) #Seek to end of file.
+				f.seek(endPos) #Seek to end of file.
 				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 				writeContainer.resize(newFileName, written)
 				continue
