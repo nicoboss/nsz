@@ -1,32 +1,25 @@
 from pathlib import Path
 
 def isGame(filePath):
-	return filePath.endswith('.nsp') or filePath.endswith('.xci') or filePath.endswith('.nsz') or filePath.endswith('.xcz')
+	return filePath.suffix == '.nsp' or filePath.suffix == '.xci' or filePath.suffix == '.nsz' or filePath.suffix == '.xcz'
 
 def isUncompressedGame(filePath):
-	return filePath.endswith('.nsp') or filePath.endswith('.xci')
+	return filePath.suffix == '.nsp' or filePath.suffix == '.xci'
 
 def isCompressedGame(filePath):
-	return filePath.endswith('.nsz') or filePath.endswith('.xcz')
+	return filePath.suffix == '.nsz' or filePath.suffix == '.xcz'
 
 def isCompressedGameFile(filePath):
-	return filePath.endswith('.ncz')
+	return filePath.suffix == '.ncz'
 
 def isNspNsz(filePath):
-	return filePath.endswith('.nsp') or filePath.endswith('.nsz')
+	return filePath.suffix == '.nsp' or filePath.suffix == '.nsz'
 
 def isXciXcz(filePath):
-	return filePath.endswith('.xci') or filePath.endswith('.xcz')
-
-def getExtension(filePath):
-	return str(Path(filePath).suffix)
-
-def getBasename(filePath):
-	return str(Path(filePath).stem)
+	return filePath.suffix == '.xci' or filePath.suffix == '.xcz'
 
 def changeExtension(filePath, newExtension):
-	filePathObj = Path(filePath)
-	return str(filePathObj.parent.resolve().joinpath(filePathObj.stem + newExtension))
+	return str(filePath.parent.resolve().joinpath(filePath.stem + newExtension))
 
 def getExtensionName(filePath):
 	return str(Path(filePath).suffix[1:].upper())

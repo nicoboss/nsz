@@ -65,7 +65,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write = Tru
 			elif not write:
 				Print.info('[EXISTS]     {0}'.format(nspf._path))
 			continue
-		newFileName = getBasename(nspf._path) + '.nca'
+		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
 			f = writeContainer.add(newFileName, nspf.size)
 		written, hexHash = __decompressNcz(nspf, f)
@@ -147,7 +147,7 @@ def __decompressNcz(nspf, f):
 def __decompressNsz(filePath, outputDir = None, write = True, raiseVerificationException = False):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
-	container.open(filePath, 'rb')
+	container.open(str(filePath), 'rb')
 	
 	if write:
 		filename = changeExtension(filePath, '.nsp')

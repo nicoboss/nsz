@@ -10,7 +10,7 @@ from Fs.Pfs0 import Pfs0
 from Fs.BaseFs import BaseFs
 import os
 import re
-import pathlib
+from pathlib import Path
 from nut import Keys
 from nut import Print
 import Fs
@@ -136,9 +136,9 @@ class Hfs0(Pfs0):
 			#if name in ['update', 'secure', 'normal']:
 			if name == 'secure':
 				f = Hfs0(None)
-				#f = factory(name)
+				#f = factory(Path(name))
 			else:
-				f = Fs.factory(name)
+				f = Fs.factory(Path(name))
 
 			f._path = name
 			f.offset = offset

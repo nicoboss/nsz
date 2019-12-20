@@ -27,9 +27,9 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
 def blockCompress(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
-	if filePath.endswith('.nsp'):
+	if filePath.suffix == '.nsp':
 		return blockCompressNsp(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
-	elif filePath.endswith('.xci'):
+	elif filePath.suffix == '.xci':
 		return blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
 
 def blockCompressContainer(readContainer, writeContainer, compressionLevel, blockSizeExponent, threads):
@@ -150,11 +150,11 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 				f.write(header)
 				f.seek(endPos) #Seek to end of file.
-				print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
+				Print.info('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 				writeContainer.resize(newFileName, written)
 				continue
 			else:
-				print('not packed!')
+				Print.info('not packed!')
 		f = writeContainer.add(nspf._path, nspf.size)
 		nspf.seek(0)
 		while not nspf.eof():
@@ -163,51 +163,51 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 
 def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, threads):
-	filePath = str(Path(filePath).resolve())
+	filePath = filePath.resolve()
 	container = factory(filePath)
-	container.open(filePath, 'rb')
-	nszPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.nsz'))
+	container.open(str(filePath), 'rb')
+	nszPath = outputDir.joinpath(filePath.stem + '.nsz')
 
-	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	Print.info('Block compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, nszPath))
 	
 	try:
-		with Pfs0.Pfs0Stream(nszPath) as nsp:
+		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, blockSizeExponent, threads)
 	except KeyboardInterrupt:
-		if Path(nszPath).is_file():
-			Path(nszPath).unlink()
+		if nszPath.is_file():
+			nszPath.unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		if Path(nszPath).is_file():
-			Path(nszPath).unlink()
+		if nszPath.is_file():
+			nszPath.unlink()
 
 	container.close()
 	return nszPath
 	
 def blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, threads):
-	filePath = str(Path(filePath).resolve())
+	filePath = filePath.resolve()
 	container = factory(filePath)
-	container.open(filePath, 'rb')
+	container.open(str(filePath), 'rb')
 	secureIn = container.hfs0['secure']
-	xczPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.xcz'))
+	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
-	Print.info('Block compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
+	Print.info('Block compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, xczPath))
 	
 	try:
-		with Xci.XciStream(xczPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
+		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
 				blockCompressContainer(secureIn, secureOut, compressionLevel, blockSizeExponent, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except KeyboardInterrupt:
-		if Path(xczPath).is_file():
-			Path(xczPath).unlink()
+		if xczPath.is_file():
+			xczPath.unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		if Path(xczPath).is_file():
-			Path(xczPath).unlink()
+		if xczPath.is_file():
+			xczPath.unlink()
 
 	container.close()
 	return xczPath

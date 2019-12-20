@@ -102,11 +102,11 @@ class Nsp(Pfs0):
 		return None
 
 	def unpack(self, path):
-		os.makedirs(path, exist_ok=True)
+		os.makedirs(str(path), exist_ok=True)
 
 		for nspF in self:
-			filePath = os.path.abspath(path + '/' + nspF._path)
-			f = open(filePath, 'wb')
+			filePath_str = str(path.joinpath(nspF._path))
+			f = open(filePath_str, 'wb')
 			nspF.rewind()
 			i = 0
 
@@ -119,7 +119,7 @@ class Nsp(Pfs0):
 				i += len(buf)
 				f.write(buf)
 			f.close()
-			Print.info(filePath)
+			Print.info(filePath_str)
 
 	def setHasValidTicket(self, value):
 		if hasattr(self.title(), 'isUpdate') and self.title().isUpdate:

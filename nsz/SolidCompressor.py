@@ -100,11 +100,11 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 					compressor.flush(COMPRESSOBJ_FLUSH_FINISH)
 		
 					written = f.tell() - start
-					print('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
+					Print.info('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
 					writeContainer.resize(newFileName, written)
 					continue
 			else:
-				print('not packed!')
+				Print.info('not packed!')
 
 		with writeContainer.add(nspf._path, nspf.size) as f:
 			nspf.seek(0)
@@ -114,36 +114,36 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 
 
 def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
-	filePath = str(Path(filePath).resolve())
+	filePath = filePath.resolve()
 	container = factory(filePath)
-	container.open(filePath, 'rb')
-	nszPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.nsz'))
+	container.open(str(filePath), 'rb')
+	nszPath = outputDir.joinpath(filePath.stem + '.nsz')
 
-	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, nszPath))
+	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, nszPath))
 	
 	try:
 		with Pfs0.Pfs0Stream(nszPath) as nsp:
 			processContainer(container, nsp, compressionLevel, threads)
 	except KeyboardInterrupt:
-		if Path(nszPath).is_file():
-			Path(nszPath).unlink()
+		if nszPath.is_file():
+			nszPath.unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		if Path(nszPath).is_file():
-			Path(nszPath).unlink()
+		if nszPath.is_file():
+			nszPath.unlink()
 
 	container.close()
 	return nszPath
 	
 def solidCompressXci(filePath, compressionLevel, outputDir, threads):
-	filePath = str(Path(filePath).resolve())
+	filePath = filePath.resolve()
 	container = factory(filePath)
-	container.open(filePath, 'rb')
+	container.open(str(filePath), 'rb')
 	secureIn = container.hfs0['secure']
-	xczPath = str(Path(outputDir).joinpath(Path(filePath).stem + '.xcz'))
+	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
-	Print.info('Solid compressing (level %d) %s -> %s' % (compressionLevel, filePath, xczPath))
+	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, xczPath))
 	
 	try:
 		with Xci.XciStream(xczPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
@@ -152,13 +152,13 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except KeyboardInterrupt:
-		if Path(xczPath).is_file():
-			Path(xczPath).unlink()
+		if xczPath.is_file():
+			xczPath.unlink()
 		raise KeyboardInterrupt
 	except BaseException:
 		Print.error(format_exc())
-		if Path(xczPath).is_file():
-			Path(xczPath).unlink()
+		if xczPath.is_file():
+			xczPath.unlink()
 
 	container.close()
 	return xczPath

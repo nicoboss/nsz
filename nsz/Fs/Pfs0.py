@@ -8,7 +8,7 @@ from hashlib import sha256
 import Fs.Type
 import os
 import re
-import pathlib
+from pathlib import Path
 from nut import Keys
 from nut import Print
 from Fs.BaseFs import BaseFs
@@ -164,7 +164,7 @@ class Pfs0(BaseFs):
 
 			self.readInt32() # junk data
 
-			f = Fs.factory(name)
+			f = Fs.factory(Path(name))
 
 			f._path = name
 			f.offset = offset

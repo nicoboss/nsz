@@ -7,23 +7,23 @@ import Fs.Cnmt
 import Fs.File
 
 def factory(name):
-	if name.endswith('.xci'):
+	if name.suffix == '.xci':
 		f = Fs.Xci.Xci()
-	elif name.endswith('.xcz'):
+	elif name.suffix == '.xcz':
 		f = Fs.Xci.Xci()
-	elif name.endswith('.nsp'):
+	elif name.suffix == '.nsp':
 		f = Fs.Nsp.Nsp()
-	elif name.endswith('.nsz'):
+	elif name.suffix == '.nsz':
 		f = Fs.Nsp.Nsp()
-	elif name.endswith('.nsx'):
+	elif name.suffix == '.nsx':
 		f = Fs.Nsp.Nsp()
-	elif name.endswith('.nca'):
+	elif name.suffix == '.nca':
 		f =  Fs.Nca.Nca()
-	elif name.endswith('.nacp'):
+	elif name.suffix == '.nacp':
 		f =  Fs.Nacp.Nacp()
-	elif name.endswith('.tik'):
+	elif name.suffix == '.tik':
 		f =  Fs.Ticket.Ticket()
-	elif name.endswith('.cnmt'):
+	elif name.suffix == '.cnmt':
 		f =  Fs.Cnmt.Cnmt()
 	else:
 		f = Fs.File.File()
