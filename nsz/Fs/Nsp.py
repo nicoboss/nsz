@@ -101,11 +101,13 @@ class Nsp(Pfs0):
 
 		return None
 
-	def unpack(self, path):
+	def unpack(self, path, extractregex="*"):
 		os.makedirs(str(path), exist_ok=True)
 
 		for nspF in self:
 			filePath_str = str(path.joinpath(nspF._path))
+			if not re.match(extractregex, filePath_str):
+				continue
 			f = open(filePath_str, 'wb')
 			nspF.rewind()
 			i = 0

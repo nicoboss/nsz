@@ -4,6 +4,7 @@ from Fs.File import BaseFile
 from Fs.Hfs0 import Hfs0
 from Fs.Hfs0 import Hfs0Stream
 import os
+import re
 from nut import Print
 
 
@@ -292,12 +293,14 @@ class Xci(File):
 		self.hfs0 = Hfs0(None, cryptoKey = None)
 		self.partition(0xf000, None, self.hfs0, cryptoKey = None)
 
-	def unpack(self, path):
-		os.makedirs(path, exist_ok=True)
+	def unpack(self, path, extractregex="*"):
+		os.makedirs(str(path), exist_ok=True)
 
 		for nspF in self.hfs0:
-			filePath = os.path.abspath(path + '/' + nspF._path)
-			f = open(filePath, 'wb')
+			filePath_str = str(path.joinpath(nspF._path))
+			if not re.match(extractregex, filePath_str):
+				continue
+			f = open(filePath_str, 'wb')
 			nspF.rewind()
 			i = 0
 
@@ -310,7 +313,7 @@ class Xci(File):
 				i += len(buf)
 				f.write(buf)
 			f.close()
-			Print.info(filePath)
+			Print.info(filePath_str)
 		
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent

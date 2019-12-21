@@ -4,6 +4,8 @@
 *.nca
 *.tik
 *.cert
+*.cnmt.nca
+*.cnmt.xml
 *.nsz
 *.xcz
 *.ncz
@@ -24,3 +26,8 @@ normal
 logo
 update
 secure
+titlekeys.txt
+titledb/
+* - Copy*
+*_.*
+*_

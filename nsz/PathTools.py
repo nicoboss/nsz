@@ -1,4 +1,19 @@
 from pathlib import Path
+from os import listdir
+
+def expandFiles(path):
+	files = []
+	path = path.resolve()
+
+	if path.is_file():
+		files.append(path)
+	else:
+		for f_str in listdir(path):
+			f = Path(f_str)
+			f = path.joinpath(f)
+			files.append(f)
+	return files
+	
 
 def isGame(filePath):
 	return filePath.suffix == '.nsp' or filePath.suffix == '.xci' or filePath.suffix == '.nsz' or filePath.suffix == '.xcz'
@@ -23,3 +38,4 @@ def changeExtension(filePath, newExtension):
 
 def getExtensionName(filePath):
 	return str(Path(filePath).suffix[1:].upper())
+

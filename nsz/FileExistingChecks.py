@@ -4,7 +4,7 @@ from os import scandir, remove
 from pathlib import Path
 from re import search
 from nut import Print
-from GameType import *
+from PathTools import *
 import os
 
 def ExtractHashes(gamePath):

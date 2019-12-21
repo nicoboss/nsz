@@ -4,7 +4,7 @@ from hashlib import sha256
 from nut import Print, aes128
 from zstandard import ZstdDecompressor
 from Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
-from GameType import *
+from PathTools import *
 import Header, BlockDecompressorReader, FileExistingChecks
 
 def decompress(filePath, outputDir = None):

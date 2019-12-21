@@ -18,7 +18,8 @@ from NszDecompressor import verify as NszVerify, decompress as NszDecompress
 from multiprocessing import cpu_count, freeze_support
 from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 from ParseArguments import *
-from GameType import *
+from PathTools import *
+from ExtractTitlekeys import *
 
 def compress(filePath, outputDir, args):
 	compressionLevel = 22 if args.level is None else args.level
@@ -38,20 +39,6 @@ def decompress(filePath, outputDir):
 
 def verify(filePath, raiseVerificationException):
 	NszVerify(filePath, raiseVerificationException)
-
-def expandFiles(path):
-	files = []
-	path = path.resolve()
-
-	if path.is_file():
-		files.append(path)
-	else:
-		for f_str in listdir(path):
-			f = Path(f_str)
-			f = path.joinpath(f)
-			if f.is_file() and (f_str.endswith('.nsp') or f_str.endswith('.nsz')):
-				files.append(f)
-	return files
 
 err = []
 
@@ -88,6 +75,9 @@ def main():
 		Print.info('                `"\'')
 		Print.info('')
 		
+		if args.titlekeys:
+			extractTitlekeys(args.file)
+		
 		if args.extract:
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
@@ -96,7 +86,7 @@ def main():
 					f = factory(filePath)
 					f.open(filePath_str, 'rb')
 					dir = outfolder.joinpath(filePath.stem)
-					f.unpack(outfolder)
+					f.unpack(dir, args.extractregex)
 					f.close()
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))
@@ -159,8 +149,8 @@ def main():
 						print_exc()
 
 		if args.info:
-			for i in args.file:
-				for filePath in expandFiles(i):
+			for f_str in args.file:
+				for filePath in expandFiles(Path(f_str)):
 					filePath_str = str(filePath)
 					Print.info(filePath_str)
 					f = factory(filePath)

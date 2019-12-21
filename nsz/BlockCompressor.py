@@ -9,7 +9,7 @@ from ThreadSafeCounter import Counter
 from SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
 from Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
-from GameType import *
+from PathTools import *
 #import sys
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):

@@ -6,7 +6,7 @@ from traceback import format_exc
 from SectionFs import isNcaPacked, sortedFs
 from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
-from GameType import *
+from PathTools import *
 
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
