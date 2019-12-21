@@ -23,11 +23,11 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
+    .\python.exe -m pip install --upgrade pip
+    .\python.exe -m pip install -r requirements.txt
   displayName: 'Install dependencies'
 
 - task: CmdLine@2
   inputs:
-    script: python nsz.py
+    script: .\python.exe nsz.py
     failOnStderr: true
