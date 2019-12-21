@@ -1,3 +1,4 @@
+setuptools
 pycryptodome>=3.9.0
 zstandard
 colorama
