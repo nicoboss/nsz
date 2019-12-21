@@ -12,9 +12,9 @@ ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
 
 def solidCompress(filePath, compressionLevel = 22, outputDir = None, threads = -1):
-	if filePath.endswith('.nsp'):
+	if filePath.suffix == '.nsp':
 		return solidCompressNsp(filePath, compressionLevel, outputDir, threads)
-	elif filePath.endswith('.xci'):
+	elif filePath.suffix == '.xci':
 		return solidCompressXci(filePath, compressionLevel, outputDir, threads)
 		
 def processContainer(readContainer, writeContainer, compressionLevel, threads):
@@ -122,7 +122,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, nszPath))
 	
 	try:
-		with Pfs0.Pfs0Stream(nszPath) as nsp:
+		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
 			processContainer(container, nsp, compressionLevel, threads)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
@@ -143,7 +143,7 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, xczPath))
 	
 	try:
-		with Xci.XciStream(xczPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
+		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
 				processContainer(secureIn, secureOut, compressionLevel, threads)
 			
