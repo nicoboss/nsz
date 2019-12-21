@@ -124,12 +124,9 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	try:
 		with Pfs0.Pfs0Stream(nszPath) as nsp:
 			processContainer(container, nsp, compressionLevel, threads)
-	except KeyboardInterrupt:
-		if nszPath.is_file():
-			nszPath.unlink()
-		raise KeyboardInterrupt
-	except BaseException:
-		Print.error(format_exc())
+	except BaseException as ex:
+		if not ex is KeyboardInterrupt:
+			Print.error(format_exc())
 		if nszPath.is_file():
 			nszPath.unlink()
 
@@ -151,12 +148,9 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 				processContainer(secureIn, secureOut, compressionLevel, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
-	except KeyboardInterrupt:
-		if xczPath.is_file():
-			xczPath.unlink()
-		raise KeyboardInterrupt
-	except BaseException:
-		Print.error(format_exc())
+	except BaseException as ex:
+		if not ex is KeyboardInterrupt:
+			Print.error(format_exc())
 		if xczPath.is_file():
 			xczPath.unlink()
 

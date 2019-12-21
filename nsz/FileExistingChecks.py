@@ -89,7 +89,10 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 	(filesAtTarget, alreadyExists) = targetDict
 	extractedIdVersion = ExtractTitleIDAndVersion(filePath, parseCnmt)
 	if extractedIdVersion == None:
-		Print.error("Failed to extract TitleID/Version from filename {0}. Use -p to extract from Cnmt.".format(Path(filePath).name))
+		if parseCnmt:
+			Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))
+		else:
+			Print.error('Failed to extract TitleID/Version from filename "{0}". Use -p to extract from Cnmt.'.format(Path(filePath).name))
 		return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
 	(titleIDExtracted, versionExtracted) = extractedIdVersion
 	titleIDEntry = alreadyExists.get(titleIDExtracted)

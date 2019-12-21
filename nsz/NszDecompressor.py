@@ -18,9 +18,16 @@ def decompress(filePath, outputDir = None):
 		Print.info('Decompressing %s -> %s' % (filePath, outPath))
 		container = factory(filePath)
 		container.open(filePath, 'rb')
-		with open(outPath, 'wb') as outFile:
-			written, hexHash = __decompressNcz(container, outFile)
-		container.close()
+		try:
+			with open(outPath, 'wb') as outFile:
+				written, hexHash = __decompressNcz(container, outFile)
+		except BaseException as ex:
+			if not ex is KeyboardInterrupt:
+				Print.error(format_exc())
+			if outFile.is_file():
+				outFile.unlink()
+		finally:
+			container.close()
 		fileNameHash = Path(filePath).stem.lower()
 		if hexHash[:32] == fileNameHash:
 			Print.error('[VERIFIED]   {0}'.format(filename))

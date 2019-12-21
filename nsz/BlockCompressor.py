@@ -70,6 +70,9 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 					sections += fs.getEncryptionSections()
 
 				if len(sections) == 0:
+					for p in pool:
+						#Process.terminate() might corrupt the datastructure but we do't care
+						p.terminate()
 					raise Exception("NCA can't be decrypted. Outdated keys.txt?")
 				header = b'NCZSECTN'
 				header += len(sections).to_bytes(8, 'little')
@@ -173,12 +176,9 @@ def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, 
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, blockSizeExponent, threads)
-	except KeyboardInterrupt:
-		if nszPath.is_file():
-			nszPath.unlink()
-		raise KeyboardInterrupt
-	except BaseException:
-		Print.error(format_exc())
+	except BaseException as ex:
+		if not ex is KeyboardInterrupt:
+			Print.error(format_exc())
 		if nszPath.is_file():
 			nszPath.unlink()
 
@@ -200,12 +200,9 @@ def blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, t
 				blockCompressContainer(secureIn, secureOut, compressionLevel, blockSizeExponent, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
-	except KeyboardInterrupt:
-		if xczPath.is_file():
-			xczPath.unlink()
-		raise KeyboardInterrupt
-	except BaseException:
-		Print.error(format_exc())
+	except BaseException as ex:
+		if not ex is KeyboardInterrupt:
+			Print.error(format_exc())
 		if xczPath.is_file():
 			xczPath.unlink()
 

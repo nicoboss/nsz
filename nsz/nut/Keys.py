@@ -1,4 +1,5 @@
 import os, sys, re
+from traceback import format_exc
 from nut import aes128
 from binascii import hexlify as hx, unhexlify as uhx
 from nut import Print
@@ -103,7 +104,9 @@ def load(fileName):
 				keyAreaKeys[i][2] = generateKek(uhx(keys['key_area_key_system_source']), masterKey, aes_kek_generation_source, aes_key_generation_source)
 			else:
 				titleKeks.append('0' * 32)
+				raise IOError('{0} missing from keys.txt'.format(masterKeyName))
 	except BaseException as e:
+		Print.error(format_exc())
 		Print.error(str(e))
 
 
