@@ -23,6 +23,7 @@ from ParseArguments import *
 from PathTools import *
 from ExtractTitlekeys import *
 import enlighten
+import time
 
 
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseKillYourself, id):
@@ -38,7 +39,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseKillYourself, 
 			print("[VERIFY NSZ] {0}".format(outFile))
 			verify(outFile, True)
 
-def compress(filePath, outputDir, args, work):
+def compress(filePath, outputDir, args, work, barManager):
 	print(filePath)
 	compressionLevel = 22 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
@@ -51,8 +52,8 @@ def compress(filePath, outputDir, args, work):
 		work.put([filePath, compressionLevel, outputDir, threadsToUse, args.verify])
 
 
-def decompress(filePath, outputDir):
-	NszDecompress(filePath, outputDir)
+def decompress(filePath, outputDir, barManager):
+	NszDecompress(filePath, outputDir, barManager)
 
 def verify(filePath, raiseVerificationException):
 	NszVerify(filePath, raiseVerificationException)
@@ -92,15 +93,16 @@ def main():
 		Print.info('                `"\'')
 		Print.info('')
 		
+		barManager = enlighten.get_manager()
 		threads = args.threads if args.threads > 0 else cpu_count()
 		poolManager = Manager()
 		statusReport = poolManager.list()
 		readyForWork = Counter(0)
 		pleaseKillYourself = Counter(0)
 		pool = []
-		work = poolManager.Queue(threads)
+		work = poolManager.Queue()
 		for i in range(threads):
-			statusReport.append([0, 100])
+			statusReport.append([0, 0, 100])
 			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseKillYourself, i))
 			p.start()
 			pool.append(p)
@@ -126,6 +128,7 @@ def main():
 		if args.C:
 			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
 			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xcz")
+			sourceFileToDelete = []
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
 					if not isUncompressedGame(filePath):
@@ -138,9 +141,9 @@ def main():
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 								
-						compress(filePath, outfolder, args, work)
+						compress(filePath, outfolder, args, work, barManager)
 						if args.rm_source:
-							delete_source_file(filePath)
+							sourceFileToDelete.append(filePath)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
@@ -149,16 +152,19 @@ def main():
 						print_exc()
 			
 			bars = []
-			barManager = enlighten.get_manager()
+			subBars = []
 			for i in range(threads):
-				bars.append(barManager.counter(total=1, desc='Compressing', unit='B'))
+				bar = barManager.counter(total=1, desc='Compressing', unit='B', color='cyan')
+				subBars.append(bar.add_subcounter('green', all_fields=True))
+				bars.append(bar)
 			sleep(0.02)
 			while readyForWork.value()<threads:
 				sleep(0.2)
 				for i in range(threads):
 					report = statusReport[i]
-					bars[i].total = report[1]
-					bars[i].count = report[0]
+					bars[i].total = report[2]
+					bars[i].count = report[1]
+					subBars[i].count = report[0]
 					bars[i].refresh()
 			pleaseKillYourself.increment()
 			for i in range(readyForWork.value()):
@@ -166,6 +172,9 @@ def main():
 			
 			while readyForWork.value() > 0:
 				sleep(0.02)
+				
+			for filePath in sourceFileToDelete:
+				delete_source_file(filePath)
 
 
 		if args.D:
@@ -188,7 +197,7 @@ def main():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
 								'If you want to overwrite it use the -w parameter!'.format(outfile.name))
 								continue
-						decompress(filePath, outfolder)
+						decompress(filePath, outfolder, barManager)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:

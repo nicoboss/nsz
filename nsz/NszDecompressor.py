@@ -6,6 +6,7 @@ from Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
 from PathTools import *
 import Header, BlockDecompressorReader, FileExistingChecks
 import enlighten
+import time
 
 def decompress(filePath, outputDir = None):
 	if filePath.endswith('.nsz'):
@@ -114,7 +115,7 @@ def __decompressNcz(nspf, f):
 	if not useBlockCompression:
 		decompressor = ZstdDecompressor().stream_reader(nspf)
 	hash = sha256()
-	with enlighten.Counter(total=nca_size, unit="B") as bar:
+	with enlighten.Counter(total=nca_size, desc='Decompress', unit="B", color='red') as bar:
 		if f != None:
 			f.write(header)
 		bar.update(len(header))
@@ -142,6 +143,7 @@ def __decompressNcz(nspf, f):
 				hash.update(inputChunk)
 				i += len(inputChunk)
 				bar.update(chunkSz)
+				time.sleep(0.02)
 
 	hexHash = hash.hexdigest()
 	if f != None:

@@ -105,10 +105,14 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				header += b'\x00' * (blocksToCompress*4)
 				f.write(header)
 				decompressedBytes = ncaHeaderSize
-				with enlighten.Counter(total=nspf.size, unit="B") as bar:
+				compressedBytes = f.tell()
+				with enlighten.Counter(total=nspf.size, desc='Compressing', unit='B', color='cyan') as bar:
+					subBars = bar.add_subcounter('green', all_fields=True)
 					partitions = [nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True) for section in sections]
 					partNr = 0
-					bar.update(f.tell())
+					bar.count = nspf.tell()
+					subBars.count = f.tell()
+					bar.refresh()
 					while True:
 						buffer = partitions[partNr].read(blockSize)
 						while (len(buffer) < blockSize and partNr < len(partitions)-1):
@@ -121,7 +125,9 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 								sleep(0.02)
 
 							for i in range(min(TasksPerChunk, blocksToCompress-startChunkBlockID)):
-								compressedblockSizeList[startChunkBlockID+i] = len(results[i])
+								lenResult = len(results[i])
+								compressedBytes += lenResult
+								compressedblockSizeList[startChunkBlockID+i] = lenResult
 								f.write(results[i])
 								results[i] = b""
 
@@ -141,10 +147,15 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 						blockID += 1
 						chunkRelativeBlockID += 1
 						decompressedBytes += len(buffer)
-						bar.update(len(buffer))
+						bar.count = decompressedBytes
+						subBars.count = compressedBytes
+						bar.refresh()
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
+				bar.count = decompressedBytes
+				subBars.count = compressedBytes
+				bar.refresh()
 				written = endPos - startPos
 				f.seek(blocksHeaderFilePos+24)
 				header = b""

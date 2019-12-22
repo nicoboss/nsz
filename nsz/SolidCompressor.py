@@ -10,6 +10,7 @@ from PathTools import *
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
 
+
 def solidCompress(filePath, compressionLevel, outputDir, threads, stusReport, id):
 	if filePath.suffix == '.nsp':
 		return solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport, id)
@@ -64,7 +65,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					decompressedBytes = ncaHeaderSize
 					
 					
-					stusReport[id] = [0, nspf.size]
+					stusReport[id] = [0, 0, nspf.size]
 					
 					partitions = []
 					for section in sections:
@@ -73,12 +74,11 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 				
 			
 					partNr = 0
-					stusReport[id] = [nspf.tell(), nspf.size]
-					#if threads > 1:
-					#	cctx = ZstdCompressor(level=compressionLevel, threads=threads)
-					#else:
-					cctx = ZstdCompressor(level=compressionLevel)
-					compressor = cctx.stream_writer(f)
+					stusReport[id] = [nspf.tell(), nspf.tell(), nspf.size]
+					if threads > 1:
+						cctx = ZstdCompressor(level=compressionLevel, threads=threads)
+					else:
+						cctx = ZstdCompressor(level=compressionLevel)
 					while True:
 			
 						buffer = partitions[partNr].read(CHUNK_SZ)
@@ -89,15 +89,16 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 							buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
 						if len(buffer) == 0:
 							break
-						compressor.write(buffer)
+						f.write(cctx.compress(buffer))
 				
 						decompressedBytes += len(buffer)
-						stusReport[id] = [nspf.tell(), nspf.size]
+						stusReport[id] = [f.tell(), nspf.tell(), nspf.size]
 					partitions[partNr].close()
 					partitions[partNr] = None
 		
-					compressor.flush(FLUSH_FRAME)
-					compressor.flush(COMPRESSOBJ_FLUSH_FINISH)
+					#cctx.compress.flush(FLUSH_FRAME)
+					#cctx.compress.flush(COMPRESSOBJ_FLUSH_FINISH)
+					stusReport[id] = [f.tell(), nspf.tell(), nspf.size]
 		
 					written = f.tell() - start
 					Print.info('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path))
