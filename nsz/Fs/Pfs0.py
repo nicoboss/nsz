@@ -38,8 +38,8 @@ class Pfs0Stream(BaseFile):
 		if self.tell() > self.actualSize:
 			self.actualSize = self.tell()
 
-	def add(self, name, size):
-		Print.info('[ADDING]     %s %d bytes to NSP' % (name, int(size)))
+	def add(self, name, size, pleaseNoPrint = None):
+		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
 		return self.partition(self.f.tell(), size, n = BaseFile())
 

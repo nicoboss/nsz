@@ -28,7 +28,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 		
 				newFileName = nspf._path[0:-1] + 'z'
 		
-				with writeContainer.add(newFileName, nspf.size) as f:
+				with writeContainer.add(newFileName, nspf.size, pleaseNoPrint) as f:
 					start = f.tell()
 		
 					nspf.seek(0)
@@ -107,7 +107,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 			else:
 				Print.info('not packed!', pleaseNoPrint)
 
-		with writeContainer.add(nspf._path, nspf.size) as f:
+		with writeContainer.add(nspf._path, nspf.size, pleaseNoPrint) as f:
 			nspf.seek(0)
 			while not nspf.eof():
 				buffer = nspf.read(CHUNK_SZ)
@@ -145,7 +145,7 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport,
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
+			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
 				processContainer(secureIn, secureOut, compressionLevel, threads, stusReport, id, pleaseNoPrint)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)

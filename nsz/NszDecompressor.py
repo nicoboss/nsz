@@ -55,7 +55,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
 			if write:
-				f = writeContainer.add(nspf._path, nspf.size)
+				f = writeContainer.add(nspf._path, nspf.size, pleaseNoPrint)
 			hash = sha256()
 			nspf.seek(0)
 			while not nspf.eof():
@@ -75,7 +75,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
-			f = writeContainer.add(newFileName, nspf.size)
+			f = writeContainer.add(newFileName, nspf.size, pleaseNoPrint)
 		written, hexHash = __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint)
 		if write:
 			writeContainer.resize(newFileName, written)
@@ -190,7 +190,7 @@ def __decompressXcz(filePath, outputDir, write, raiseVerificationException, stat
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
+			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
 				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 				xci.hfs0.resize('secure', secureOut.actualSize)
 	else:

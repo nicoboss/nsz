@@ -57,8 +57,8 @@ class XciStream(BaseFile):
 	def __exit__(self, type, value, traceback):
 		self.close()
 
-	def add(self, name, size):
-		Print.info('[ADDING]     %s %d bytes to NSP' % (name, int(size)))
+	def add(self, name, size, pleaseNoPrint = None):
+		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
 		t = {'name': name, 'size': size, 'offset': self.f.tell()}
 		return self.f
