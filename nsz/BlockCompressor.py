@@ -1,6 +1,5 @@
 from os import remove
 from nut import Print
-from tqdm import tqdm
 from time import sleep
 from pathlib import Path
 from traceback import format_exc
@@ -10,6 +9,7 @@ from SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
 from Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
 from PathTools import *
+import enlighten
 #import sys
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
@@ -105,7 +105,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				header += b'\x00' * (blocksToCompress*4)
 				f.write(header)
 				decompressedBytes = ncaHeaderSize
-				with tqdm(total=nspf.size, unit_scale=True, unit="B") as bar:
+				with enlighten.Counter(total=nspf.size, unit="B") as bar:
 					partitions = [nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True) for section in sections]
 					partNr = 0
 					bar.update(f.tell())

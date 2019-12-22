@@ -13,8 +13,8 @@ from nut import Print
 from Fs.Pfs0 import Pfs0
 from Fs.Ticket import Ticket
 from Fs.Nca import Nca
+import enlighten
 import shutil
-from tqdm import tqdm
 
 MEDIA_SIZE = 0x200
 
@@ -507,7 +507,7 @@ class Nsp(Pfs0):
 			Print.info('\t\tRepack %s is already complete!' % self.path)
 			return
 			
-		t = tqdm(total=totalSize, unit='B', unit_scale=True, desc=os.path.basename(self.path), leave=False)
+		t = enlighten.Counter(total=totalSize, unit='B', desc=os.path.basename(self.path), leave=False)
 		
 		t.write('\t\tWriting header...')
 		outf = open(self.path, 'wb')

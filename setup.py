@@ -21,7 +21,7 @@ setuptools.setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	install_requires=['pycryptodome>=3.9.0', 'zstandard', 'colorama', 'tqdm', 'enlighten', 'kivy_deps.sdl2==0.1.22', 'kivy_deps.glew==0.1.12', 'kivy==1.11.1'],
+	install_requires=['pycryptodome>=3.9.0', 'zstandard', 'enlighten', 'kivy_deps.sdl2==0.1.22', 'kivy_deps.glew==0.1.12', 'kivy==1.11.1'],
 	entry_points = {'console_scripts': ['nsz = nsz:main']},
 	keywords = ['nsz', 'xcz', 'ncz', 'nsp', 'xci', 'nca', 'Switch'],
 	python_requires='>=3.6',

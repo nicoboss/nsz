@@ -32,7 +32,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=True,
-          icon='C:\\Users\\Administrator\\Documents\\NSZ\\nsz\\nsz\\nsZip.ico')
+          icon='C:\\Users\\Administrator\\Documents\\nsz\\nsz\\nsZip.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

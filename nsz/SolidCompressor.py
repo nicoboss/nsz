@@ -6,7 +6,6 @@ from SectionFs import isNcaPacked, sortedFs
 from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
 from PathTools import *
-import enlighten
 
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000

@@ -6,6 +6,7 @@ rmdir /s /q dist
 rmdir /s /q nsz\__pycache__
 rmdir /s /q nsz\Fs\__pycache__
 rmdir /s /q nsz\nut\__pycache__
+rmdir /s /q nsz\gui\__pycache__
 rmdir /s /q nsz\nut\___init__.build
 python setup.py sdist bdist_wheel
 python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
