@@ -1,23 +1,23 @@
 from nut import Print
 from os import remove
-from tqdm import tqdm
 from pathlib import Path
 from traceback import format_exc
 from SectionFs import isNcaPacked, sortedFs
 from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
 from PathTools import *
+import enlighten
 
 ncaHeaderSize = 0x4000
 CHUNK_SZ = 0x1000000
 
-def solidCompress(filePath, compressionLevel = 22, outputDir = None, threads = -1):
+def solidCompress(filePath, compressionLevel, outputDir, threads, stusReport, id):
 	if filePath.suffix == '.nsp':
-		return solidCompressNsp(filePath, compressionLevel, outputDir, threads)
+		return solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport, id)
 	elif filePath.suffix == '.xci':
-		return solidCompressXci(filePath, compressionLevel, outputDir, threads)
+		return solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport, id)
 		
-def processContainer(readContainer, writeContainer, compressionLevel, threads):
+def processContainer(readContainer, writeContainer, compressionLevel, threads, stusReport, id):
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 			Print.info('skipping delta fragment')
@@ -63,38 +63,39 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 					compressedblockSizeList = []
 		
 					decompressedBytes = ncaHeaderSize
-		
-					with tqdm(total=nspf.size, unit_scale=True, unit="B") as bar:
-			
-						partitions = []
-						for section in sections:
-							#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
-							partitions.append(nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
+					
+					
+					stusReport[id] = [0, nspf.size]
+					
+					partitions = []
+					for section in sections:
+						#print('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
+						partitions.append(nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
 				
 			
-						partNr = 0
-						bar.update(f.tell())
-						if threads > 1:
-							cctx = ZstdCompressor(level=compressionLevel, threads=threads)
-						else:
-							cctx = ZstdCompressor(level=compressionLevel)
-						compressor = cctx.stream_writer(f)
-						while True:
+					partNr = 0
+					stusReport[id] = [nspf.tell(), nspf.size]
+					#if threads > 1:
+					#	cctx = ZstdCompressor(level=compressionLevel, threads=threads)
+					#else:
+					cctx = ZstdCompressor(level=compressionLevel)
+					compressor = cctx.stream_writer(f)
+					while True:
 			
-							buffer = partitions[partNr].read(CHUNK_SZ)
-							while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
-								partitions[partNr].close()
-								partitions[partNr] = None
-								partNr += 1
-								buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
-							if len(buffer) == 0:
-								break
-							compressor.write(buffer)
+						buffer = partitions[partNr].read(CHUNK_SZ)
+						while (len(buffer) < CHUNK_SZ and partNr < len(partitions)-1):
+							partitions[partNr].close()
+							partitions[partNr] = None
+							partNr += 1
+							buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
+						if len(buffer) == 0:
+							break
+						compressor.write(buffer)
 				
-							decompressedBytes += len(buffer)
-							bar.update(len(buffer))
-						partitions[partNr].close()
-						partitions[partNr] = None
+						decompressedBytes += len(buffer)
+						stusReport[id] = [nspf.tell(), nspf.size]
+					partitions[partNr].close()
+					partitions[partNr] = None
 		
 					compressor.flush(FLUSH_FRAME)
 					compressor.flush(COMPRESSOBJ_FLUSH_FINISH)
@@ -113,7 +114,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads):
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
+def solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport, id):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -123,7 +124,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
-			processContainer(container, nsp, compressionLevel, threads)
+			processContainer(container, nsp, compressionLevel, threads, stusReport, id)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -133,7 +134,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads):
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel, outputDir, threads):
+def solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport, id):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -145,7 +146,7 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads):
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
-				processContainer(secureIn, secureOut, compressionLevel, threads)
+				processContainer(secureIn, secureOut, compressionLevel, threads, stusReport, id)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:

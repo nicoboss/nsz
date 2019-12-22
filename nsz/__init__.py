@@ -10,29 +10,46 @@ path.append(importPath_str)
 from sys import argv
 from nut import Print
 from os import listdir
+from time import sleep
 from Fs import Nsp, factory
 from BlockCompressor import blockCompress
 from SolidCompressor import solidCompress
 from traceback import print_exc, format_exc
 from NszDecompressor import verify as NszVerify, decompress as NszDecompress
-from multiprocessing import cpu_count, freeze_support
+from multiprocessing import cpu_count, freeze_support, Process, Manager
+from ThreadSafeCounter import Counter
 from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 from ParseArguments import *
 from PathTools import *
 from ExtractTitlekeys import *
+import enlighten
 
-def compress(filePath, outputDir, args):
+
+def solidCompressTask(in_queue, statusReport, readyForWork, pleaseKillYourself, id):
+	while True:
+		readyForWork.increment()
+		item = in_queue.get()
+		readyForWork.decrement()
+		if pleaseKillYourself.value() > 0:
+			break
+		filePath, compressionLevel, outputDir, threadsToUse, verifyArg = item
+		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id)
+		if verifyArg:
+			print("[VERIFY NSZ] {0}".format(outFile))
+			verify(outFile, True)
+
+def compress(filePath, outputDir, args, work):
+	print(filePath)
 	compressionLevel = 22 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		outFile = blockCompress(filePath, compressionLevel, args.bs, outputDir, threadsToUse)
+		if args.verify:
+			Print.info("[VERIFY NSZ] {0}".format(outFile))
+			verify(outFile, True)
 	else:
-		if args.threads < 0:
-			threadsToUse = 1
-		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse)
-	if args.verify:
-		Print.info("[VERIFY NSZ] {0}".format(outFile))
-		verify(outFile, True)
+		work.put([filePath, compressionLevel, outputDir, threadsToUse, args.verify])
+
 
 def decompress(filePath, outputDir):
 	NszDecompress(filePath, outputDir)
@@ -75,6 +92,19 @@ def main():
 		Print.info('                `"\'')
 		Print.info('')
 		
+		threads = args.threads if args.threads > 0 else cpu_count()
+		poolManager = Manager()
+		statusReport = poolManager.list()
+		readyForWork = Counter(0)
+		pleaseKillYourself = Counter(0)
+		pool = []
+		work = poolManager.Queue(threads)
+		for i in range(threads):
+			statusReport.append([0, 100])
+			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseKillYourself, i))
+			p.start()
+			pool.append(p)
+		
 		if args.titlekeys:
 			extractTitlekeys(args.file)
 		
@@ -107,7 +137,8 @@ def main():
 						elif filePath.suffix == '.xci':
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-						compress(filePath, outfolder, args)
+								
+						compress(filePath, outfolder, args, work)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:
@@ -116,6 +147,25 @@ def main():
 						Print.error('Error when compressing file: %s' % filePath)
 						err.append({"filename":filePath,"error":format_exc() })
 						print_exc()
+			
+			bars = []
+			barManager = enlighten.get_manager()
+			for i in range(threads):
+				bars.append(barManager.counter(total=1, desc='Compressing', unit='B'))
+			sleep(0.02)
+			while readyForWork.value()<threads:
+				sleep(0.2)
+				for i in range(threads):
+					report = statusReport[i]
+					bars[i].total = report[1]
+					bars[i].count = report[0]
+					bars[i].refresh()
+			pleaseKillYourself.increment()
+			for i in range(readyForWork.value()):
+				work.put(None)
+			
+			while readyForWork.value() > 0:
+				sleep(0.02)
 
 
 		if args.D:

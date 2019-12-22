@@ -17,7 +17,7 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		readyForWork.increment()
 		item = in_queue.get()
 		readyForWork.decrement()
-		if(pleaseKillYourself.value() > 0):
+		if pleaseKillYourself.value() > 0:
 			break
 		buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID = item # compressedblockSizeList IS UNUSED VARIABLE
 		if buffer == 0:
@@ -45,9 +45,9 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 	TasksPerChunk = 209715200//blockSize
 	for i in range(TasksPerChunk):
 		results.append(b"")
-	work = manager.Queue(threads)
 	pool = []
-
+	work = manager.Queue(threads)
+	
 	for i in range(threads):
 		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
 		p.start()
@@ -126,6 +126,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 								results[i] = b""
 
 							if len(buffer) == 0:
+								sleep(0.02)
 								pleaseKillYourself.increment()
 
 								for i in range(readyForWork.value()):

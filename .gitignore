@@ -28,6 +28,7 @@ update
 secure
 titlekeys.txt
 titledb/
+*.7z
 * - Copy*
 *_.*
 *_

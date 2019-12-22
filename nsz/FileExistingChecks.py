@@ -69,7 +69,14 @@ def CreateTargetDict(targetFolder, parseCnmt, extension):
 			if filePath.suffix == extension:
 				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
 				filesAtTarget[file.name.lower()] = filePath_str
-				(titleID, version) = ExtractTitleIDAndVersion(file, True)
+				extractedIdVersion = ExtractTitleIDAndVersion(file, parseCnmt)
+				if extractedIdVersion == None:
+					if parseCnmt:
+						Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))
+					else:
+						Print.error('Failed to extract TitleID/Version from filename "{0}". Use -p to extract from Cnmt.'.format(Path(filePath).name))
+					continue
+				titleID, version = extractedIdVersion
 				titleIDEntry = alreadyExists.get(titleID)
 				if titleIDEntry == None:
 					titleIDEntry = {version: [filePath_str]}
