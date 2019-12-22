@@ -6,17 +6,17 @@ from Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
 from PathTools import *
 import Header, BlockDecompressorReader, FileExistingChecks
 import enlighten
-import time
 
-def decompress(filePath, outputDir = None):
+
+def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint):
 	if filePath.endswith('.nsz'):
-		__decompressNsz(filePath, outputDir, True, False)
+		__decompressNsz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
 	elif filePath.endswith('.xcz'):
-		__decompressXcz(filePath, outputDir, True, False)
+		__decompressXcz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
 	elif filePath.endswith('.ncz'):
 		filename = changeExtension(filePath, '.nca')
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
-		Print.info('Decompressing %s -> %s' % (filePath, outPath))
+		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		container = factory(filePath)
 		container.open(filePath, 'rb')
 		try:
@@ -31,26 +31,26 @@ def decompress(filePath, outputDir = None):
 			container.close()
 		fileNameHash = Path(filePath).stem.lower()
 		if hexHash[:32] == fileNameHash:
-			Print.error('[VERIFIED]   {0}'.format(filename))
+			Print.info('[VERIFIED]   {0}'.format(filename), pleaseNoPrint)
 		else:
-			Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]))
+			Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]), pleaseNoPrint)
 	else:
 		raise NotImplementedError("Can't decompress {0} as that file format isn't implemented!".format(filePath))
 
 
-def verify(filePath, raiseVerificationException):
+def verify(filePath, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	if isNspNsz(filePath):
-		__decompressNsz(filePath, None, False, raiseVerificationException)
+		__decompressNsz(filePath, None, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 	elif isXciXcz(filePath):
-		__decompressXcz(filePath, None, False, raiseVerificationException)
+		__decompressXcz(filePath, None, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 
 
-def __decompressContainer(readContainer, writeContainer, fileHashes, write = True, raiseVerificationException = False):
+def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	for nspf in readContainer:
 		CHUNK_SZ = 0x100000
 		f = None
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('skipping delta fragment')
+			Print.info('skipping delta fragment', pleaseNoPrint)
 			continue
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
@@ -65,29 +65,29 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write = Tru
 					f.write(inputChunk)
 			if verifyFile:
 				if hash.hexdigest() in fileHashes:
-					Print.error('[VERIFIED]   {0}'.format(nspf._path))
+					Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
 				else:
-					Print.info('[CORRUPTED]  {0}'.format(nspf._path))
+					Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
 					if raiseVerificationException:
 						raise Exception("Verification detected hash missmatch!")
 			elif not write:
-				Print.info('[EXISTS]     {0}'.format(nspf._path))
+				Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
 			f = writeContainer.add(newFileName, nspf.size)
-		written, hexHash = __decompressNcz(nspf, f)
+		written, hexHash = __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint)
 		if write:
 			writeContainer.resize(newFileName, written)
 		if hexHash in fileHashes:
-			Print.error('[VERIFIED]   {0}'.format(nspf._path))
+			Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
 		else:
-			Print.info('[CORRUPTED]  {0}'.format(nspf._path))
+			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
 			if raiseVerificationException:
 				raise Exception("Verification detected hash missmatch")
 
 
-def __decompressNcz(nspf, f):
+def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	ncaHeaderSize = 0x4000
 	blockID = 0
 	nspf.seek(0)
@@ -115,35 +115,44 @@ def __decompressNcz(nspf, f):
 	if not useBlockCompression:
 		decompressor = ZstdDecompressor().stream_reader(nspf)
 	hash = sha256()
-	with enlighten.Counter(total=nca_size, desc='Decompress', unit="B", color='red') as bar:
-		if f != None:
-			f.write(header)
+	
+	
+	if statusReportInfo == None:
+		bar = enlighten.Counter(total=nca_size, desc='Decompress', unit="B", color='red')
+	if f != None:
+		f.write(header)
+	if statusReportInfo != None:
+		statusReport, id = statusReportInfo
+		statusReport[id] = [len(header), 0, nca_size]
+	else:
 		bar.update(len(header))
-		hash.update(header)
+	hash.update(header)
 
-		for s in sections:
-			i = s.offset
-			crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
-			end = s.offset + s.size
-			while i < end:
-				crypto.seek(i)
-				chunkSz = 0x10000 if end - i > 0x10000 else end - i
-				if useBlockCompression:
-					inputChunk = blockDecompressorReader.read(chunkSz)
-				else:
-					inputChunk = decompressor.read(chunkSz)
-				if not len(inputChunk):
-					break
-				if not useBlockCompression:
-					decompressor.flush()
-				if s.cryptoType in (3, 4):
-					inputChunk = crypto.encrypt(inputChunk)
-				if f != None:
-					f.write(inputChunk)
-				hash.update(inputChunk)
-				i += len(inputChunk)
+	for s in sections:
+		i = s.offset
+		crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
+		end = s.offset + s.size
+		while i < end:
+			crypto.seek(i)
+			chunkSz = 0x10000 if end - i > 0x10000 else end - i
+			if useBlockCompression:
+				inputChunk = blockDecompressorReader.read(chunkSz)
+			else:
+				inputChunk = decompressor.read(chunkSz)
+			if not len(inputChunk):
+				break
+			if not useBlockCompression:
+				decompressor.flush()
+			if s.cryptoType in (3, 4):
+				inputChunk = crypto.encrypt(inputChunk)
+			if f != None:
+				f.write(inputChunk)
+			hash.update(inputChunk)
+			i += len(inputChunk)
+			if statusReportInfo != None:
+				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size]
+			else:
 				bar.update(chunkSz)
-				time.sleep(0.02)
 
 	hexHash = hash.hexdigest()
 	if f != None:
@@ -153,7 +162,7 @@ def __decompressNcz(nspf, f):
 	return (0, hexHash)
 
 
-def __decompressNsz(filePath, outputDir = None, write = True, raiseVerificationException = False):
+def __decompressNsz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -161,16 +170,16 @@ def __decompressNsz(filePath, outputDir = None, write = True, raiseVerificationE
 	if write:
 		filename = changeExtension(filePath, '.nsp')
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
-		Print.info('Decompressing %s -> %s' % (filePath, outPath))
+		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		with Pfs0.Pfs0Stream(outPath) as nsp:
-			__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException)
+			__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 	else:
-		__decompressContainer(container, None, fileHashes, write, raiseVerificationException)
+		__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 
 	container.close()
 
 
-def __decompressXcz(filePath, outputDir = None, write = True, raiseVerificationException = False):
+def __decompressXcz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(filePath, 'rb')
@@ -179,13 +188,13 @@ def __decompressXcz(filePath, outputDir = None, write = True, raiseVerificationE
 	if write:
 		filename = changeExtension(filePath, '.xci')
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
-		Print.info('Decompressing %s -> %s' % (filePath, outPath))
+		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
-				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException)
+				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 				xci.hfs0.resize('secure', secureOut.actualSize)
 	else:
-		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException)
+		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 
 	container.close()
 

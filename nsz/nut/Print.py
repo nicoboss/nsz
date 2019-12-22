@@ -1,3 +1,5 @@
+import sys
+import time
 
 global silent
 enableInfo = True
@@ -6,19 +8,27 @@ enableWarning = True
 enableDebug = False
 
 silent = False
-
-
-def info(s):
-	print(s)
+	
+def info(s, pleaseNoPrint = None):
+	if pleaseNoPrint == None:
+		sys.stdout.write(s + "\n")
+	else:
+		while pleaseNoPrint.value() > 0:
+			#print("Wait")
+			time.sleep(0.01)
+		pleaseNoPrint.increment()
+		sys.stdout.write(s + "\n")
+		sys.stdout.flush()
+		pleaseNoPrint.decrement()
 	
 def infoNoNewline(s):
-	print(s, end = '')
+	sys.stdout.write(s)
 
 def error(s):
-	print(s)
+	sys.stdout.write(s + "\n")
 
 def warning(s):
-	print(s)
+	sys.stdout.write(s + "\n")
 
 def debug(s):
-	print(s)
+	sys.stdout.write(s + "\n")

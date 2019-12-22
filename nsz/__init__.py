@@ -26,7 +26,7 @@ import enlighten
 import time
 
 
-def solidCompressTask(in_queue, statusReport, readyForWork, pleaseKillYourself, id):
+def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id):
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
@@ -34,13 +34,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseKillYourself, 
 		if pleaseKillYourself.value() > 0:
 			break
 		filePath, compressionLevel, outputDir, threadsToUse, verifyArg = item
-		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id)
+		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 		if verifyArg:
-			print("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, True)
+			Print.info("[VERIFY NSZ] {0}".format(outFile))
+			verify(outFile, True, [statusReport, id], pleaseNoPrint)
 
-def compress(filePath, outputDir, args, work, barManager):
-	print(filePath)
+def compress(filePath, outputDir, args, work):
 	compressionLevel = 22 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if filePath.suffix == ".xci" and not args.solid or args.block:
@@ -52,11 +51,11 @@ def compress(filePath, outputDir, args, work, barManager):
 		work.put([filePath, compressionLevel, outputDir, threadsToUse, args.verify])
 
 
-def decompress(filePath, outputDir, barManager):
-	NszDecompress(filePath, outputDir, barManager)
+def decompress(filePath, outputDir, statusReportInfo = None):
+	NszDecompress(filePath, outputDir, statusReportInfo)
 
-def verify(filePath, raiseVerificationException):
-	NszVerify(filePath, raiseVerificationException)
+def verify(filePath, raiseVerificationException, statusReportInfo = None, pleaseNoPrint = None):
+	NszVerify(filePath, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 
 err = []
 
@@ -98,12 +97,13 @@ def main():
 		poolManager = Manager()
 		statusReport = poolManager.list()
 		readyForWork = Counter(0)
+		pleaseNoPrint = Counter(0)
 		pleaseKillYourself = Counter(0)
 		pool = []
 		work = poolManager.Queue()
 		for i in range(threads):
 			statusReport.append([0, 0, 100])
-			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseKillYourself, i))
+			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
 			p.start()
 			pool.append(p)
 		
@@ -141,7 +141,7 @@ def main():
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 								
-						compress(filePath, outfolder, args, work, barManager)
+						compress(filePath, outfolder, args, work)
 						if args.rm_source:
 							sourceFileToDelete.append(filePath)
 					except KeyboardInterrupt:
@@ -152,27 +152,37 @@ def main():
 						print_exc()
 			
 			bars = []
-			subBars = []
+			compressedSubBars = []
+			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 			for i in range(threads):
-				bar = barManager.counter(total=1, desc='Compressing', unit='B', color='cyan')
-				subBars.append(bar.add_subcounter('green', all_fields=True))
+				bar = barManager.counter(total=1, desc='Compressing', unit='B', color='cyan', bar_format=BAR_FMT)
+				compressedSubBars.append(bar.add_subcounter('green'))
 				bars.append(bar)
 			sleep(0.02)
-			while readyForWork.value()<threads:
+			while readyForWork.value() < threads:
 				sleep(0.2)
+				if pleaseNoPrint.value() > 0:
+					continue
+				pleaseNoPrint.increment()
 				for i in range(threads):
-					report = statusReport[i]
-					bars[i].total = report[2]
-					bars[i].count = report[1]
-					subBars[i].count = report[0]
+					compressedRead, compressedWritten, total = statusReport[i]
+					if bars[i].total != total:
+						bars[i].total = total
+					bars[i].count = compressedRead
+					compressedSubBars[i].count = compressedWritten
 					bars[i].refresh()
+				pleaseNoPrint.decrement()
 			pleaseKillYourself.increment()
 			for i in range(readyForWork.value()):
 				work.put(None)
 			
 			while readyForWork.value() > 0:
 				sleep(0.02)
-				
+			
+			for i in range(threads):
+				bars[i].close(clear=True)
+			barManager.stop()
+
 			for filePath in sourceFileToDelete:
 				delete_source_file(filePath)
 
@@ -197,7 +207,7 @@ def main():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
 								'If you want to overwrite it use the -w parameter!'.format(outfile.name))
 								continue
-						decompress(filePath, outfolder, barManager)
+						decompress(filePath, outfolder)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:
