@@ -29,6 +29,7 @@ then
 		gstreamer1.0-plugins-base \
 		gstreamer1.0-plugins-good
 elif [ -n "`which dnf`" ]
+then
 	dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
 	# Install necessary system packages
 	dnf install -y python3-devel ffmpeg-libs SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel portmidi-devel libavdevice libavc1394-devel zlibrary-devel ccache mesa-libGL mesa-libGL-devel
