@@ -41,18 +41,18 @@ class GUI(App):
 		config.setdefaults(
 		'Settings', {
 			'level': '[Lv. 18] Great (default)',
-			'block': False,
-			'solid': False,
+			'block': 0,
+			'solid': 0,
 			'bs': "1 MB (default)",
-			'verify': False,
+			'verify': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
 			'multi': 4,
-			'parseCnmt': False,
-			'overwrite': False,
-			'rm_old_version': False,
-			'rm_source': False,
+			'parseCnmt': 0,
+			'overwrite': 0,
+			'rm_old_version': 0,
+			'rm_source': 0,
 		})
 		config.setdefaults('Tools', {
 			'depth': 1,
@@ -113,16 +113,16 @@ class arguments:
 		self.extract = True if rootWidget.extract is True else None
 		self.create = True if rootWidget.create is True else None
 		self.level = level_scrolloptions.get(config.get('Settings', 'level'), 18)
-		self.block = True if config.get('Settings', 'block') is True else None
-		self.solid = True if config.get('Settings', 'solid') is True else None
+		self.block = True if int(config.get('Settings', 'block')) == 1 else None
+		self.solid = True if int(config.get('Settings', 'solid')) == 1 else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
-		self.verify = True if config.get('Settings', 'verify') is True else None
+		self.verify = True if int(config.get('Settings', 'verify')) == 1 else None
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
-		self.parseCnmt = True if config.get('Advanced', 'parseCnmt') is True else None
-		self.overwrite = True if config.get('Advanced', 'overwrite') is True else None
-		self.rm_old_version = True if config.get('Advanced', 'rm_old_version') is True else None
-		self.rm_source = True if config.get('Advanced', 'rm_source') is True else None
+		self.parseCnmt = True if int(config.get('Advanced', 'parseCnmt')) == 1 else None
+		self.overwrite = True if int(config.get('Advanced', 'overwrite')) == 1 else None
+		self.rm_old_version = True if int(config.get('Advanced', 'rm_old_version')) == 1 else None
+		self.rm_source = True if int(config.get('Advanced', 'rm_source')) == 1 else None
 		self.depth = int(config.get('Tools', 'depth'))
 		self.extractregex = str(config.get('Tools', 'extractregex'))
 
