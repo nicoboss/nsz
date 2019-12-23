@@ -33,13 +33,19 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 		readyForWork.decrement()
 		if pleaseKillYourself.value() > 0:
 			break
-		filePath, compressionLevel, outputDir, threadsToUse, verifyArg = item
-		outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
-		if verifyArg:
-			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, True, [statusReport, id], pleaseNoPrint)
+		try:
+			filePath, compressionLevel, outputDir, threadsToUse, verifyArg = item
+			outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
+			if verifyArg:
+				Print.info("[VERIFY NSZ] {0}".format(outFile))
+				verify(outFile, True, [statusReport, id], pleaseNoPrint)
+		except KeyboardInterrupt:
+			Print.info('Keyboard exception')
+		except BaseException as e:
+			Print.info('nut exception: {0}'.format(str(e)))
+			raise
 
-def compress(filePath, outputDir, args, work):
+def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	compressionLevel = 18 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if filePath.suffix == ".xci" and not args.solid or args.block:
@@ -49,6 +55,7 @@ def compress(filePath, outputDir, args, work):
 			verify(outFile, True)
 	else:
 		work.put([filePath, compressionLevel, outputDir, threadsToUse, args.verify])
+		amountOfTastkQueued.increment()
 
 
 def decompress(filePath, outputDir, statusReportInfo = None):
@@ -100,11 +107,7 @@ def main():
 		pleaseKillYourself = Counter(0)
 		pool = []
 		work = poolManager.Queue()
-		for i in range(args.multi):
-			statusReport.append([0, 0, 100])
-			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
-			p.start()
-			pool.append(p)
+		amountOfTastkQueued = Counter(0)
 		
 		if args.titlekeys:
 			extractTitlekeys(args.file)
@@ -139,8 +142,7 @@ def main():
 						elif filePath.suffix == '.xci':
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-								
-						compress(filePath, outfolder, args, work)
+						compress(filePath, outfolder, args, work, amountOfTastkQueued)
 						if args.rm_source:
 							sourceFileToDelete.append(filePath)
 					except KeyboardInterrupt:
@@ -153,17 +155,25 @@ def main():
 			bars = []
 			compressedSubBars = []
 			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
-			for i in range(args.multi):
-				bar = barManager.counter(total=1, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
+			parallelTasks = min(args.multi, amountOfTastkQueued.value())
+			if parallelTasks < 0:
+				parallelTasks = 4
+			for i in range(parallelTasks):
+				statusReport.append([0, 0, 100])
+				p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
+				p.start()
+				pool.append(p)
+			for i in range(parallelTasks):
+				bar = barManager.counter(total=100, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 				compressedSubBars.append(bar.add_subcounter('green'))
 				bars.append(bar)
 			sleep(0.02)
-			while readyForWork.value() < args.multi:
+			while readyForWork.value() < parallelTasks:
 				sleep(0.2)
 				if pleaseNoPrint.value() > 0:
 					continue
 				pleaseNoPrint.increment()
-				for i in range(args.multi):
+				for i in range(parallelTasks):
 					compressedRead, compressedWritten, total = statusReport[i]
 					if bars[i].total != total:
 						bars[i].total = total//1048576
@@ -178,9 +188,9 @@ def main():
 			while readyForWork.value() > 0:
 				sleep(0.02)
 			
-			for i in range(args.multi):
+			for i in range(parallelTasks):
 				bars[i].close(clear=True)
-			barManager.stop()
+			#barManager.stop() #We aren’t using stop because of it printing garbage to the console.
 
 			for filePath in sourceFileToDelete:
 				delete_source_file(filePath)
