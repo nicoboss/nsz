@@ -69,5 +69,5 @@ export USE_X11=1
 pip3 install Cython==0.29.10
 
 # Install stable version of Kivy into the virtualenv
-pip3 install --no-binary kivy==1.11.1
+pip3 install --no-binary :all kivy==1.11.1
 
