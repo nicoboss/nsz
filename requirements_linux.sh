@@ -1,4 +1,4 @@
-su
+[ "$UID" -eq 0 ] || exec sudo "$0" "$@"
 
 pip3 install pycryptodome>=3.9.0
 pip3 install zstandard
