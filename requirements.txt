@@ -1,5 +1,3 @@
-setuptools
-ez_setup
 pycryptodome>=3.9.0
 zstandard
 enlighten
