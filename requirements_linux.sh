@@ -54,7 +54,7 @@ fi
 
 
 # make sure pip, virtualenv and setuptools are updated
-python3 -m pip3 install --upgrade --user pip virtualenv setuptools
+python3 -m pip install --upgrade --user pip virtualenv setuptools
 
 # then create a virtualenv named "kivy_venv" in your home with:
 python3 -m virtualenv ~/kivy_venv
