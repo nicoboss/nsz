@@ -106,56 +106,57 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				f.write(header)
 				decompressedBytes = ncaHeaderSize
 				compressedBytes = f.tell()
-				with enlighten.Counter(total=nspf.size, desc='Compressing', unit='B', color='cyan') as bar:
-					subBars = bar.add_subcounter('green', all_fields=True)
-					partitions = [nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True) for section in sections]
-					partNr = 0
-					bar.count = nspf.tell()
-					subBars.count = f.tell()
+				BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+				bar = enlighten.Counter(total=nspf.size//1048576, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
+				subBars = bar.add_subcounter('green', all_fields=True)
+				partitions = [nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True) for section in sections]
+				partNr = 0
+				bar.count = nspf.tell()//1048576
+				subBars.count = f.tell()//1048576
+				bar.refresh()
+				while True:
+					buffer = partitions[partNr].read(blockSize)
+					while (len(buffer) < blockSize and partNr < len(partitions)-1):
+						partitions[partNr].close()
+						partitions[partNr] = None
+						partNr += 1
+						buffer += partitions[partNr].read(blockSize - len(buffer))
+					if chunkRelativeBlockID >= TasksPerChunk or len(buffer) == 0:
+						while readyForWork.value() < threads:
+							sleep(0.02)
+
+						for i in range(min(TasksPerChunk, blocksToCompress-startChunkBlockID)):
+							lenResult = len(results[i])
+							compressedBytes += lenResult
+							compressedblockSizeList[startChunkBlockID+i] = lenResult
+							f.write(results[i])
+							results[i] = b""
+
+						if len(buffer) == 0:
+							sleep(0.02)
+							pleaseKillYourself.increment()
+
+							for i in range(readyForWork.value()):
+								work.put(None)
+
+							while readyForWork.value() > 0:
+								sleep(0.02)
+							break
+						chunkRelativeBlockID = 0
+						startChunkBlockID = blockID
+					work.put([buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID])
+					blockID += 1
+					chunkRelativeBlockID += 1
+					decompressedBytes += len(buffer)
+					bar.count = decompressedBytes//1048576
+					subBars.count = compressedBytes//1048576
 					bar.refresh()
-					while True:
-						buffer = partitions[partNr].read(blockSize)
-						while (len(buffer) < blockSize and partNr < len(partitions)-1):
-							partitions[partNr].close()
-							partitions[partNr] = None
-							partNr += 1
-							buffer += partitions[partNr].read(blockSize - len(buffer))
-						if chunkRelativeBlockID >= TasksPerChunk or len(buffer) == 0:
-							while readyForWork.value() < threads:
-								sleep(0.02)
-
-							for i in range(min(TasksPerChunk, blocksToCompress-startChunkBlockID)):
-								lenResult = len(results[i])
-								compressedBytes += lenResult
-								compressedblockSizeList[startChunkBlockID+i] = lenResult
-								f.write(results[i])
-								results[i] = b""
-
-							if len(buffer) == 0:
-								sleep(0.02)
-								pleaseKillYourself.increment()
-
-								for i in range(readyForWork.value()):
-									work.put(None)
-
-								while readyForWork.value() > 0:
-									sleep(0.02)
-								break
-							chunkRelativeBlockID = 0
-							startChunkBlockID = blockID
-						work.put([buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID])
-						blockID += 1
-						chunkRelativeBlockID += 1
-						decompressedBytes += len(buffer)
-						bar.count = decompressedBytes
-						subBars.count = compressedBytes
-						bar.refresh()
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
-				bar.count = decompressedBytes
-				subBars.count = compressedBytes
-				bar.refresh()
+				bar.count = decompressedBytes//1048576
+				subBars.count = compressedBytes//1048576
+				bar.close()
 				written = endPos - startPos
 				f.seek(blocksHeaderFilePos+24)
 				header = b""

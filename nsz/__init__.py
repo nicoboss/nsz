@@ -153,9 +153,9 @@ def main():
 			
 			bars = []
 			compressedSubBars = []
-			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 			for i in range(threads):
-				bar = barManager.counter(total=1, desc='Compressing', unit='B', color='cyan', bar_format=BAR_FMT)
+				bar = barManager.counter(total=1, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 				compressedSubBars.append(bar.add_subcounter('green'))
 				bars.append(bar)
 			sleep(0.02)
@@ -167,9 +167,9 @@ def main():
 				for i in range(threads):
 					compressedRead, compressedWritten, total = statusReport[i]
 					if bars[i].total != total:
-						bars[i].total = total
-					bars[i].count = compressedRead
-					compressedSubBars[i].count = compressedWritten
+						bars[i].total = total//1048576
+					bars[i].count = compressedRead//1048576
+					compressedSubBars[i].count = compressedWritten//1048576
 					bars[i].refresh()
 				pleaseNoPrint.decrement()
 			pleaseKillYourself.increment()
@@ -231,7 +231,7 @@ def main():
 				for filePath in expandFiles(Path(f_str)):
 					try:
 						if isGame(filePath):
-							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath), f_str))
+							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath), filePath.name))
 							verify(filePath, False)
 					except KeyboardInterrupt:
 						raise

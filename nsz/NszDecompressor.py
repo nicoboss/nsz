@@ -116,16 +116,18 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		decompressor = ZstdDecompressor().stream_reader(nspf)
 	hash = sha256()
 	
-	
 	if statusReportInfo == None:
-		bar = enlighten.Counter(total=nca_size, desc='Decompress', unit="B", color='red')
+		BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+		bar = enlighten.Counter(total=nca_size//1048576, desc='Decompress', unit="MiB", color='red', bar_format=BAR_FMT)
+	decompressedBytes = len(header)
 	if f != None:
 		f.write(header)
 	if statusReportInfo != None:
 		statusReport, id = statusReportInfo
 		statusReport[id] = [len(header), 0, nca_size]
 	else:
-		bar.update(len(header))
+		bar.count = decompressedBytes//1048576
+		bar.refresh()
 	hash.update(header)
 
 	for s in sections:
@@ -148,12 +150,16 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 			if f != None:
 				f.write(inputChunk)
 			hash.update(inputChunk)
-			i += len(inputChunk)
+			lenInputChunk = len(inputChunk)
+			i += lenInputChunk
+			decompressedBytes += lenInputChunk
 			if statusReportInfo != None:
 				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size]
 			else:
-				bar.update(chunkSz)
+				bar.count = decompressedBytes//1048576
+				bar.refresh()
 
+	bar.close()
 	hexHash = hash.hexdigest()
 	if f != None:
 		end = f.tell()

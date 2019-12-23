@@ -102,7 +102,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					stusReport[id] = [nspf.tell(), f.tell(), nspf.size]
 		
 					written = f.tell() - start
-					Print.info('compressed %d%% %d -> %d  - %s' % (int(written * 100 / nspf.size), decompressedBytes, written, nspf._path), pleaseNoPrint)
+					Print.info('Compressed {0}% {1} -> {2}  - {3}'.format(written * 100 / nspf.size, decompressedBytes, written, nspf._path), pleaseNoPrint)
 					writeContainer.resize(newFileName, written)
 					continue
 			else:
