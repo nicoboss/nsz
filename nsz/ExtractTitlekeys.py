@@ -7,7 +7,7 @@ import json
 def extractTitlekeys(argsFile):
 	titlekeysDict = {}
 	if Path("titlekeys.txt").is_file():
-		with open("titlekeys.txt", "r") as titlekeysFile:
+		with open("titlekeys.txt", "r", encoding="utf-8") as titlekeysFile:
 			for line in titlekeysFile:
 				(rightsId, titleKey, name) = line.rstrip().split('|')
 				titlekeysDict[rightsId[0:16]] = (rightsId, titleKey, name)
@@ -29,7 +29,7 @@ def extractTitlekeys(argsFile):
 				Print.info("Skipped already existing {0}".format(rightsId))
 			f.close()
 	Print.info("\ntitlekeys.txt:")
-	with open('titlekeys.txt', 'w') as titlekeysFile:
+	with open('titlekeys.txt', 'w', encoding="utf-8") as titlekeysFile:
 		for titleId in sorted(titlekeysDict.keys()):
 			(rightsId, titleKey, name) = titlekeysDict[titleId]
 			titleDBLine = "{0}|{1}|{2}".format(rightsId, titleKey, name)
