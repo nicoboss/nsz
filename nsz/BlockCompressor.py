@@ -26,7 +26,7 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
 		#sys.stdout.write(str(len(compressed) - len(buffer)) + "\n")
 		out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
-def blockCompress(filePath, compressionLevel = 22, blockSizeExponent = 20, outputDir = None, threads = -1):
+def blockCompress(filePath, compressionLevel, blockSizeExponent, outputDir, threads):
 	if filePath.suffix == '.nsp':
 		return blockCompressNsp(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
 	elif filePath.suffix == '.xci':

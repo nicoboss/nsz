@@ -20,6 +20,7 @@ class RootWidget(FloatLayout):
 	D = False
 	output = False
 	info = False
+	titlekeys = False
 	extract = False
 	create = False
 	
@@ -46,6 +47,11 @@ class RootWidget(FloatLayout):
 		
 	def Info(self):
 		self.info = True
+		self.hardExit = False
+		App.get_running_app().stop()
+		
+	def Titlekeys(self):
+		self.titlekeys = True
 		self.hardExit = False
 		App.get_running_app().stop()
 		

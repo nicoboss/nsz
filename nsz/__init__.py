@@ -40,7 +40,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 			verify(outFile, True, [statusReport, id], pleaseNoPrint)
 
 def compress(filePath, outputDir, args, work):
-	compressionLevel = 22 if args.level is None else args.level
+	compressionLevel = 18 if args.level is None else args.level
 	threadsToUse = args.threads if args.threads > 0 else cpu_count()
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		outFile = blockCompress(filePath, compressionLevel, args.bs, outputDir, threadsToUse)
@@ -93,7 +93,6 @@ def main():
 		Print.info('')
 		
 		barManager = enlighten.get_manager()
-		threads = args.threads if args.threads > 0 else cpu_count()
 		poolManager = Manager()
 		statusReport = poolManager.list()
 		readyForWork = Counter(0)
@@ -101,7 +100,7 @@ def main():
 		pleaseKillYourself = Counter(0)
 		pool = []
 		work = poolManager.Queue()
-		for i in range(threads):
+		for i in range(args.multi):
 			statusReport.append([0, 0, 100])
 			p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
 			p.start()
@@ -154,17 +153,17 @@ def main():
 			bars = []
 			compressedSubBars = []
 			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
-			for i in range(threads):
+			for i in range(args.multi):
 				bar = barManager.counter(total=1, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 				compressedSubBars.append(bar.add_subcounter('green'))
 				bars.append(bar)
 			sleep(0.02)
-			while readyForWork.value() < threads:
+			while readyForWork.value() < args.multi:
 				sleep(0.2)
 				if pleaseNoPrint.value() > 0:
 					continue
 				pleaseNoPrint.increment()
-				for i in range(threads):
+				for i in range(args.multi):
 					compressedRead, compressedWritten, total = statusReport[i]
 					if bars[i].total != total:
 						bars[i].total = total//1048576
@@ -179,7 +178,7 @@ def main():
 			while readyForWork.value() > 0:
 				sleep(0.02)
 			
-			for i in range(threads):
+			for i in range(args.multi):
 				bars[i].close(clear=True)
 			barManager.stop()
 

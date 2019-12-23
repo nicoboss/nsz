@@ -2,10 +2,10 @@
 	{
 		"type": "scrolloptions",
 		"title": "Compression Level",
-		"desc": "Trade-off between compression speed and compression ratio. Default: 22, Max: 22",
+		"desc": "Trade-off between compression speed and compression ratio. Default: 18, Max: 22",
 		"section": "Settings",
 		"key": "level",
-		"options": ["[Lv. 01] Debugging", "[Lv. 08] Faster", "[Lv. 12] Fast", "[Lv. 14] Normal", "[Lv. 18] Great", "[Lv. 22] Ultra (default)"]
+		"options": ["[Lv. 01] Debugging", "[Lv. 08] Faster", "[Lv. 12] Fast", "[Lv. 14] Normal", "[Lv. 18] Great (default)", "[Lv. 22] Ultra (recommended)"]
 	},
 	{
 		"type": "bool",

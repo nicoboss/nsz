@@ -7,6 +7,13 @@
 		"key": "threads"
 	},
 	{
+		"type": "numeric",
+		"title": "Multitasking",
+		"desc": "Executes multiple compression tasks in parallel. Take a look at available RAM especially if compression level is over 18.",
+		"section": "Advanced",
+		"key": "multi"
+	},
+	{
 		"type": "bool",
 		"title": "Parse Cnmt",
 		"desc": "Extract TitleId/Version from Cnmt if this information cannot be obtained from the filename. Required for skipping/overwriting existing files and --rm-old-version to work properly if some not every file is named properly. Supported filenames: *TitleID*[vVersion]*",

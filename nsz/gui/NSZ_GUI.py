@@ -40,7 +40,7 @@ class GUI(App):
 	def build_config(self, config):
 		config.setdefaults(
 		'Settings', {
-			'level': '[Lv. 22] Ultra (default)',
+			'level': '[Lv. 18] Great (default)',
 			'block': False,
 			'solid': False,
 			'bs': "1 MB (default)",
@@ -48,6 +48,7 @@ class GUI(App):
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
+			'multi': 4,
 			'parseCnmt': False,
 			'overwrite': False,
 			'rm_old_version': False,
@@ -55,6 +56,7 @@ class GUI(App):
 		})
 		config.setdefaults('Tools', {
 			'depth': 1,
+			'extractregex': ''
 		})
 
 	def build_settings(self, settings):
@@ -88,8 +90,8 @@ class arguments:
 			"[Lv. 08] Faster": 8,
 			"[Lv. 12] Fast": 12,
 			"[Lv. 14] Normal": 14,
-			"[Lv. 18] Great": 18,
-			"[Lv. 22] Ultra (default)": 22,
+			"[Lv. 18] Great (default)": 18,
+			"[Lv. 22] Ultra (recommended)": 22,
 		}
 		bs_scrolloptions = {
 			"64 KB": 16,
@@ -107,19 +109,22 @@ class arguments:
 		self.D = True if rootWidget.D is True else None
 		self.output = rootWidget.output
 		self.info = True if rootWidget.info is True else None
+		self.titlekeys = True if rootWidget.titlekeys is True else None
 		self.extract = True if rootWidget.extract is True else None
 		self.create = True if rootWidget.create is True else None
-		self.level = level_scrolloptions.get(config.get('Settings', 'level'), 22)
+		self.level = level_scrolloptions.get(config.get('Settings', 'level'), 18)
 		self.block = True if config.get('Settings', 'block') is True else None
 		self.solid = True if config.get('Settings', 'solid') is True else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
 		self.verify = True if config.get('Settings', 'verify') is True else None
 		self.threads = int(config.get('Advanced', 'threads'))
+		self.multi = int(config.get('Advanced', 'multi'))
 		self.parseCnmt = True if config.get('Advanced', 'parseCnmt') is True else None
 		self.overwrite = True if config.get('Advanced', 'overwrite') is True else None
 		self.rm_old_version = True if config.get('Advanced', 'rm_old_version') is True else None
 		self.rm_source = True if config.get('Advanced', 'rm_source') is True else None
 		self.depth = int(config.get('Tools', 'depth'))
+		self.extractregex = str(config.get('Tools', 'extractregex'))
 
 
 if __name__ == '__main__':
