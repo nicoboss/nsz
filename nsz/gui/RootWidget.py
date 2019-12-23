@@ -94,5 +94,5 @@ class RootWidget(FloatLayout):
 		
 	def showAboutDialog(self):
 		content = AboutDialog(cancel=self.dismissPopup)
-		self._popup = Popup(title="About", content=content, size_hint=(0.9, 0.9))
+		self._popup = Popup(title="About", content=content, auto_dismiss=False, size_hint=(0.9, 0.9))
 		self._popup.open()
