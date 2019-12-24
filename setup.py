@@ -25,9 +25,9 @@ setuptools.setup(
 		'pycryptodome>=3.9.0',
 		'zstandard',
 		'enlighten',
-		'kivy_deps.sdl2==0.1.22;platform_system=="Windows',
-		'kivy_deps.glew==0.1.12;platform_system=="Windows',
-		'pygame;platform_system=="Linux'
+		'kivy_deps.sdl2==0.1.22;platform_system=="Windows"',
+		'kivy_deps.glew==0.1.12;platform_system=="Windows"',
+		'pygame;platform_system=="Linux"',
 		'kivy==1.11.1'],
 	entry_points = {'console_scripts': ['nsz = nsz:main']},
 	keywords = ['nsz', 'xcz', 'ncz', 'nsp', 'xci', 'nca', 'Switch'],
