@@ -89,7 +89,7 @@ def main():
 		outfolder = Path(outfolderToPharse).resolve() if args.output else Path('.').resolve()
 		
 		Print.info('')
-		Print.info('             NSZ v2.1   ,;:;;,')
+		Print.info('             NSZ v3.0   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
