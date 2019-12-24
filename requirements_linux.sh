@@ -1,17 +1,17 @@
-[ "$UID" -eq 0 ] || exec sudo "$0" "$@"
-
-pip3 install pycryptodome>=3.9.0
-pip3 install zstandard
-pip3 install enlighten
+#!/bin/bash
+if [[ `id -u` != 0 ]]; then
+    echo "This script must be run as root."
+    exit
+fi
 
 if [ -n "`which apt`" ]
 then
 	apt install -y \
-		python-pip \
 		build-essential \
 		git \
-		python \
-		python-dev \
+		python3 \
+		python3-dev \
+		python3-pip \
 		ffmpeg \
 		libsdl2-dev \
 		libsdl2-image-dev \
@@ -36,7 +36,6 @@ then
 	# Install xclip in case you run a kivy app using your computer, and the app requires a CutBuffer provider:
 	dnf install -y xclip
 	
-	#
 	# In case you get the following error preventing kivy install:
 	#  annobin: _event.c: Error: plugin built for compiler version (8.0.1) but run with compiler version (8.1.1)
 	#  cc1: error: fail to initialize plugin /usr/lib/gcc/86_64-redhat-linux/8/plugin/annobin.so
@@ -45,11 +44,6 @@ then
 	
 	# avoid pip Cython conflict with packaged version:
 	dnf remove python3-Cython
-	
-	pip3 install --upgrade pip setuptools
-	
-	# Use correct Cython version here (Cython==0.29.10 is for 1.11.1):
-	pip3 install Cython==0.29.10
 fi
 
 
@@ -57,17 +51,21 @@ fi
 python3 -m pip install --upgrade --user pip virtualenv setuptools
 
 # then create a virtualenv named "kivy_venv" in your home with:
-python3 -m virtualenv ~/kivy_venv
+#python3 -m virtualenv ~/kivy_venv
 
 # load the virtualenv
-source ~/kivy_venv/bin/activate
+#source ~/kivy_venv/bin/activate
 
 # if you'd like to be able to use the x11 winodw backend do:
 export USE_X11=1
 
 # install the correct Cython version
-pip3 install Cython==0.29.10
+python3 -m pip install Cython==0.29.10
 
 # Install stable version of Kivy into the virtualenv
-pip3 install --no-binary :all kivy==1.11.1
+python3 -m pip install --no-binary :all kivy==1.11.1
 
+
+python3 -m pip install pycryptodome>=3.9.0
+python3 -m pip install zstandard
+python3 -m pip install enlighten
