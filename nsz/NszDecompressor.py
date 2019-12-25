@@ -8,12 +8,12 @@ import Header, BlockDecompressorReader, FileExistingChecks
 import enlighten
 
 
-def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint):
-	if filePath.endswith('.nsz'):
+def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
+	if isNspNsz(filePath):
 		__decompressNsz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
-	elif filePath.endswith('.xcz'):
+	elif isXciXcz(filePath):
 		__decompressXcz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
-	elif filePath.endswith('.ncz'):
+	elif isCompressedGameFile(filePath):
 		filename = changeExtension(filePath, '.nca')
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
