@@ -10,8 +10,20 @@
 			height: 30
 			id: drives_list
 		
-		FileChooserListView:
+		BoxLayout:
+			orientation: 'horizontal'
+			size_hint_y: None
+			height: 30
+			Button:
+				text: 'Icon View'
+				on_press: filechooser.view_mode = 'icon'
+			Button:
+				text: 'List View'
+				on_press: filechooser.view_mode = 'list'
+		FileChooser:
 			id: filechooser
+			FileChooserIconLayout
+			FileChooserListLayout
 
 		BoxLayout:
 			size_hint_y: None
