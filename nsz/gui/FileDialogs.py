@@ -14,11 +14,14 @@ class OpenFileDialog(FloatLayout):
 	load = ObjectProperty(None)
 	cancel = ObjectProperty(None)
 	selected = None
+	backgroundColor = (1, 1, 1, 1)
+	selectedColor = (1.4, 1.4, 1.4, 1)
+	buttonDown = 'atlas://data/images/defaulttheme/button'
 	
 	def __init__(self, **kwargs):
 		super(OpenFileDialog, self).__init__(**kwargs)
 		for drive in WinDrives.get_win_drives():
-			button = Button(text=drive, on_press=self.drive_selection_changed)
+			button = Button(text=drive, background_color=self.backgroundColor, background_down=self.buttonDown, on_press=self.drive_selection_changed)
 			self.ids.drives_list.add_widget(button)
 			if self.selected == None:
 				self.drive_selection_changed(button)
@@ -26,10 +29,9 @@ class OpenFileDialog(FloatLayout):
 	def drive_selection_changed(self, *args):
 		self.ids.filechooser.path = args[0].text
 		if self.selected != None:
-			self.selected.background_color = [1, 1, 1, 1]
+			self.selected.background_color = self.backgroundColor
 		self.selected = args[0]
-		args[0].background_color = [1.4, 1.4, 1.4, 1]
-		print(args[0])
+		args[0].background_color = self.selectedColor
 
 
 class SaveFileDialog(FloatLayout):
@@ -37,11 +39,14 @@ class SaveFileDialog(FloatLayout):
 	text_input = ObjectProperty(None)
 	cancel = ObjectProperty(None)
 	selected = None
+	backgroundColor = (1, 1, 1, 1)
+	selectedColor = (1.4, 1.4, 1.4, 1)
+	buttonDown = 'atlas://data/images/defaulttheme/button'
 	
 	def __init__(self, **kwargs):
 		super(SaveFileDialog, self).__init__(**kwargs)
 		for drive in WinDrives.get_win_drives():
-			button = Button(text=drive, on_press=self.drive_selection_changed)
+			button = Button(text=drive, background_color=self.backgroundColor, background_down=self.buttonDown, on_press=self.drive_selection_changed)
 			self.ids.drives_list.add_widget(button)
 			if self.selected == None:
 				self.drive_selection_changed(button)
@@ -49,9 +54,9 @@ class SaveFileDialog(FloatLayout):
 	def drive_selection_changed(self, *args):
 		self.ids.filechooser.path = args[0].text
 		if self.selected != None:
-			self.selected.background_color = [1, 1, 1, 1]
+			self.selected.background_color = self.backgroundColor
 		self.selected = args[0]
-		args[0].background_color = [1.4, 1.4, 1.4, 1]
+		args[0].background_color = self.selectedColor
 
 
 class WinDrives:
