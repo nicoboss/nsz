@@ -1,6 +1,5 @@
 from kivy.app import App
 from kivy.core.window import Window
-Window.minimum_width, Window.minimum_height = 800, 600
 from kivy.clock import Clock
 from kivy.compat import string_types
 from kivy.uix.label import Label

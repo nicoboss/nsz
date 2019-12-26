@@ -81,7 +81,7 @@ class GameList(StackLayout):
 		self.recycleView = RV([])
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)
 		self.add_widget(self.draggableScrollbar)
-		self.id = "gameList"
+		self.name = "gameList"
 
 	def refresh(self, items):
 		self.draggableScrollbar.slider.opacity = int(len(items)>20)
