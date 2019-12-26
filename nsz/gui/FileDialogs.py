@@ -13,27 +13,45 @@ Builder.load_file(getGuiPath('layout/SaveFileDialog.kv'))
 class OpenFileDialog(FloatLayout):
 	load = ObjectProperty(None)
 	cancel = ObjectProperty(None)
+	selected = None
 	
 	def __init__(self, **kwargs):
 		super(OpenFileDialog, self).__init__(**kwargs)
 		for drive in WinDrives.get_win_drives():
-			self.ids.drives_list.add_widget(Button(text=drive, on_press=self.drive_selection_changed))
+			button = Button(text=drive, on_press=self.drive_selection_changed)
+			self.ids.drives_list.add_widget(button)
+			if self.selected == None:
+				self.drive_selection_changed(button)
 	
 	def drive_selection_changed(self, *args):
 		self.ids.filechooser.path = args[0].text
+		if self.selected != None:
+			self.selected.background_color = [1, 1, 1, 1]
+		self.selected = args[0]
+		args[0].background_color = [1.4, 1.4, 1.4, 1]
+		print(args[0])
+
 
 class SaveFileDialog(FloatLayout):
 	save = ObjectProperty(None)
 	text_input = ObjectProperty(None)
 	cancel = ObjectProperty(None)
+	selected = None
 	
 	def __init__(self, **kwargs):
 		super(SaveFileDialog, self).__init__(**kwargs)
 		for drive in WinDrives.get_win_drives():
-			self.ids.drives_list.add_widget(Button(text=drive, on_press=self.drive_selection_changed))
+			button = Button(text=drive, on_press=self.drive_selection_changed)
+			self.ids.drives_list.add_widget(button)
+			if self.selected == None:
+				self.drive_selection_changed(button)
 	
 	def drive_selection_changed(self, *args):
 		self.ids.filechooser.path = args[0].text
+		if self.selected != None:
+			self.selected.background_color = [1, 1, 1, 1]
+		self.selected = args[0]
+		args[0].background_color = [1.4, 1.4, 1.4, 1]
 
 
 class WinDrives:
