@@ -6,6 +6,7 @@ from kivy.properties import ObjectProperty
 from gui.FileDialogs import *
 from gui.AboutDialog import *
 from nsz.gui.GuiPath import *
+from PathTools import *
 
 class RootWidget(FloatLayout):
 	loadfile = ObjectProperty(None)
@@ -82,7 +83,8 @@ class RootWidget(FloatLayout):
 			if pathObj.is_dir():
 				for file in scandir(path):
 					filepath = Path(path).joinpath(file)
-					self.filelist.append((filepath.name, filepath.stat().st_size))
+					if isGame(filepath) or isCompressedGameFile(filepath):
+						self.filelist.append((filepath.name, filepath.stat().st_size))
 		else:
 			for file in filename:
 				pathObj = Path(path).joinpath(file)
