@@ -74,16 +74,20 @@ class RootWidget(FloatLayout):
 		self._popup.open()
 
 	def setInputFileFolder(self, path, filename):
-		self.pathlist.clear()
-		self.filelist.clear()
+		#self.pathlist.clear()
+		#self.filelist.clear()
 		self.pathlist.append(path)
-		pathObj = Path(path)
-		if pathObj.is_file():
-			self.filelist.append((pathObj.name, pathObj.stat().st_size))
-		elif pathObj.is_dir():
-			for file in scandir(path):
-				filepath = Path(path).joinpath(file)
-				self.filelist.append((filepath.name, filepath.stat().st_size))
+		if len(filename) == 0:
+			pathObj = Path(path)
+			if pathObj.is_dir():
+				for file in scandir(path):
+					filepath = Path(path).joinpath(file)
+					self.filelist.append((filepath.name, filepath.stat().st_size))
+		else:
+			for file in filename:
+				pathObj = Path(path).joinpath(file)
+				if pathObj.is_file():
+					self.filelist.append((pathObj.name, pathObj.stat().st_size))
 		self.gameList.refresh(self.filelist)
 		self.dismissPopup()
 
