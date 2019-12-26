@@ -12,18 +12,24 @@ Builder.load_file(getGuiPath('layout/OpenFileDialog.kv'))
 class OpenFileDialog(FloatLayout):
 	load = ObjectProperty(None)
 	cancel = ObjectProperty(None)
+	filters = ObjectProperty(None)
 	selected = None
-	backgroundColor = (1, 1, 1, 1)
-	selectedColor = (1.4, 1.4, 1.4, 1)
+	backgroundColor = [1, 1, 1, 1]
+	selectedColor = [1.4, 1.4, 1.4, 1]
 	buttonDown = 'atlas://data/images/defaulttheme/button'
 	
 	def __init__(self, **kwargs):
 		super(OpenFileDialog, self).__init__(**kwargs)
-		for drive in WinDrives.get_win_drives():
-			button = Button(text=drive, background_color=self.backgroundColor, background_down=self.buttonDown, on_press=self.drive_selection_changed)
-			self.ids.drives_list.add_widget(button)
-			if self.selected == None:
-				self.drive_selection_changed(button)
+		self.ids.filechooser.filters = self.filters
+		drives = WinDrives.get_win_drives()
+		if len(drives) == 0:
+			self.ids.drives_list.height = 0
+		else:
+			for drive in drives:
+				button = Button(text=drive, background_color=self.backgroundColor, background_down=self.buttonDown, on_press=self.drive_selection_changed)
+				self.ids.drives_list.add_widget(button)
+				if self.selected == None:
+					self.drive_selection_changed(button)
 	
 	def drive_selection_changed(self, *args):
 		self.ids.filechooser.path = args[0].text

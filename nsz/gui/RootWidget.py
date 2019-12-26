@@ -65,14 +65,18 @@ class RootWidget(FloatLayout):
 		self._popup.dismiss()
 
 	def showInputFileFolderDialog(self):
-		content = OpenFileDialog(load=self.setInputFileFolder, cancel=self.dismissPopup)
+		filter = ['*.nsp', '*.nsz', '*.xci', '*.xcz', '*.ncz']
+		content = OpenFileDialog(load=self.setInputFileFolder, cancel=self.dismissPopup, filters=filter)
 		self._popup = Popup(title="Input File/Folder", content=content, size_hint=(0.9, 0.9))
 		self._popup.open()
 
 	def showOutputFileFolderDialog(self):
-		content = OpenFileDialog(load=self.setOutputFileFolder, cancel=self.dismissPopup)
+		content = OpenFileDialog(load=self.setOutputFileFolder, cancel=self.dismissPopup, filters=[self.showNoFiles])
 		self._popup = Popup(title="Output File/Folder", content=content, size_hint=(0.9, 0.9))
 		self._popup.open()
+		
+	def showNoFiles(self, foldername, filename):
+		return False
 
 	def setInputFileFolder(self, path, filename):
 		#self.pathlist.clear()
