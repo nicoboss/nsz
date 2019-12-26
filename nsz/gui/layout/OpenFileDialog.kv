@@ -15,11 +15,23 @@
 			size_hint_y: None
 			height: 30
 			Button:
+				id: iconViewBtn
 				text: 'Icon View'
-				on_press: filechooser.view_mode = 'icon'
+				background_down: 'atlas://data/images/defaulttheme/button'
+				on_press:
+					filechooser.view_mode = 'icon'
+					iconViewBtn.background_color = [1.4, 1.4, 1.4, 1]
+					listViewBtn.background_color = [1, 1, 1, 1]
+				background_color: [1.4, 1.4, 1.4, 1]
 			Button:
+				id: listViewBtn
 				text: 'List View'
-				on_press: filechooser.view_mode = 'list'
+				background_down: 'atlas://data/images/defaulttheme/button'
+				on_press:
+					filechooser.view_mode = 'list'
+					iconViewBtn.background_color = [1, 1, 1, 1]
+					listViewBtn.background_color = [1.4, 1.4, 1.4, 1]
+				background_color: [1, 1, 1, 1]
 		FileChooser:
 			id: filechooser
 			dirselect: True
