@@ -15,8 +15,6 @@ class RootWidget(FloatLayout):
 	gameList = None
 	
 	hardExit = True
-	pathlist = []
-	filelist = []
 	C = False
 	D = False
 	output = False
@@ -79,22 +77,19 @@ class RootWidget(FloatLayout):
 		return False
 
 	def setInputFileFolder(self, path, filename):
-		#self.pathlist.clear()
-		#self.filelist.clear()
-		self.pathlist.append(path)
 		if len(filename) == 0:
 			pathObj = Path(path)
 			if pathObj.is_dir():
 				for file in scandir(path):
 					filepath = Path(path).joinpath(file)
 					if isGame(filepath) or isCompressedGameFile(filepath):
-						self.filelist.append((filepath.name, filepath.stat().st_size))
+						self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
 		else:
 			for file in filename:
-				pathObj = Path(path).joinpath(file)
-				if pathObj.is_file():
-					self.filelist.append((pathObj.name, pathObj.stat().st_size))
-		self.gameList.refresh(self.filelist)
+				filepath = Path(path).joinpath(file)
+				if filepath.is_file():
+					self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
+		self.gameList.refresh()
 		self.dismissPopup()
 
 	def setOutputFileFolder(self, path, filename):

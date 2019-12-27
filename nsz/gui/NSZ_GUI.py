@@ -104,7 +104,7 @@ class arguments:
 			"8 MB": 23,
 			"16 MB": 24,
 		}
-		self.file = rootWidget.pathlist
+		self.file = rootWidget.gameList.filelist
 		self.C = True if rootWidget.C is True else None
 		self.D = True if rootWidget.D is True else None
 		self.output = rootWidget.output

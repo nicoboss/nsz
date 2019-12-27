@@ -18,7 +18,21 @@ from nsz.gui.GuiPath import *
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
 								 RecycleBoxLayout):
 	''' Adds selection and focus behaviour to the view. '''
-
+	selectedList = set()
+	
+	def __init__(self, **kwargs):
+		super(SelectableRecycleBoxLayout, self).__init__(**kwargs)
+		self.unfocus_on_touch = False
+	
+	def keyboard_on_key_down(self, window, keycode, text, modifiers):
+		keycodeId, keycodeName = keycode
+		if keycodeName == 'delete' or keycodeName == 'backspace':
+			for item in self.selectedList:
+				del self.parent.parent.parent.filelist[item]
+			self.selectedList.clear()
+			self.parent.parent.parent.refresh()
+			return True
+		return False
 
 class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 	''' Add selection support to the Label '''
@@ -48,9 +62,14 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 			return
 		self.selected = is_selected
 		if is_selected:
-			print("selection changed to {0}".format(rv.data[index]))
+			print("Selection changed to {0}".format(rv.data[index]))
+			if self.parent != None:
+				self.parent.selectedList.add(self.filename_text)
 		else:
-			print("selection removed for {0}".format(rv.data[index]))
+			print("Selection removed for {0}".format(rv.data[index]))
+			if self.parent != None:
+				if self.parent.selectedList.contains(self.filename_text):
+					del self.parent.selectedList[self.filename_text]
 
 
 class RV(RecycleView):
@@ -60,8 +79,9 @@ class RV(RecycleView):
 		
 	def refresh(self, items):
 		self.data = []
-		for item in items:
-			self.data.append({'0': item[0], '1': self.sizeof_fmt(item[1])})
+		self.ids.selectableRecycleBoxLayout.selectedList.clear()
+		for path in items:
+			self.data.append({'0': path, '1': self.sizeof_fmt(items[path])})
 			
 	def sizeof_fmt(self, num, suffix='B'):
 		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
@@ -72,6 +92,7 @@ class RV(RecycleView):
 
 class GameList(StackLayout):
 
+	filelist = {}
 	recycleView = None
 	draggableScrollbar = None
 
@@ -83,9 +104,9 @@ class GameList(StackLayout):
 		self.add_widget(self.draggableScrollbar)
 		self.name = "gameList"
 
-	def refresh(self, items):
-		self.draggableScrollbar.slider.opacity = int(len(items)>20)
-		self.recycleView.refresh(items)
+	def refresh(self):
+		self.draggableScrollbar.slider.opacity = int(len(self.filelist) > 20)
+		self.recycleView.refresh(self.filelist)
 
 	def scroll_change(self, recycleView, instance, value):
 		recycleView.scroll_y = value
