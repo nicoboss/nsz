@@ -116,7 +116,12 @@ class arguments:
 		self.block = True if int(config.get('Settings', 'block')) == 1 else None
 		self.solid = True if int(config.get('Settings', 'solid')) == 1 else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
-		self.verify = True if int(config.get('Settings', 'verify')) == 1 else None
+		if rootWidget.verify is True \
+		or ((rootWidget.C is True or rootWidget.D is True) \
+		and int(config.get('Settings', 'verify')) == 1):
+			self.verify = True
+		else:
+			self.verify = None
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
 		self.parseCnmt = True if int(config.get('Advanced', 'parseCnmt')) == 1 else None

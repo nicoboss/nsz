@@ -38,9 +38,9 @@ class RootWidget(FloatLayout):
 		self.D = True
 		self.hardExit = False
 		App.get_running_app().stop()
-	def Verify(self):
 		
-		self.C = True
+	def Verify(self):
+		self.verify = True
 		self.hardExit = False
 		App.get_running_app().stop()
 		
