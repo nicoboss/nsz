@@ -15,10 +15,9 @@ from gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
 
 
-class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
-								 RecycleBoxLayout):
-	''' Adds selection and focus behaviour to the view. '''
-	selectedList = set()
+class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
+	
+	touchedIndex = -1
 	
 	def __init__(self, **kwargs):
 		super(SelectableRecycleBoxLayout, self).__init__(**kwargs)
@@ -26,23 +25,26 @@ class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
 	
 	def keyboard_on_key_down(self, window, keycode, text, modifiers):
 		keycodeId, keycodeName = keycode
-		if keycodeName == 'delete' or keycodeName == 'backspace':
-			for item in self.selectedList:
-				del self.parent.parent.parent.filelist[item]
-			self.selectedList.clear()
+		if keycodeName == 'delete' or keycodeName == 'backspace' and len(self.selected_nodes) > 0:
+			for index in self.selected_nodes:
+				del self.parent.parent.parent.filelist[self.parent.data[index]['0']]
+			self.clear_selection()
 			self.parent.parent.parent.refresh()
 			return True
+		if 'ctrl' in modifiers:
+			if keycodeName == 'a':
+				for index in range(len(self.parent.data)):
+					self.select_node(index)
 		return False
 
+
 class SelectableLabel(RecycleDataViewBehavior, GridLayout):
-	''' Add selection support to the Label '''
 	index = None
 	selected = BooleanProperty(False)
 	selectable = BooleanProperty(True)
 	cols = 3
 
 	def refresh_view_attrs(self, rv, index, data):
-		''' Catch and handle the view changes '''
 		self.index = index
 		self.filename_text = data['0']
 		self.filesize_text = data['1']
@@ -50,26 +52,21 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 			rv, index, data)
 
 	def on_touch_down(self, touch):
-		''' Add selection on touch down '''
 		if super(SelectableLabel, self).on_touch_down(touch):
 			return True
 		if self.collide_point(*touch.pos) and self.selectable:
+			self.parent.touchedIndex = self.index
+			return self.parent.select_with_touch(self.index, touch)
+	
+	def on_touch_move(self, touch):
+		if super(SelectableLabel, self).on_touch_move(touch):
+			return True
+		if self.parent.touchedIndex != self.index and self.collide_point(*touch.pos) and self.selectable:
+			self.parent.touchedIndex = self.index
 			return self.parent.select_with_touch(self.index, touch)
 
 	def apply_selection(self, rv, index, is_selected):
-		''' Respond to the selection of items in the view. '''
-		if self.selected == is_selected:
-			return
 		self.selected = is_selected
-		if is_selected:
-			print("Selection changed to {0}".format(rv.data[index]))
-			if self.parent != None:
-				self.parent.selectedList.add(self.filename_text)
-		else:
-			print("Selection removed for {0}".format(rv.data[index]))
-			if self.parent != None:
-				if self.parent.selectedList.contains(self.filename_text):
-					del self.parent.selectedList[self.filename_text]
 
 
 class RV(RecycleView):
@@ -79,7 +76,6 @@ class RV(RecycleView):
 		
 	def refresh(self, items):
 		self.data = []
-		self.ids.selectableRecycleBoxLayout.selectedList.clear()
 		for path in items:
 			self.data.append({'0': path, '1': self.sizeof_fmt(items[path])})
 			
@@ -89,6 +85,7 @@ class RV(RecycleView):
 				return "%3.1f %s%s" % (num, unit, suffix)
 			num /= 1024.0
 		return "%.1f%s%s" % (num, 'Yi', suffix)
+
 
 class GameList(StackLayout):
 
@@ -115,6 +112,3 @@ class GameList(StackLayout):
 		if value >= 0:
 		#this to avoid 'maximum recursion depth exceeded' error
 			s.value=value
-
-if __name__ == '__main__':
-	TestApp().run()
