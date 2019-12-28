@@ -9,7 +9,7 @@ path.append(importPath_str)
 
 from sys import argv
 from nut import Print
-from os import listdir
+from os import listdir, _exit
 from time import sleep
 from Fs import Nsp, factory
 from BlockCompressor import blockCompress
@@ -266,7 +266,8 @@ def main():
 			Print.info(e["error"])
 
 	Print.info('Done!')
-	
+	_exit(0)
+	#breakpoint()
 
 
 if __name__ == '__main__':

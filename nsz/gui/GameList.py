@@ -75,9 +75,10 @@ class RV(RecycleView):
 		self.refresh(items)
 		
 	def refresh(self, items):
-		self.data = []
+		self.data.clear()
 		for path in items:
 			self.data.append({'0': path, '1': self.sizeof_fmt(items[path])})
+		self.refresh_from_data()
 			
 	def sizeof_fmt(self, num, suffix='B'):
 		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
