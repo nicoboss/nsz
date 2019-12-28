@@ -47,14 +47,16 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 
 def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	compressionLevel = 18 if args.level is None else args.level
-	threadsToUse = args.threads if args.threads > 0 else cpu_count()
+	
 	if filePath.suffix == ".xci" and not args.solid or args.block:
-		outFile = blockCompress(filePath, compressionLevel, args.bs, outputDir, threadsToUse)
+		threadsToUseForBlockCompression = args.threads if args.threads > 0 else cpu_count()
+		outFile = blockCompress(filePath, compressionLevel, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
 			verify(outFile, True)
 	else:
-		work.put([filePath, compressionLevel, outputDir, threadsToUse, args.verify])
+		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
+		work.put([filePath, compressionLevel, outputDir, threadsToUseForSolidCompression, args.verify])
 		amountOfTastkQueued.increment()
 
 

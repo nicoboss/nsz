@@ -84,9 +84,9 @@ This tool was only tested with base games, updates and DLCs.<br/>
 ```
 nsz.py --help
 usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p]
-              [-t THREADS] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i]
-              [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX] [--titlekeys]
-              [-c CREATE]
+              [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
+              [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
+              [--titlekeys] [-c CREATE]
               [file [file ...]]
 
 positional arguments:
@@ -98,7 +98,7 @@ optional arguments:
   -D                    Decompress NSZ/XCZ/NCZ
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
-                        and compression ratio. Default: 22, Max: 22
+                        and compression ratio. Default: 18, Max: 22
   -B, --block           Use block compression option. This mode allows highly
                         multi-threaded compression/decompression with random
                         read access allowing compressed games to be played
@@ -123,7 +123,12 @@ optional arguments:
                         *TitleID*[vVersion]*
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Numbers < 1
-                        corresponds to the number of logical CPU cores
+                        corresponds to the number of logical CPU cores for
+                        block compression and 3 for solid compression
+  -m MULTI, --multi MULTI
+                        Executes multiple compression tasks in parallel. Take
+                        a look at available RAM especially if compression
+                        level is over 18.
   -o [OUTPUT], --output [OUTPUT]
                         Directory to save the output NSZ files
   -w, --overwrite       Continues even if there already is a file with the
