@@ -237,6 +237,7 @@ def main():
 					f.open(filePath_str, 'r+b')
 					f.printInfo(args.depth+1)
 					f.close()
+
 		if args.verify and not args.C and not args.D:
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
@@ -262,7 +263,7 @@ def main():
 		Print.info('\n\033[93m\033[1mSummary of errors which occurred while processing files:')
 		
 		for e in err:
-			Print.info('\033[0mError when processing {0}'.format(e["filename"]))
+			Print.info('\033[0mError while processing {0}'.format(e["filename"]))
 			Print.info(e["error"])
 
 	Print.info('Done!')
