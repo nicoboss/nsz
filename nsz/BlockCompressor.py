@@ -55,7 +55,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('skipping delta fragment')
+			Print.info('Skipping delta fragment {0}'.format(nspf._path))
 			continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA):
 			if isNcaPacked(nspf, ncaHeaderSize):
@@ -133,14 +133,6 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 							results[i] = b""
 
 						if len(buffer) == 0:
-							sleep(0.02)
-							pleaseKillYourself.increment()
-
-							for i in range(readyForWork.value()):
-								work.put(None)
-
-							while readyForWork.value() > 0:
-								sleep(0.02)
 							break
 						chunkRelativeBlockID = 0
 						startChunkBlockID = blockID
@@ -170,12 +162,23 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				writeContainer.resize(newFileName, written)
 				continue
 			else:
-				Print.info('not packed!')
+				Print.info('Skipping not packed {0}'.format(nspf._path))
 		f = writeContainer.add(nspf._path, nspf.size)
 		nspf.seek(0)
 		while not nspf.eof():
 			buffer = nspf.read(CHUNK_SZ)
 			f.write(buffer)
+
+	#Ensures that all threads are started and compleaded before being requested to quit
+	while readyForWork.value() < threads:
+		sleep(0.02)
+	pleaseKillYourself.increment()
+
+	for i in range(readyForWork.value()):
+		work.put(None)
+
+	while readyForWork.value() > 0:
+		sleep(0.02)
 
 
 def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, threads):

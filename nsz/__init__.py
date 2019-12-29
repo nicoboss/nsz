@@ -124,11 +124,13 @@ def main():
 					dir = outfolder.joinpath(filePath.stem)
 					f.unpack(dir, args.extractregex)
 					f.close()
+
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))
 			nsp = Nsp.Nsp(None, None)
 			nsp.path = args.create
 			nsp.pack(args.file)
+
 		if args.C:
 			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
 			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xcz")
@@ -169,7 +171,7 @@ def main():
 				bar = barManager.counter(total=100, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 				compressedSubBars.append(bar.add_subcounter('green'))
 				bars.append(bar)
-			sleep(0.02)
+			#Ensures that all threads are started and compleaded before being requested to quit
 			while readyForWork.value() < parallelTasks:
 				sleep(0.2)
 				if pleaseNoPrint.value() > 0:
@@ -196,7 +198,6 @@ def main():
 
 			for filePath in sourceFileToDelete:
 				delete_source_file(filePath)
-
 
 		if args.D:
 			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
