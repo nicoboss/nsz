@@ -159,7 +159,8 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 				bar.count = decompressedBytes//1048576
 				bar.refresh()
 
-	bar.close()
+	if statusReportInfo == None:
+		bar.close()
 	hexHash = hash.hexdigest()
 	if f != None:
 		end = f.tell()
@@ -188,7 +189,7 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 def __decompressXcz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
-	container.open(filePath, 'rb')
+	container.open(str(filePath), 'rb')
 	secureIn = container.hfs0['secure']
 	
 	if write:
