@@ -26,7 +26,7 @@ class GUI(App):
 	def build(self):
 		Builder.load_file(getGuiPath('layout/GUI.kv'))
 		self.title = 'NSZ GUI 3.0'
-		self.icon = 'nsZip.png'
+		self.icon = getGuiPath('nsZip.png')
 		root = FloatLayout()
 		with open(getGuiPath('shaders/plasma.shader')) as stream:
 			plasma_shader = stream.read()
