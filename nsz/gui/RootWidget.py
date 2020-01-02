@@ -82,12 +82,12 @@ class RootWidget(FloatLayout):
 			pathObj = Path(path)
 			if pathObj.is_dir():
 				for file in scandir(path):
-					filepath = Path(path).joinpath(file)
+					filepath = pathObj.joinpath(file)
 					if isGame(filepath) or isCompressedGameFile(filepath):
 						self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
 		else:
 			for file in filename:
-				filepath = Path(path).joinpath(file)
+				filepath = pathObj.joinpath(file)
 				if filepath.is_file():
 					self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
 		self.gameList.refresh()

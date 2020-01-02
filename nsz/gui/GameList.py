@@ -1,4 +1,7 @@
+from os import scandir
+from pathlib import Path
 from kivy.lang import Builder
+from kivy.core.window import Window
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.label import Label
@@ -13,6 +16,7 @@ from kivy.uix.slider import Slider
 from functools import partial
 from gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
+from PathTools import *
 
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
@@ -100,7 +104,24 @@ class GameList(StackLayout):
 		self.recycleView = RV([])
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)
 		self.add_widget(self.draggableScrollbar)
+		Window.bind(on_dropfile=self.handledrops)
 		self.name = "gameList"
+
+	def handledrops(self, widget, rawPath):
+		path = Path(rawPath.decode('utf-8'))
+		fullPath = str(path.resolve())
+		if path.is_dir():
+			for file in scandir(str(path)):
+				filepath = path.joinpath(file)
+				if isGame(filepath) or isCompressedGameFile(filepath):
+					self.filelist[str(filepath.resolve())] = filepath.stat().st_size
+			self.refresh()
+		elif path.is_file():
+			if isGame(path) or isCompressedGameFile(path):
+				self.filelist[fullPath] = path.stat().st_size
+				self.refresh()
+		else:
+			print("Warning: {0} isn't a file or folder!".format(fullPath))
 
 	def refresh(self):
 		self.draggableScrollbar.slider.opacity = int(len(self.filelist) > 20)
