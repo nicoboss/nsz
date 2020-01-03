@@ -161,6 +161,9 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 
 	if statusReportInfo == None:
 		bar.close()
+		#Line break after closing the process bar is required to prevent
+		#the next output from being on the same line as the process bar
+		print()
 	hexHash = hash.hexdigest()
 	if f != None:
 		end = f.tell()
