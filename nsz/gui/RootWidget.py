@@ -87,7 +87,7 @@ class RootWidget(FloatLayout):
 						self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
 		else:
 			for file in filename:
-				filepath = pathObj.joinpath(file)
+				filepath = Path(path).joinpath(file)
 				if filepath.is_file():
 					self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
 		self.gameList.refresh()
