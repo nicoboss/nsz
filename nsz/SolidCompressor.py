@@ -20,7 +20,7 @@ def solidCompress(filePath, compressionLevel, outputDir, threads, stusReport, id
 def processContainer(readContainer, writeContainer, compressionLevel, threads, stusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('skipping delta fragment', pleaseNoPrint)
+			Print.info('Skipping delta fragment {0}'.format(nspf._path))
 			continue
 	
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA):
@@ -106,7 +106,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					writeContainer.resize(newFileName, written)
 					continue
 			else:
-				Print.info('not packed!', pleaseNoPrint)
+				Print.info('Skipping not packed {0}'.format(nspf._path))
 
 		with writeContainer.add(nspf._path, nspf.size, pleaseNoPrint) as f:
 			nspf.seek(0)
