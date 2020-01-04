@@ -1,4 +1,5 @@
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
@@ -10,7 +11,9 @@ from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
 from nsz.gui.GuiPath import *
 from nsz.gui.SettingScrollOptions import *
+import logging
 import os
+
 
 class GUI(App):
 	
@@ -24,6 +27,15 @@ class GUI(App):
 			return None
 	
 	def build(self):
+		realLevl = Logger.level
+		#To hide the wrongly appearance of "[WARNING] Both Window.minimum_width
+		#and Window.minimum_height must be bigger than 0 for the size restriction
+		#to take effect." caused by checking if booth variables are set after setting
+		#one of them without offering any way of setting booth at the same time
+		Logger.setLevel(logging.ERROR)
+		Window.minimum_width = 800
+		Window.minimum_height = 600
+		Logger.setLevel(realLevl)
 		Builder.load_file(getGuiPath('layout/GUI.kv'))
 		self.title = 'NSZ GUI 3.1'
 		self.icon = getGuiPath('nsZip.png')
@@ -36,6 +48,11 @@ class GUI(App):
 		root.add_widget(self.rootWidget)
 		self.settings_cls = MySettingsWithTabbedPanel
 		return root
+	
+	def on_start(self, *args):
+		if platform == 'win':
+			import gui.KivyOnTop
+			gui.KivyOnTop.register_topmost(Window, self.title)
 
 	def build_config(self, config):
 		config.setdefaults(
