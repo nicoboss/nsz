@@ -133,12 +133,7 @@ class Hfs0(Pfs0):
 
 			self.readInt32() # junk data
 
-			#if name in ['update', 'secure', 'normal']:
-			if name == 'secure':
-				f = Hfs0(None)
-				#f = factory(Path(name))
-			else:
-				f = Fs.factory(Path(name))
+			f = Fs.factory(Path(name))
 
 			f._path = name
 			f.offset = offset
@@ -146,6 +141,28 @@ class Hfs0(Pfs0):
 			self.files.append(self.partition(offset + headerSize, f.size, f))
 
 		self.files.reverse()
+
+	def unpack(self, path, extractregex="*"):
+		os.makedirs(str(path), exist_ok=True)
+	
+		for hfsf in self:
+			filePath_str = str(path.joinpath(hfsf._path))
+			if not re.match(extractregex, filePath_str):
+				continue
+			f = open(filePath_str, 'wb')
+			hfsf.rewind()
+			i = 0
+	
+			pageSize = 0x100000
+	
+			while True:
+				buf = hfsf.read(pageSize)
+				if len(buf) == 0:
+					break
+				i += len(buf)
+				f.write(buf)
+			f.close()
+			Print.info(filePath_str)
 
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent

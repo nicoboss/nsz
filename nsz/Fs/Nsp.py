@@ -104,18 +104,18 @@ class Nsp(Pfs0):
 	def unpack(self, path, extractregex="*"):
 		os.makedirs(str(path), exist_ok=True)
 
-		for nspF in self:
-			filePath_str = str(path.joinpath(nspF._path))
+		for nspf in self:
+			filePath_str = str(path.joinpath(nspf._path))
 			if not re.match(extractregex, filePath_str):
 				continue
 			f = open(filePath_str, 'wb')
-			nspF.rewind()
+			nspf.rewind()
 			i = 0
 
-			pageSize = 0x10000
+			pageSize = 0x100000
 
 			while True:
-				buf = nspF.read(pageSize)
+				buf = nspf.read(pageSize)
 				if len(buf) == 0:
 					break
 				i += len(buf)

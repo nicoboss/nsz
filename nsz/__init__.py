@@ -11,7 +11,7 @@ from sys import argv
 from nut import Print
 from os import listdir, _exit
 from time import sleep
-from Fs import Nsp, factory
+from Fs import Nsp, Hfs0, factory
 from BlockCompressor import blockCompress
 from SolidCompressor import solidCompress
 from traceback import print_exc, format_exc
@@ -119,11 +119,16 @@ def main():
 				for filePath in expandFiles(Path(f_str)):
 					filePath_str = str(filePath)
 					Print.info('Extracting "{0}" to {1}'.format(filePath_str, outfolder))
-					f = factory(filePath)
-					f.open(filePath_str, 'rb')
 					dir = outfolder.joinpath(filePath.stem)
-					f.unpack(dir, args.extractregex)
-					f.close()
+					container = factory(filePath)
+					container.open(filePath_str, 'rb')
+					if isXciXcz(filePath):
+						for hfs0 in container.hfs0:
+							secureIn = hfs0
+							secureIn.unpack(dir.joinpath(hfs0._path), args.extractregex)
+					else:
+						container.unpack(dir, args.extractregex)
+					container.close()
 
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))
