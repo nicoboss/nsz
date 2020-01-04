@@ -103,7 +103,6 @@ class GameList(StackLayout):
 		super(GameList, self).__init__(**kwargs)
 		self.recycleView = RV([])
 		self.draggableScrollbar = DraggableScrollbar(self.recycleView)
-		self.add_widget(self.draggableScrollbar)
 		Window.bind(on_dropfile=self.handledrops)
 		self.name = "gameList"
 
@@ -124,6 +123,9 @@ class GameList(StackLayout):
 			print("Warning: {0} isn't a file or folder!".format(fullPath))
 
 	def refresh(self):
+		if self.ids.DragAndDropFloatLayout:
+			self.remove_widget(self.ids.DragAndDropFloatLayout)
+			self.add_widget(self.draggableScrollbar)
 		self.draggableScrollbar.slider.opacity = int(len(self.filelist) > 20)
 		self.recycleView.refresh(self.filelist)
 

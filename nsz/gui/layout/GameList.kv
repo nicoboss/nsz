@@ -36,3 +36,17 @@
 		orientation: 'vertical'
 		multiselect: True
 		touch_multiselect: True
+
+
+<GameList>:
+	FloatLayout:
+		id: DragAndDropFloatLayout
+		Label:
+			size_hint: 1, 1
+			pos_hint: {"x": 0, "y": 0}
+			halign: "center"
+			valign: "center"
+			id: DragAndDropLabel
+			text_size: self.size
+			font_size: 0.03 * self.width
+			text: "Drag & Drop NSP/NSZ/XCI/XCZ/NCZ files/folders here"
