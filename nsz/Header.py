@@ -8,6 +8,12 @@ class Section:
 		self.cryptoKey = f.read(16)
 		self.cryptoCounter = f.read(16)
 
+class FakeSection:
+	def __init__(self, offset, size):
+		self.offset = offset
+		self.size = size
+		self.cryptoType = 1
+
 class Block:
 	def __init__(self, f):
 		self.f = f

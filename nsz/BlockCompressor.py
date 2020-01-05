@@ -34,7 +34,7 @@ def blockCompress(filePath, compressionLevel, blockSizeExponent, outputDir, thre
 
 def blockCompressContainer(readContainer, writeContainer, compressionLevel, blockSizeExponent, threads):
 	CHUNK_SZ = 0x100000
-	ncaHeaderSize = 0x4000
+	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
 		raise ValueError("Block size must be between 14 and 32")
 	blockSize = 2**blockSizeExponent
@@ -57,13 +57,15 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 			Print.info('Skipping delta fragment {0}'.format(nspf._path))
 			continue
-		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA):
-			if isNcaPacked(nspf, ncaHeaderSize):
+		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
+			if isNcaPacked(nspf):
+				
+				offsetFirstSection = sortedFs(nspf)[0].offset
 				newFileName = nspf._path[0:-1] + 'z'
 				f = writeContainer.add(newFileName, nspf.size)
 				startPos = f.tell()
 				nspf.seek(0)
-				f.write(nspf.read(ncaHeaderSize))
+				f.write(nspf.read(UNCOMPRESSABLE_HEADER_SIZE))
 				sections = []
 
 				for fs in sortedFs(nspf):
@@ -92,7 +94,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				chunkRelativeBlockID = 0
 				startChunkBlockID = 0
 				blocksHeaderFilePos = f.tell()
-				bytesToCompress = nspf.size - ncaHeaderSize
+				bytesToCompress = nspf.size - UNCOMPRESSABLE_HEADER_SIZE
 				blocksToCompress = bytesToCompress//blockSize + (bytesToCompress%blockSize > 0)
 				compressedblockSizeList = [0]*blocksToCompress
 				header = b'NCZBLOCK' #Magic
@@ -104,12 +106,21 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				header += bytesToCompress.to_bytes(8, 'little') #Decompressed Size
 				header += b'\x00' * (blocksToCompress*4)
 				f.write(header)
-				decompressedBytes = ncaHeaderSize
+				decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 				compressedBytes = f.tell()
 				BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 				bar = enlighten.Counter(total=nspf.size//1048576, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 				subBars = bar.add_subcounter('green', all_fields=True)
-				partitions = [nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True) for section in sections]
+				
+				partitions = []
+				if offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE > 0:
+					partitions.append(nspf.partition(offset = UNCOMPRESSABLE_HEADER_SIZE, size = offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE, cryptoType = Type.Crypto.CTR.NONE, autoOpen = True))
+				for section in sections:
+					#Print.info('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))), pleaseNoPrint)
+					partitions.append(nspf.partition(offset = section.offset, size = section.size, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
+				if UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection > 0:
+						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
+				
 				partNr = 0
 				bar.count = nspf.tell()//1048576
 				subBars.count = f.tell()//1048576

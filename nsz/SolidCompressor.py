@@ -7,7 +7,7 @@ from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
 from PathTools import *
 
-ncaHeaderSize = 0x4000
+UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000
 
 
@@ -23,16 +23,17 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 			Print.info('Skipping delta fragment {0}'.format(nspf._path))
 			continue
 	
-		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA):
-			if isNcaPacked(nspf, ncaHeaderSize):
-		
+		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
+			if isNcaPacked(nspf):
+				
+				offsetFirstSection = sortedFs(nspf)[0].offset
 				newFileName = nspf._path[0:-1] + 'z'
 		
 				with writeContainer.add(newFileName, nspf.size, pleaseNoPrint) as f:
 					start = f.tell()
 		
 					nspf.seek(0)
-					f.write(nspf.read(ncaHeaderSize))
+					f.write(nspf.read(UNCOMPRESSABLE_HEADER_SIZE))
 		
 					sections = []
 					for fs in sortedFs(nspf):
@@ -62,17 +63,20 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					blocksHeaderFilePos = f.tell()
 					compressedblockSizeList = []
 		
-					decompressedBytes = ncaHeaderSize
+					decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 					
 					
 					stusReport[id] = [0, 0, nspf.size]
 					
 					partitions = []
+					if offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE > 0:
+						partitions.append(nspf.partition(offset = UNCOMPRESSABLE_HEADER_SIZE, size = offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE, cryptoType = Type.Crypto.CTR.NONE, autoOpen = True))
 					for section in sections:
 						#Print.info('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))), pleaseNoPrint)
-						partitions.append(nspf.partition(offset = section.offset, size = section.size, n = None, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
-				
-			
+						partitions.append(nspf.partition(offset = section.offset, size = section.size, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
+					if UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection > 0:
+						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
+					
 					partNr = 0
 					stusReport[id] = [nspf.tell(), f.tell(), nspf.size]
 					if threads > 1:

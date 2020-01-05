@@ -88,10 +88,10 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 
 
 def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
-	ncaHeaderSize = 0x4000
+	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 	blockID = 0
 	nspf.seek(0)
-	header = nspf.read(ncaHeaderSize)
+	header = nspf.read(UNCOMPRESSABLE_HEADER_SIZE)
 	if f != None:
 		start = f.tell()
 
@@ -100,7 +100,10 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
 	sectionCount = nspf.readInt64()
 	sections = [Header.Section(nspf) for _ in range(sectionCount)]
-	nca_size = ncaHeaderSize
+	if sections[0].offset-UNCOMPRESSABLE_HEADER_SIZE > 0:
+		fakeSection = Header.FakeSection(UNCOMPRESSABLE_HEADER_SIZE, sections[0].offset-UNCOMPRESSABLE_HEADER_SIZE)
+		sections.insert(0, fakeSection)
+	nca_size = UNCOMPRESSABLE_HEADER_SIZE
 	for i in range(sectionCount):
 		nca_size += sections[i].size
 	pos = nspf.tell()
@@ -130,22 +133,30 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		bar.refresh()
 	hash.update(header)
 
+	firstSection = True
 	for s in sections:
 		i = s.offset
-		crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
+		useCrypto = s.cryptoType in (3, 4)
+		if useCrypto:
+			crypto = aes128.AESCTR(s.cryptoKey, s.cryptoCounter)
 		end = s.offset + s.size
+		if firstSection:
+			firstSection = False
+			uncompressedSize = UNCOMPRESSABLE_HEADER_SIZE-sections[0].offset
+			if uncompressedSize > 0:
+				i += uncompressedSize
 		while i < end:
-			crypto.seek(i)
+			if useCrypto:
+				crypto.seek(i)
 			chunkSz = 0x10000 if end - i > 0x10000 else end - i
 			if useBlockCompression:
 				inputChunk = blockDecompressorReader.read(chunkSz)
 			else:
 				inputChunk = decompressor.read(chunkSz)
+				decompressor.flush()
 			if not len(inputChunk):
 				break
-			if not useBlockCompression:
-				decompressor.flush()
-			if s.cryptoType in (3, 4):
+			if useCrypto:
 				inputChunk = crypto.encrypt(inputChunk)
 			if f != None:
 				f.write(inputChunk)

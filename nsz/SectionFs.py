@@ -3,11 +3,11 @@ def sortedFs(nca):
 	fs.sort(key=lambda x: x.offset)
 	return fs
 
-def isNcaPacked(nca, ncaHeaderSize):
+def isNcaPacked(nca):
 	fs = sortedFs(nca)
 	if len(fs) == 0:
 		return True
-	next = ncaHeaderSize
+	next = fs[0].offset
 
 	for i in range(len(fs)):
 		if fs[i].offset != next:
