@@ -139,10 +139,10 @@ optional arguments:
                         --verify
   -i, --info            Show info about title or file
   --depth DEPTH         Max depth for file info and extraction
-  -x, --extract         Extract a NSP/XCI/NSZ/XCZ
+  -x, --extract         Extract a NSP/XCI/NSZ/XCZ/NSPZ
   --extractregex EXTRACTREGEX
                         Regex specifying which files inside the container
-                        should be extracted
+                        should be extracted. Excample: "^.*\.(cert|tik)$"
   --titlekeys           Extracts titlekeys from your NSP/NSZ files and adds
                         missing keys to ./titlekeys.txt and JSON files inside
                         ./titledb/ (obtainable from

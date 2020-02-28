@@ -21,8 +21,8 @@ class ParseArguments:
 		parser.add_argument('--rm-source', action='store_true', default=False, help="Deletes source file/s after compressing/decompressing. It's recommended to only use this in combination with --verify")
 		parser.add_argument('-i', '--info', action='store_true', default=False, help='Show info about title or file')
 		parser.add_argument('--depth', type=int, default=1, help='Max depth for file info and extraction')
-		parser.add_argument('-x', '--extract', action="store_true", help='Extract a NSP/XCI/NSZ/XCZ')
-		parser.add_argument('--extractregex', type=str, default="", help='Regex specifying which files inside the container should be extracted')
+		parser.add_argument('-x', '--extract', action="store_true", help='Extract a NSP/XCI/NSZ/XCZ/NSPZ')
+		parser.add_argument('--extractregex', type=str, default="", help='Regex specifying which files inside the container should be extracted. Excample: "^.*\.(cert|tik)$"')
 		parser.add_argument('--titlekeys', action='store_true', default=False, help="Extracts titlekeys from your NSP/NSZ files and adds missing keys to ./titlekeys.txt and JSON files inside ./titledb/ (obtainable from https://github.com/blawar/titledb). Titlekeys can be used to unlock updates using NUT OG (OG fork obtainable from https://github.com/plato79/nut). There is currently no publicly known way of optioning NSX files. To MitM: Apply disable_ca_verification & disable_browser_ca_verification patches, use your device's nx_tls_client_cert.pfx (Password: switch, Install to OS and import for Fiddler or import into Charles/OWASP ZAP). Use it for aauth-lp1.ndas.srv.nintendo.net:443, dauth-lp1.ndas.srv.nintendo.net:443 and app-b01-lp1.npns.srv.nintendo.net:443. Try with your WiiU first as there you won't get banned if you mess up.")
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 	

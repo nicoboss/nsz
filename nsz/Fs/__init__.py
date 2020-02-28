@@ -15,6 +15,8 @@ def factory(name):
 		f = Fs.Nsp.Nsp()
 	elif name.suffix == '.nsz':
 		f = Fs.Nsp.Nsp()
+	elif name.suffix == '.nspz':
+		f = Fs.Nsp.Nsp()
 	elif name.suffix == '.nsx':
 		f = Fs.Nsp.Nsp()
 	elif name.suffix == '.nca':
