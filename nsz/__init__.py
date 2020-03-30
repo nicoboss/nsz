@@ -75,7 +75,11 @@ def main():
 		if len(argv) > 1:
 			args = ParseArguments.parse()
 		else:
-			from gui.NSZ_GUI import GUI
+			try:
+				from gui.NSZ_GUI import GUI
+			except ImportError:
+				Print.error("Failed to import the GUI - is it installed?")
+				return
 			args = GUI().run()
 			if args == None:
 				Print.info("Done!")
