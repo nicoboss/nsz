@@ -223,7 +223,7 @@ def main():
 							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						elif filePath.suffix == '.ncz':
-							outfile = changeExtension(outfolder.joinpath(filePath.name), ".nca")
+							outfile = Path(changeExtension(outfolder.joinpath(filePath.name), ".nca"))
 							if not args.overwrite and outfile.is_file():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
 								'If you want to overwrite it use the -w parameter!'.format(outfile.name))

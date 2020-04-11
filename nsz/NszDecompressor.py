@@ -1,4 +1,5 @@
 from pathlib import Path
+from traceback import format_exc
 from hashlib import sha256
 from nut import Print, aes128
 from zstandard import ZstdDecompressor
@@ -17,23 +18,23 @@ def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
 		filename = changeExtension(filePath, '.nca')
 		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
-		container = factory(filePath)
-		container.open(filePath, 'rb')
 		try:
+			inFile = factory(filePath)
+			inFile.open(str(filePath), 'rb')
 			with open(outPath, 'wb') as outFile:
-				written, hexHash = __decompressNcz(container, outFile)
+				written, hexHash = __decompressNcz(inFile, outFile, statusReportInfo, pleaseNoPrint)
+				fileNameHash = Path(filePath).stem.lower()
+				if hexHash[:32] == fileNameHash:
+					Print.info('[VERIFIED]   {0}'.format(filename), pleaseNoPrint)
+				else:
+					Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]), pleaseNoPrint)
 		except BaseException as ex:
 			if not ex is KeyboardInterrupt:
 				Print.error(format_exc())
-			if outFile.is_file():
-				outFile.unlink()
+			if Path(outPath).is_file():
+				Path(outPath).unlink()
 		finally:
-			container.close()
-		fileNameHash = Path(filePath).stem.lower()
-		if hexHash[:32] == fileNameHash:
-			Print.info('[VERIFIED]   {0}'.format(filename), pleaseNoPrint)
-		else:
-			Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]), pleaseNoPrint)
+			inFile.close()
 	else:
 		raise NotImplementedError("Can't decompress {0} as that file format isn't implemented!".format(filePath))
 

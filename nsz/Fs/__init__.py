@@ -21,6 +21,8 @@ def factory(name):
 		f = Fs.Nsp.Nsp()
 	elif name.suffix == '.nca':
 		f = Fs.Nca.Nca()
+	elif name.suffix == '.ncz':
+		f = Fs.File.File()
 	elif name.suffix == '.nacp':
 		f = Fs.Nacp.Nacp()
 	elif name.suffix == '.tik':
