@@ -1,10 +1,11 @@
 import os, sys, re
 from traceback import format_exc
-from nut import aes128
+from nsz.nut import aes128
 from binascii import crc32, hexlify as hx, unhexlify as uhx
-from nut import Print
+from nsz.nut import Print
 from pathlib import Path
-from multiprocessing import *
+# from multiprocessing import *
+from multiprocessing.process import current_process
 
 keys = {}
 titleKeks = []
@@ -95,12 +96,12 @@ def unwrapAesWrappedTitlekey(wrappedKey, keyGeneration):
 
 def getKey(key):
 	if key not in keys:
-		raise IOError('{0} missing from {1}'.format(key, loadedKeysPath))
+		raise IOError('{0} missing from {1}'.format(key, loadedKeysFile))
 	foundKey = uhx(keys[key])
 	foundKeyChecksum = crc32(foundKey)
 	if key in crc32_checksum:
 		if crc32_checksum[key] != foundKeyChecksum:
-			raise IOError('{0} from {1} is invalid (crc32 missmatch)'.format(key, loadedKeysPath))
+			raise IOError('{0} from {1} is invalid (crc32 missmatch)'.format(key, loadedKeysFile))
 	elif current_process().name == 'MainProcess':
 		Print.info('Unconfirmed: crc32({0}) = {1}'.format(key, foundKeyChecksum))
 	return foundKey
@@ -115,8 +116,8 @@ def load(fileName):
 	try:
 		global keyAreaKeys
 		global titleKeks
-		global loadedKeysPath
-		loadedKeysPath = fileName
+		global loadedKeysFile
+		loadedKeysFile = fileName
 		
 		with open(fileName, encoding="utf8") as f:
 			for line in f.readlines():
