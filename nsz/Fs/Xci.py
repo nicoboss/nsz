@@ -1,11 +1,11 @@
 from binascii import hexlify as hx, unhexlify as uhx
-from Fs.File import File
-from Fs.File import BaseFile
-from Fs.Hfs0 import Hfs0
-from Fs.Hfs0 import Hfs0Stream
+from nsz.Fs.File import File
+from nsz.Fs.File import BaseFile
+from nsz.Fs.Hfs0 import Hfs0
+from nsz.Fs.Hfs0 import Hfs0Stream
 import os
 import re
-from nut import Print
+from nsz.nut import Print
 
 
 MEDIA_SIZE = 0x200

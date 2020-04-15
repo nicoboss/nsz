@@ -1,8 +1,6 @@
 from enum import IntEnum
-import Fs.Type
-from nut import aes128
-from nut import Print
-from nut import Hex
+import nsz.Fs.Type
+from nsz.nut import aes128,Print, Hex
 from binascii import hexlify as hx, unhexlify as uhx
 import hashlib
 import os.path
@@ -14,7 +12,7 @@ class BaseFile:
 		self.f = None
 		self.crypto = None
 		self.cryptoKey = None
-		self.cryptoType = Fs.Type.Crypto.NONE
+		self.cryptoType = nsz.Fs.Type.Crypto.NONE
 		self.cryptoCounter = None
 		self.cryptoOffset = 0
 		self.ctr_val = 0
@@ -177,17 +175,17 @@ class BaseFile:
 		if cryptoCounter != -1:
 			self.cryptoCounter = cryptoCounter
 			
-		if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
+		if self.cryptoType == nsz.Fs.Type.Crypto.CTR or self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
 			if self.cryptoKey:
 				self.crypto = aes128.AESCTR(self.cryptoKey, nonce = self.cryptoCounter.copy())
-				self.cryptoType = Fs.Type.Crypto.CTR
+				self.cryptoType = nsz.Fs.Type.Crypto.CTR
 			
 				self.enableBufferedIO(0x10, 0x10)
 
-		elif self.cryptoType == Fs.Type.Crypto.XTS:
+		elif self.cryptoType == nsz.Fs.Type.Crypto.XTS:
 			if self.cryptoKey:
 				self.crypto = aes128.AESXTS(self.cryptoKey)
-				self.cryptoType = Fs.Type.Crypto.XTS
+				self.cryptoType = nsz.Fs.Type.Crypto.XTS
 			
 				if self.size < 1 or self.size > 0xFFFFFF:
 					raise IOError('AESXTS Block too large or small')
@@ -195,12 +193,12 @@ class BaseFile:
 				self.rewind()
 				self.enableBufferedIO(self.size, 0x10)
 
-		elif self.cryptoType == Fs.Type.Crypto.BKTR:
-			self.cryptoType = Fs.Type.Crypto.BKTR
-		elif self.cryptoType == Fs.Type.Crypto.NCA0:
-			self.cryptoType = Fs.Type.Crypto.NCA0
-		elif self.cryptoType == Fs.Type.Crypto.NONE:
-			self.cryptoType = Fs.Type.Crypto.NONE
+		elif self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
+			self.cryptoType = nsz.Fs.Type.Crypto.BKTR
+		elif self.cryptoType == nsz.Fs.Type.Crypto.NCA0:
+			self.cryptoType = nsz.Fs.Type.Crypto.NCA0
+		elif self.cryptoType == nsz.Fs.Type.Crypto.NONE:
+			self.cryptoType = nsz.Fs.Type.Crypto.NONE
 
 
 	def open(self, path, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
@@ -366,9 +364,9 @@ class BufferedFile(BaseFile):
 
 	def getPageFlushBuffer(self, buffer):
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR:
+			if self.cryptoType == nsz.Fs.Type.Crypto.CTR:
 				self.crypto.seek(self.offset + self._bufferOffset)
-			elif self.cryptoType == Fs.Type.Crypto.BKTR:
+			elif self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
 				self.crypto.seek(self.offset + self._bufferOffset)
 
 			return self.crypto.encrypt(buffer)
@@ -426,7 +424,7 @@ class File(BufferedFile):
 
 	def pageRefreshed(self):
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
+			if self.cryptoType == nsz.Fs.Type.Crypto.CTR or self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
 				#Print.info('reading ctr from ' + hex(self._bufferOffset))
 				self.crypto.seek(self.offset + self._bufferOffset)
 			else:
@@ -444,7 +442,7 @@ class MemoryFile(File):
 		self.setupCrypto(cryptoType = cryptoType, cryptoKey = cryptoKey, cryptoCounter = cryptoCounter)
 
 		if self.crypto:
-			if self.cryptoType == Fs.Type.Crypto.CTR or self.cryptoType == Fs.Type.Crypto.BKTR:
+			if self.cryptoType == nsz.Fs.Type.Crypto.CTR or self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
 				self.crypto.seek(offset)
 
 			self.buffer = self.crypto.decrypt(self.buffer)

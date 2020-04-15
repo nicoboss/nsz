@@ -1,9 +1,10 @@
-import Fs
-from Fs.File import File
-from Fs import Type
-from nut import Print
-from Fs.File import MemoryFile
-from Fs import Bktr
+# from nsz import Fs
+from nsz.Fs.File import File
+from nsz.Fs import Type
+from nsz.nut import Print
+from nsz.Fs.File import MemoryFile
+from nsz.Fs.Cnmt import Cnmt
+from nsz.Fs import Bktr
 from binascii import hexlify as hx, unhexlify as uhx
 
 class EncryptedSection:
@@ -31,12 +32,12 @@ class BaseFs(File):
 		if buffer:
 			self.buffer = buffer
 			try:
-				self.fsType = Fs.Type.Fs(buffer[0x3])
+				self.fsType = Type.Fs(buffer[0x3])
 			except:
 				self.fsType = buffer[0x3]
 
 			try:
-				self.cryptoType = Fs.Type.Crypto(buffer[0x4])
+				self.cryptoType = Type.Crypto(buffer[0x4])
 			except:
 				self.cryptoType = buffer[0x4]
 			
@@ -140,7 +141,7 @@ class BaseFs(File):
 		
 	def getCnmt(self):
 		for f in self:
-			if isinstance(f, Fs.Cnmt.Cnmt):
+			if isinstance(f, Cnmt):
 				return f
 		raise("No Cnmt found!")
 	

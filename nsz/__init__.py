@@ -3,9 +3,6 @@
 
 from sys import path
 from pathlib import Path
-scriptPath = Path(__file__).resolve()
-importPath_str = str(scriptPath.parent)
-path.append(importPath_str)
 
 from sys import argv
 from nsz.nut import Print
@@ -71,7 +68,6 @@ err = []
 def main():
 	global err
 	try:
-		
 		if len(argv) > 1:
 			args = ParseArguments.parse()
 		else:
