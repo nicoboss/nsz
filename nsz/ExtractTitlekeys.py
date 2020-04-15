@@ -1,7 +1,7 @@
 from pathlib import Path
-from nut import Print
-from Fs import Nsp, factory
-from PathTools import *
+from nsz.nut import Print
+from nsz.Fs import Nsp, factory
+from nsz.PathTools import *
 import json
 
 def extractTitlekeys(argsFile):
