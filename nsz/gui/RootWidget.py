@@ -3,10 +3,10 @@ from pathlib import Path
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
-from gui.FileDialogs import *
-from gui.AboutDialog import *
+from nsz.gui.FileDialogs import *
+from nsz.gui.AboutDialog import *
 from nsz.gui.GuiPath import *
-from PathTools import *
+from nsz.PathTools import *
 
 class RootWidget(FloatLayout):
 	loadfile = ObjectProperty(None)

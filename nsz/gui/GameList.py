@@ -14,9 +14,9 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.progressbar import ProgressBar
 from kivy.uix.slider import Slider
 from functools import partial
-from gui.DraggableScrollbar import *
+from nsz.gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
-from PathTools import *
+from nsz.PathTools import *
 
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):

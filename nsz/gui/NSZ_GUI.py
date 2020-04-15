@@ -3,9 +3,9 @@ from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
-from gui.ShaderWidget import *
-from gui.RootWidget import *
-from gui.GameList import *
+from nsz.gui.ShaderWidget import *
+from nsz.gui.RootWidget import *
+from nsz.gui.GameList import *
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
@@ -51,8 +51,8 @@ class GUI(App):
 	
 	def on_start(self, *args):
 		if platform == 'win':
-			import gui.KivyOnTop
-			gui.KivyOnTop.register_topmost(Window, self.title)
+			import nsz.gui.KivyOnTop
+			nsz.gui.KivyOnTop.register_topmost(Window, self.title)
 
 	def build_config(self, config):
 		config.setdefaults(

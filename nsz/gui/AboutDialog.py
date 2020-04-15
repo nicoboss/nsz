@@ -2,7 +2,7 @@ from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from gui.Hyperlink import *
+from nsz.gui.Hyperlink import *
 from kivy.core.window import Window
 from nsz.gui.GuiPath import *
 import os

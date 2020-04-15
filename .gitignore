@@ -28,9 +28,7 @@ update
 secure
 titlekeys.txt
 titledb/
+*.exe
 *.7z
 * - Copy*
 
-# these 2 are commented out as it makes no sense to do this. the 2nd one causes __init__.py not to be added for packages
-# *_.*
-# *_
