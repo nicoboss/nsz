@@ -1,11 +1,11 @@
 from pathlib import Path
 from traceback import format_exc
 from hashlib import sha256
-from nut import Print, aes128
+from nsz.nut import Print, aes128
 from zstandard import ZstdDecompressor
-from Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
-from PathTools import *
-import Header, BlockDecompressorReader, FileExistingChecks
+from nsz.Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
+from nsz.PathTools import *
+from nsz import Header, BlockDecompressorReader, FileExistingChecks
 import enlighten
 
 

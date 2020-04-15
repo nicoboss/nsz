@@ -1,10 +1,10 @@
-from Fs import Pfs0, Nca, Type, factory
+from nsz.Fs import Pfs0, Nca, Type, factory
 from traceback import print_exc
 from os import scandir, remove
 from pathlib import Path
 from re import search
-from nut import Print
-from PathTools import *
+from nsz.nut import Print
+from nsz.PathTools import *
 import os
 
 def ExtractHashes(gamePath):

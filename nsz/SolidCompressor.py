@@ -1,11 +1,11 @@
-from nut import Print
+from nsz.nut import Print
 from os import remove
 from pathlib import Path
 from traceback import format_exc
-from SectionFs import isNcaPacked, sortedFs
-from Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
+from nsz.SectionFs import isNcaPacked, sortedFs
+from nsz.Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
 from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
-from PathTools import *
+from nsz.PathTools import *
 
 UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000

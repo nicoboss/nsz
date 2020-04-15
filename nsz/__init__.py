@@ -3,25 +3,22 @@
 
 from sys import path
 from pathlib import Path
-scriptPath = Path(__file__).resolve()
-importPath_str = str(scriptPath.parent)
-path.append(importPath_str)
 
 from sys import argv
-from nut import Print
+from nsz.nut import Print
 from os import listdir, _exit
 from time import sleep
-from Fs import Nsp, Hfs0, factory
-from BlockCompressor import blockCompress
-from SolidCompressor import solidCompress
+from nsz.Fs import Nsp, Hfs0, factory
+from nsz.BlockCompressor import blockCompress
+from nsz.SolidCompressor import solidCompress
 from traceback import print_exc, format_exc
-from NszDecompressor import verify as NszVerify, decompress as NszDecompress
+from nsz.NszDecompressor import verify as NszVerify, decompress as NszDecompress
 from multiprocessing import cpu_count, freeze_support, Process, Manager
-from ThreadSafeCounter import Counter
-from FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
-from ParseArguments import *
-from PathTools import *
-from ExtractTitlekeys import *
+from nsz.ThreadSafeCounter import Counter
+from nsz.FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
+from nsz.ParseArguments import *
+from nsz.PathTools import *
+from nsz.ExtractTitlekeys import *
 import enlighten
 import time
 
@@ -71,12 +68,11 @@ err = []
 def main():
 	global err
 	try:
-		
 		if len(argv) > 1:
 			args = ParseArguments.parse()
 		else:
 			try:
-				from gui.NSZ_GUI import GUI
+				from nsz.gui.NSZ_GUI import GUI
 			except ImportError:
 				Print.error("Failed to import the GUI - is it installed?")
 				return

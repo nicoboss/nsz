@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 class ParseArguments:
-
+	@staticmethod
 	def parse():
 		parser = ArgumentParser()
 		parser.add_argument('file',nargs='*')

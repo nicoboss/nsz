@@ -1,14 +1,14 @@
 from os import remove
-from nut import Print
+from nsz.nut import Print
 from time import sleep
 from pathlib import Path
 from traceback import format_exc
 from zstandard import ZstdCompressor
-from ThreadSafeCounter import Counter
-from SectionFs import isNcaPacked, sortedFs
+from nsz.ThreadSafeCounter import Counter
+from nsz.SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
-from Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
-from PathTools import *
+from nsz.Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
+from nsz.PathTools import *
 import enlighten
 #import sys
 

@@ -1,8 +1,7 @@
-from Fs.File import File
-import Fs.Type
+from nsz.Fs.File import File
 from binascii import hexlify as hx, unhexlify as uhx
-from nut import Print
-from nut import Keys
+from nsz.nut import Print, Keys
+
 
 class MetaEntry:
 	def __init__(self, f):

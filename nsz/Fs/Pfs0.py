@@ -1,18 +1,18 @@
-from nut import aes128
-from nut import Hex
+from nsz.nut import aes128
+from nsz.nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
-from Fs.File import File
-from Fs.File import BaseFile
+from nsz.Fs.File import File
+from nsz.Fs.File import BaseFile
 from hashlib import sha256
-import Fs.Type
+from nsz import Fs
 import os
 import re
 from pathlib import Path
-from nut import Keys
-from nut import Print
-from Fs.BaseFs import BaseFs
-from nut import Titles
+from nsz.nut import Keys
+from nsz.nut import Print
+from nsz.Fs.BaseFs import BaseFs
+from nsz.nut import Titles
 
 MEDIA_SIZE = 0x200
 
@@ -100,7 +100,7 @@ class Pfs0(BaseFs):
 			#self.offset += sectionStart
 			#self.size -= sectionStart
 		
-	def getHeader():
+	def getHeader(self):
 		stringTable = '\x00'.join(file.name for file in self.files)
 		
 		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
@@ -116,10 +116,10 @@ class Pfs0(BaseFs):
 		stringOffset = 0
 		
 		for f in range(len(self.files)):
-			header += f.offset.to_bytes(8, byteorder='little')
-			header += f.size.to_bytes(8, byteorder='little')
-			header += stringOffset.to_bytes(4, byteorder='little')
-			header += b'\x00\x00\x00\x00'
+			h += f.offset.to_bytes(8, byteorder='little')
+			h += f.size.to_bytes(8, byteorder='little')
+			h += stringOffset.to_bytes(4, byteorder='little')
+			h += b'\x00\x00\x00\x00'
 			
 			stringOffset += len(f.name) + 1
 			

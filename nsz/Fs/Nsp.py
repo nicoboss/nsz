@@ -1,20 +1,22 @@
-from nut import aes128
-from nut import Hex
+from nsz.nut import aes128
+from nsz.nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
-from Fs.File import File
+from nsz.Fs.File import File
 from hashlib import sha256
-import Fs.Type
+from nsz import Fs
 import os
 import re
 import pathlib
-from nut import Keys
-from nut import Print
-from Fs.Pfs0 import Pfs0
-from Fs.Ticket import Ticket
-from Fs.Nca import Nca
+from nsz.nut import Keys
+from nsz.nut import Print
+from nsz.Fs.Pfs0 import Pfs0
+from nsz.Fs.Ticket import Ticket
+from nsz.Fs.Nca import Nca
 import enlighten
 import shutil
+from nsz.nut import Titles
+from nsz.nut.Titles import Title
 
 MEDIA_SIZE = 0x200
 
@@ -88,18 +90,6 @@ class Nsp(Pfs0):
 		t.setId(self.titleId)
 		Titles.data()[self.titleId] = t
 		return t
-
-	def getUpdateFile(self):
-		title = self.title()
-
-		if title.isUpdate or title.isDLC or not title.updateId:
-			return None
-
-		for i, nsp in Nsps.files.items():
-			if nsp.titleId == title.updateId:
-				return nsp
-
-		return None
 
 	def unpack(self, path, extractregex="*"):
 		os.makedirs(str(path), exist_ok=True)
@@ -206,64 +196,8 @@ class Nsp(Pfs0):
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Nsp, self).open(path or self.path, mode, cryptoType, cryptoKey, cryptoCounter)
 					
-	def move(self, forceNsp = False):
-		if not self.path:
-			Print.error('no path set')
-			return False
-			
-		newPath = self.fileName(forceNsp = forceNsp)
-		
-		if not newPath:
-			Print.error('could not get filename for ' + self.path)
-			return False
-
-		if os.path.abspath(newPath).lower().replace('\\', '/') == os.path.abspath(self.path).lower().replace('\\', '/'):
-			return False
-			
-		if os.path.isfile(newPath):
-			Print.info('duplicate title: ')
-			Print.info(os.path.abspath(self.path))
-			Print.info(os.path.abspath(self.fileName(forceNsp = forceNsp)))
-			return False
-
-		try:
-			Print.info(self.path + ' -> ' + self.fileName(forceNsp = forceNsp))
-			
-			if not Config.dryRun:
-				os.makedirs(os.path.dirname(self.fileName(forceNsp = forceNsp)), exist_ok=True)
-			newPath = self.fileName(forceNsp = forceNsp)
-			
-			if not Config.dryRun:
-				shutil.move(self.path, newPath)
-				self.path = newPath
-		except BaseException as e:
-			Print.error('failed to rename file! %s -> %s  : %s' % (self.path, self.fileName(forceNsp = forceNsp), e))
-			if not Config.dryRun:
-				self.moveDupe()
-					
-		
 		return True
 
-	def moveDupe(self):
-		if Config.dryRun:
-			return True
-
-		try:
-			newPath = self.fileName()
-			os.makedirs(Config.paths.duplicates, exist_ok = True)
-			origDupePath = Config.paths.duplicates + os.path.basename(newPath)
-			dupePath = origDupePath
-			Print.info('moving duplicate ' + os.path.basename(newPath))
-			c = 0
-			while os.path.isfile(dupePath):
-				dupePath = Config.paths.duplicates + os.path.basename(newPath) + '.' + str(c)
-				c = c + 1
-			shutil.move(self.path, dupePath)
-			return True
-		except BaseException as e:
-			Print.error('failed to move to duplicates! ' + str(e))
-		return False
-		
 	def cleanFilename(self, s):
 		if s is None:
 			return ''
@@ -274,69 +208,7 @@ class Nsp(Pfs0):
 
 	def dict(self):
 		return {"titleId": self.titleId, "hasValidTicket": self.hasValidTicket, 'extractedNcaMeta': self.getExtractedNcaMeta(), 'version': self.version, 'timestamp': self.timestamp, 'path': self.path }
-		
-	def fileName(self, forceNsp = False):
-		bt = None
-		if not self.titleId in Titles.keys():
-			if not Title.getBaseId(self.titleId) in Titles.keys():
-				Print.info('could not find base title for ' + str(self.titleId) + ' or ' + str(Title.getBaseId(self.titleId)))
-				return None
-			bt = Titles.get(Title.getBaseId(self.titleId))
-			t = Title.Title()
-			if bt.name is not None:
-				t.loadCsv(self.titleId + '0000000000000000|0000000000000000|' + bt.name)
-			else:
-				t.setId(self.titleId)
-		else:
-			t = Titles.get(self.titleId)
 
-			if not t:
-				Print.error('could not find title id ' + str(self.titleId))
-				return None
-		
-			try:
-				if not t.baseId in Titles.keys():
-					Print.info('could not find baseId for ' + self.path)
-					return None
-			except BaseException as e:
-				print('exception: could not find title id ' + str(self.titleId) + ' ' + str(e))
-				return None
-			bt = Titles.get(t.baseId)
-			
-			
-		isNsx = not self.hasValidTicket and not forceNsp
-		
-		if t.isDLC:
-			format = Config.paths.getTitleDLC(isNsx)
-		elif t.isDemo:
-			if t.idExt != 0:
-				format = Config.paths.getTitleDemoUpdate(isNsx)
-			else:
-				format = Config.paths.getTitleDemo(isNsx)
-		elif t.idExt != 0:
-			if bt and bt.isDemo:
-				format = Config.paths.getTitleDemoUpdate(isNsx)
-			else:
-				format = Config.paths.getTitleUpdate(isNsx)
-		else:
-			format = Config.paths.getTitleBase(isNsx)
-			
-		format = format.replace('{id}', self.cleanFilename(t.id))
-		format = format.replace('{region}', self.cleanFilename(t.getRegion() or bt.getRegion()))
-		format = format.replace('{name}', self.cleanFilename(t.getName() or ''))
-		format = format.replace('{version}', str(self.getVersion() or 0))
-		format = format.replace('{baseId}', self.cleanFilename(bt.id))
-
-		baseName = self.cleanFilename(bt.getName() or '')
-		result = format.replace('{baseName}', baseName)
-		
-		while(len(os.path.basename(result).encode('utf-8')) > 240 and len(baseName) > 3):
-			baseName = baseName[:-1]
-			result = format.replace('{baseName}', baseName)
-			
-		
-		return result
-		
 	def ticket(self):
 		for f in (f for f in self if type(f) == Ticket):
 			return f
