@@ -179,7 +179,7 @@ if blockCompression:
 ```
 
 ## References
-NSZ pip package: https://pypi.org/project/nsz/\
+NSZ pip package: https://pypi.org/project/nsz/  
 Forum thread: https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compressor-decompressor.550556/
 
 ## Credits
