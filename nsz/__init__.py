@@ -199,7 +199,7 @@ def main():
 			
 			for i in range(parallelTasks):
 				bars[i].close(clear=True)
-			#barManager.stop() #We aren’t using stop because of it printing garbage to the console.
+			barManager.stop()
 
 			for filePath in sourceFileToDelete:
 				delete_source_file(filePath)
