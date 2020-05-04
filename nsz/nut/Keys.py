@@ -107,10 +107,10 @@ def getKey(key):
 	return foundKey
 
 def getMasterKey(masterKeyIndex):
-	return getKey('master_key_{0:02}'.format(masterKeyIndex))
+	return getKey('master_key_{0:02x}'.format(masterKeyIndex))
 	
 def existsMasterKey(masterKeyIndex):
-	return 'master_key_{0:02}'.format(masterKeyIndex) in keys
+	return 'master_key_{0:02x}'.format(masterKeyIndex) in keys
 
 def load(fileName):
 	try:
