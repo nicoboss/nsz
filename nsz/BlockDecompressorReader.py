@@ -3,8 +3,10 @@ from zstandard import ZstdDecompressor
 class BlockDecompressorReader:
 	#Position in decompressed data
 	Position = 0
+	BlockHeader = None
 
 	def __init__(self, nspf, BlockHeader):
+		self.BlockHeader = BlockHeader
 		initialOffset = nspf.tell()
 		self.nspf = nspf
 		if BlockHeader.blockSizeExponent < 14 or BlockHeader.blockSizeExponent > 32:
@@ -32,7 +34,7 @@ class BlockDecompressorReader:
 		elif whence  == 1:
 			self.Position += offset
 		elif whence  == 2:
-			self.Position = decompressedSize - offset
+			self.Position = self.BlockHeader.decompressedSize - offset
 		else:
 			raise ValueError("whence argument must be 0, 1 or 2")
 
