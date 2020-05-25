@@ -28,6 +28,7 @@ setuptools.setup(
 	],
 	extras_require={
 		'gui': [
+			'pywin32;platform_system=="Windows"',
 			'kivy_deps.sdl2==0.1.22;platform_system=="Windows"',
 			'kivy_deps.glew==0.1.12;platform_system=="Windows"',
 			'pygame;platform_system=="Linux"',
