@@ -31,10 +31,10 @@ class BlockDecompressorReader:
 	def seek(self, offset, whence = 0):
 		if whence == 0:
 			self.Position = offset
-		elif whence  == 1:
+		elif whence == 1:
 			self.Position += offset
-		elif whence  == 2:
-			self.Position = self.BlockHeader.decompressedSize - offset
+		elif whence == 2:
+			self.Position = self.BlockHeader.decompressedSize + offset
 		else:
 			raise ValueError("whence argument must be 0, 1 or 2")
 
