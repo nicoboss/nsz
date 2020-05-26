@@ -46,7 +46,7 @@ steps:
   continueOnError: true
   displayName: 'Test NSP solid compression'
   
-  - task: CmdLine@2
+- task: CmdLine@2
   inputs:
     script: python nsz.py -C -B -V -w -p -o C:\Users\Azure\.switch\tests\nsz_block_out C:\Users\Azure\.switch\tests\nsp
     failOnStderr: true
