@@ -1,7 +1,4 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+# NSZ Azure pipeline
 
 trigger:
 - master
@@ -15,7 +12,8 @@ strategy:
       python.version: '3.6'
     Python37:
       python.version: '3.7'
-
+    Python38:
+      python.version: '3.8'
 steps:
 - task: UsePythonVersion@0
   inputs:
@@ -26,8 +24,31 @@ steps:
     python -m pip install --upgrade pip
     python -m pip install -r requirements.txt
   displayName: 'Install dependencies'
-
+  
 - task: CmdLine@2
   inputs:
-    script: python nsz.py
+    script: python nsz.py -D -V -w -o C:\Users\Azure\.switch\tests\nsp_from_solid_out C:\Users\Azure\.switch\tests\nsz_solid
     failOnStderr: true
+  continueOnError: true
+  displayName: 'Test NSZ solid decompression'
+  
+- task: CmdLine@2
+  inputs:
+    script: python nsz.py -D -V -w -o C:\Users\Azure\.switch\tests\nsp_from_block_out C:\Users\Azure\.switch\tests\nsz_block
+    failOnStderr: true
+  continueOnError: true
+  displayName: 'Test NSZ block decompression'
+  
+- task: CmdLine@2
+  inputs:
+    script: python nsz.py -C -V -w -p -m 4 -o C:\Users\Azure\.switch\tests\nsz_solid_out C:\Users\Azure\.switch\tests\nsp
+    failOnStderr: true
+  continueOnError: true
+  displayName: 'Test NSP solid compression'
+  
+  - task: CmdLine@2
+  inputs:
+    script: python nsz.py -C -B -V -w -p -o C:\Users\Azure\.switch\tests\nsz_block_out C:\Users\Azure\.switch\tests\nsp
+    failOnStderr: true
+  continueOnError: true
+  displayName: 'Test NSP block compression'
