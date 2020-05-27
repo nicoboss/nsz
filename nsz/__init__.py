@@ -272,6 +272,9 @@ def main():
 			Print.info('\033[0mError while processing {0}'.format(e["filename"]))
 			Print.info(e["error"])
 
+		Print.info('Done!')
+		_exit(1)
+	
 	Print.info('Done!')
 	_exit(0)
 	#breakpoint()
