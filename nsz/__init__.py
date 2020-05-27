@@ -273,10 +273,10 @@ def main():
 			Print.info(e["error"])
 
 		Print.info('Done!')
-		_exit(1)
+		exit(1)
 	
 	Print.info('Done!')
-	_exit(0)
+	exit(0)
 	#breakpoint()
 
 
