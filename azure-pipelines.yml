@@ -7,7 +7,6 @@ pool:
   name: default
   #vmImage: 'windows-latest'
 strategy:
-  parallel:
   maxParallel: 4
   matrix:
     Python360:
