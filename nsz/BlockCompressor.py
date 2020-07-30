@@ -12,19 +12,21 @@ from nsz.PathTools import *
 import enlighten
 #import sys
 
-def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself):
+def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, blockSize):
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
-		readyForWork.decrement()
+		#readyForWork.decrement() # https://github.com/nicoboss/nsz/issues/80
 		if pleaseKillYourself.value() > 0:
 			break
 		buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID = item # compressedblockSizeList IS UNUSED VARIABLE
 		if buffer == 0:
 			return
-		compressed = ZstdCompressor(level=compressionLevel).compress(buffer)
-		#sys.stdout.write(str(len(compressed) - len(buffer)) + "\n")
-		out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
+		if compressionLevel == 0 and len(buffer) == blockSize: # https://github.com/nicoboss/nsz/issues/79
+			out_list[chunkRelativeBlockID] = buffer
+		else:
+			compressed = ZstdCompressor(level=compressionLevel).compress(buffer)
+			out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
 def blockCompress(filePath, compressionLevel, blockSizeExponent, outputDir, threads):
 	if filePath.suffix == '.nsp':
@@ -49,7 +51,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 	work = manager.Queue(threads)
 	
 	for i in range(threads):
-		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself))
+		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself, blockSize))
 		p.start()
 		pool.append(p)
 
@@ -148,6 +150,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 						chunkRelativeBlockID = 0
 						startChunkBlockID = blockID
 					work.put([buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID])
+					readyForWork.decrement()
 					blockID += 1
 					chunkRelativeBlockID += 1
 					decompressedBytes += len(buffer)
@@ -187,6 +190,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 	for i in range(readyForWork.value()):
 		work.put(None)
+		readyForWork.decrement()
 
 	while readyForWork.value() > 0:
 		sleep(0.02)
