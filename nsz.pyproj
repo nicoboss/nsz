@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{39fabc12-415b-4deb-bfae-38ac2d1fc72c}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>nsz.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|PythonCore|3.8</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="azure-pipelines.yml" />
+    <Content Include="dev\publish.cmd" />
+    <Content Include="dev\runDummyAzuretest.cmd" />
+    <Content Include="dev\test.cmd" />
+    <Content Include="dev\testPip.cmd" />
+    <Content Include="dev\testPyInstaller.cmd" />
+    <Content Include="LICENSE" />
+    <Content Include="MANIFEST.in" />
+    <Content Include="nsz\gui\json\settings_advanced.json" />
+    <Content Include="nsz\gui\json\settings_basic.json" />
+    <Content Include="nsz\gui\json\settings_tools.json" />
+    <Content Include="nsz\gui\layout\AboutDialog.kv" />
+    <Content Include="nsz\gui\layout\GameList.kv" />
+    <Content Include="nsz\gui\layout\GUI.kv" />
+    <Content Include="nsz\gui\layout\Hyperlink.kv" />
+    <Content Include="nsz\gui\layout\OpenFileDialog.kv" />
+    <Content Include="nsz\gui\layout\RootWidget.kv" />
+    <Content Include="nsz\gui\nsZip.png" />
+    <Content Include="nsz\gui\shaders\plasma.shader" />
+    <Content Include="nsz\gui\txt\license.txt" />
+    <Content Include="nsz\nsZip.ico" />
+    <Content Include="nsz\__init__.spec" />
+    <Content Include="README.md" />
+    <Content Include="requirements-gui.txt" />
+    <Content Include="requirements.txt" />
+    <Content Include="requirements_linux.sh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="nsz.py" />
+    <Compile Include="nsz\BlockCompressor.py" />
+    <Compile Include="nsz\BlockDecompressorReader.py" />
+    <Compile Include="nsz\ExtractTitlekeys.py" />
+    <Compile Include="nsz\FileExistingChecks.py" />
+    <Compile Include="nsz\Fs\BaseFs.py" />
+    <Compile Include="nsz\Fs\Bktr.py" />
+    <Compile Include="nsz\Fs\Cnmt.py" />
+    <Compile Include="nsz\Fs\File.py" />
+    <Compile Include="nsz\Fs\Hfs0.py" />
+    <Compile Include="nsz\Fs\Ivfc.py" />
+    <Compile Include="nsz\Fs\Nacp.py" />
+    <Compile Include="nsz\Fs\Nca.py" />
+    <Compile Include="nsz\Fs\Nsp.py" />
+    <Compile Include="nsz\Fs\Pfs0.py" />
+    <Compile Include="nsz\Fs\Rom.py" />
+    <Compile Include="nsz\Fs\Ticket.py" />
+    <Compile Include="nsz\Fs\Type.py" />
+    <Compile Include="nsz\Fs\Xci.py" />
+    <Compile Include="nsz\Fs\__init__.py" />
+    <Compile Include="nsz\gui\AboutDialog.py" />
+    <Compile Include="nsz\gui\DraggableScrollbar.py" />
+    <Compile Include="nsz\gui\FileDialogs.py" />
+    <Compile Include="nsz\gui\GameList.py" />
+    <Compile Include="nsz\gui\GuiPath.py" />
+    <Compile Include="nsz\gui\Hyperlink.py" />
+    <Compile Include="nsz\gui\KivyOnTop.py" />
+    <Compile Include="nsz\gui\NSZ_GUI.py" />
+    <Compile Include="nsz\gui\RootWidget.py" />
+    <Compile Include="nsz\gui\SettingScrollOptions.py" />
+    <Compile Include="nsz\gui\ShaderWidget.py" />
+    <Compile Include="nsz\Header.py" />
+    <Compile Include="nsz\IndependentNczDecompressor.py" />
+    <Compile Include="nsz\NszDecompressor.py" />
+    <Compile Include="nsz\nut\aes128.py" />
+    <Compile Include="nsz\nut\Hex.py" />
+    <Compile Include="nsz\nut\Keys.py" />
+    <Compile Include="nsz\nut\Print.py" />
+    <Compile Include="nsz\nut\Titles.py" />
+    <Compile Include="nsz\ParseArguments.py" />
+    <Compile Include="nsz\PathTools.py" />
+    <Compile Include="nsz\SectionFs.py" />
+    <Compile Include="nsz\SolidCompressor.py" />
+    <Compile Include="nsz\ThreadSafeCounter.py" />
+    <Compile Include="nsz\__init__.py" />
+    <Compile Include="setup.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="dev" />
+    <Folder Include="nsz" />
+    <Folder Include="nsz\Fs" />
+    <Folder Include="nsz\gui" />
+    <Folder Include="nsz\gui\json" />
+    <Folder Include="nsz\gui\layout" />
+    <Folder Include="nsz\gui\shaders" />
+    <Folder Include="nsz\gui\txt" />
+    <Folder Include="nsz\nut" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.8" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
