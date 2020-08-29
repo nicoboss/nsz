@@ -13,7 +13,11 @@ It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/rel
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
 
 **Methods listed below requires you to have Python 3.6+ and the pip package manager installed.**\
-**Python 3.8 and later requires [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) if you are want to use the GUI.**
+**Python 3.8 and later requires kivy 2.0 preview if you want GUI:**
+```
+pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew --extra-index-url https://kivy.org/downloads/packages/simple
+pip install kivy[base] kivy_examples --pre --extra-index-url https://kivy.org/downloads/simple/
+```
 
 ### PIP Package
 Simplest way to install would be using the following command in a terminal or a command prompt.\
