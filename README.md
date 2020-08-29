@@ -24,7 +24,7 @@ Simplest way to install would be using the following command in a terminal or a 
 `pip3 install --upgrade nsz`
 
 If you are interested in installing the GUI for the script, you can do so by running the following command.\
-`pip3 install --upgrade nszgui`
+`pip3 install --upgrade nsz[gui]`
 
 ### Running from source
 The script can also be run by cloning the repo locally. You need to install the pre-requisite modules by running the following command.\
