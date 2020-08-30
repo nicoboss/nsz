@@ -17,7 +17,7 @@ from functools import partial
 from nsz.gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
 from nsz.PathTools import *
-
+from nsz import FileExistingChecks
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
 	
@@ -46,12 +46,14 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 	index = None
 	selected = BooleanProperty(False)
 	selectable = BooleanProperty(True)
-	cols = 3
+	cols = 4
 
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		self.filename_text = data['0']
-		self.filesize_text = data['1']
+		self.titleid = data['1']
+		self.version = data['2']
+		self.filesize_text = data['3']
 		return super(SelectableLabel, self).refresh_view_attrs(
 			rv, index, data)
 
@@ -81,7 +83,7 @@ class RV(RecycleView):
 	def refresh(self, items):
 		self.data.clear()
 		for path in items:
-			self.data.append({'0': path, '1': self.sizeof_fmt(items[path])})
+			self.data.append({'0': path, '1': items[path][0], '2': 'v' + str(items[path][1]), '3': self.sizeof_fmt(items[path][2])})
 		self.refresh_from_data()
 			
 	def sizeof_fmt(self, num, suffix='B'):
@@ -119,7 +121,8 @@ class GameList(StackLayout):
 			self.refresh()
 		elif path.is_file():
 			if isGame(path) or isCompressedGameFile(path):
-				self.filelist[fullPath] = path.stat().st_size
+				(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
+				self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
 				self.refresh()
 		else:
 			print("Warning: {0} isn't a file or folder!".format(fullPath))

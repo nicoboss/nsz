@@ -23,7 +23,7 @@ class DraggableScrollbar(GridLayout):
 		self.orientation='lr-bt'
 
 		#the last child of layout1 and this will act as the draggable scrollbar
-		self.slider = Slider(min=0, max=1, value=25, orientation='vertical', step=0.01, size_hint=(0.1, 0.95))
+		self.slider = Slider(min=0, max=1, value=25, orientation='vertical', step=0.01, size_hint=(0.03, 0.95))
 
 		recycleView.bind(scroll_y=partial(self.slider_change))
 

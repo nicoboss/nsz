@@ -8,29 +8,84 @@
 			size: self.size
 	cover_source: ''
 	filename_text: ''
+	titleid: ''
+	version: ''
 	filesize_text: '0 KB'
 	pos: self.pos
 	size: self.size
-	padding: 20
 	Label:
 		id: id_filename
+		valign: "top"
 		halign: "left"
-		text_size: self.size
+		pos: 0, 0
+		size_hint: None, None
+		text_size: self.width, root.height
 		text: root.filename_text
+		size: root.width-300, self.texture_size[1]
+		on_size: root.height = self.height
+		padding: [3, 2]
+		canvas.before:
+			Color:
+				rgba: (1.0, 0.0, 0.0, 0.1)
+			Rectangle:
+				pos: self.pos
+				size: self.size
+	Label:
+		id: id_titleid
+		valign: "top"
+		halign: "right"
+		pos: root.width-300, 0
+		size_hint: None, None
+		text_size: self.width, root.height
+		text: root.titleid
+		size: 140, self.texture_size[1]
+		padding: [3, 2]
+		canvas.before:
+			Color:
+				rgba: (1.0, 1.0, 0.0, 0.1)
+			Rectangle:
+				pos: self.pos
+				size: self.size
+	Label:
+		id: id_version
+		valign: "top"
+		halign: "right"
+		pos: root.width-160, 0
+		size_hint: None, None
+		text_size: self.width, root.height
+		text: root.version
+		size: 80, self.texture_size[1]
+		padding: [3, 2]
+		canvas.before:
+			Color:
+				rgba: (0.0, 1.0, 1.0, 0.1)
+			Rectangle:
+				pos: self.pos
+				size: self.size
 	Label:
 		id: id_size
+		valign: "top"
 		halign: "right"
-		text_size: self.size
+		pos: root.width-80, 0
+		size_hint: None, None
+		text_size: self.width, root.height
 		text: root.filesize_text
-
+		size: 80, self.texture_size[1]
+		padding: [3, 2]
+		canvas.before:
+			Color:
+				rgba: (0.0, 0.0, 1.0, 0.1)
+			Rectangle:
+				pos: self.pos
+				size: self.size
 
 <RV>:
 	scroll_y: 0.5
 	viewclass: 'SelectableLabel'
 	SelectableRecycleBoxLayout:
 		id: selectableRecycleBoxLayout
-		default_size: None, dp(30)
-		default_size_hint: 0.95, None
+		default_size: None, dp(40)
+		default_size_hint: 0.99, None
 		size_hint_y: None
 		height: self.minimum_height
 		orientation: 'vertical'
