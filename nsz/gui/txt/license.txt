@@ -1,7 +1,8 @@
 MIT License
 
 Copyright (c) 2019 Nico Bosshard and Blake Warner
-Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni
+Thanks to our contributors: nicoboss, blawar, plato79,
+eXhumer, Taorni, gabest11, thatch, pR0Ps, maki-chan
 
 Some code inside NSZ originates from NUT. Blake Warner, as the author of NUT,
 permits to license all NUT code used in NSZ to the following MIT license.

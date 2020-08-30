@@ -189,3 +189,4 @@ Forum thread: https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compre
 ## Credits
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
 
+Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni, gabest11, thatch, pR0Ps, maki-chan
