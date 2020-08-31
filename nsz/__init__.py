@@ -82,13 +82,13 @@ def main():
 				return
 		
 		if args.output:
-			outfolderToPharse = args.output
-			if not outfolderToPharse.endswith('/') and not outfolderToPharse.endswith('\\'):
-				outfolderToPharse += "/"
-			if not Path(outfolderToPharse).is_dir():
+			argOutFolderToPharse = args.output
+			if not argOutFolderToPharse.endswith('/') and not argOutFolderToPharse.endswith('\\'):
+				argOutFolderToPharse += "/"
+			if not Path(argOutFolderToPharse).is_dir():
 				Print.error('Error: Output directory "{0}" does not exist!'.format(args.output))
 				return
-		outfolder = Path(outfolderToPharse).resolve() if args.output else Path('.').resolve()
+		argOutFolder = Path(argOutFolderToPharse).resolve() if args.output else None
 		
 		Print.info('')
 		Print.info('             NSZ v3.2   ,;:;;,')
@@ -110,6 +110,8 @@ def main():
 		pool = []
 		work = poolManager.Queue()
 		amountOfTastkQueued = Counter(0)
+		targetDictNsz = dict()
+		targetDictXcz = dict()
 		
 		if args.titlekeys:
 			extractTitlekeys(args.file)
@@ -118,16 +120,16 @@ def main():
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
 					filePath_str = str(filePath)
-					Print.info('Extracting "{0}" to {1}'.format(filePath_str, outfolder))
-					dir = outfolder.joinpath(filePath.stem)
+					outFolder = argOutFolder.joinpath(filePath.stem) if argOutFolder else filePath.parent.absolute().joinpath(filePath.stem)
+					Print.info('Extracting "{0}" to {1}'.format(filePath_str, outFolder))
 					container = factory(filePath)
 					container.open(filePath_str, 'rb')
 					if isXciXcz(filePath):
 						for hfs0 in container.hfs0:
 							secureIn = hfs0
-							secureIn.unpack(dir.joinpath(hfs0._path), args.extractregex)
+							secureIn.unpack(outFolder.joinpath(hfs0._path), args.extractregex)
 					else:
-						container.unpack(dir, args.extractregex)
+						container.unpack(outFolder, args.extractregex)
 					container.close()
 
 		if args.create:
@@ -137,21 +139,24 @@ def main():
 			nsp.pack(args.file)
 
 		if args.C:
-			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsz")
-			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xcz")
 			sourceFileToDelete = []
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
 					if not isUncompressedGame(filePath):
 						continue
 					try:
+						outFolder = argOutFolder if argOutFolder else filePath.parent.absolute()
 						if filePath.suffix == '.nsp':
-							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not outFolder in targetDictNsz:
+								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".nsz")
+							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						elif filePath.suffix == '.xci':
-							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not outFolder in targetDictXcz:
+								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".xcz")
+							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
-						compress(filePath, outfolder, args, work, amountOfTastkQueued)
+						compress(filePath, outFolder, args, work, amountOfTastkQueued)
 						if args.rm_source:
 							sourceFileToDelete.append(filePath)
 					except KeyboardInterrupt:
@@ -205,26 +210,29 @@ def main():
 				delete_source_file(filePath)
 
 		if args.D:
-			targetDictNsz = CreateTargetDict(outfolder, args.parseCnmt, ".nsp")
-			targetDictXcz = CreateTargetDict(outfolder, args.parseCnmt, ".xci")
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
 					if not isCompressedGame(filePath) and not isCompressedGameFile(filePath):
 						continue
 					try:
+						outFolder = argOutFolder if argOutFolder else filePath.parent.absolute()
 						if filePath.suffix == '.nsz':
-							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not outFolder in targetDictNsz:
+								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".xcz")
+							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						elif filePath.suffix == '.xcz':
-							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz, args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not outFolder in targetDictXcz:
+								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".xcz")
+							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						elif filePath.suffix == '.ncz':
-							outfile = Path(changeExtension(outfolder.joinpath(filePath.name), ".nca"))
+							outFile = Path(changeExtension(outFolder.joinpath(filePath.name), ".nca"))
 							if not args.overwrite and outfile.is_file():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
-								'If you want to overwrite it use the -w parameter!'.format(outfile.name))
+								'If you want to overwrite it use the -w parameter!'.format(outFile.name))
 								continue
-						decompress(filePath, outfolder)
+						decompress(filePath, outFolder)
 						if args.rm_source:
 							delete_source_file(filePath)
 					except KeyboardInterrupt:
@@ -273,9 +281,17 @@ def main():
 			Print.info(e["error"])
 
 		Print.info('Done!')
+		if len(argv) <= 1:
+			print()
+			print()
+			input("Press Enter to exit...")	
 		exit(1)
 	
-	Print.info('Done!')
+		Print.info('Done!')
+	if len(argv) <= 1:
+		print()
+		print()
+		input("Press Enter to exit...")
 	exit(0)
 	#breakpoint()
 
