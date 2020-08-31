@@ -1,3 +1,6 @@
+from nsz.gui.GuiPath import *
+from kivy.config import Config
+Config.set("kivy", "default_font", ["MPLUS1p", getGuiPath("fonts/MPLUS1p-Medium.ttf")])
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
@@ -9,7 +12,6 @@ from nsz.gui.GameList import *
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.logger import Logger
-from nsz.gui.GuiPath import *
 from nsz.gui.SettingScrollOptions import *
 import logging
 import os
@@ -61,7 +63,7 @@ class GUI(App):
 			'block': 0,
 			'solid': 0,
 			'bs': "1 MB (default)",
-			'verify': 0,
+			'verify': 1,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,

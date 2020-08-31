@@ -21,6 +21,7 @@
 		pos: 0, 0
 		size_hint: None, None
 		text_size: self.width, None
+		font_size: 12
 		text: root.filename_text
 		size: root.width-300, self.texture_size[1]
 		on_size: root.height = self.height #Booth required due to the way how Kivy resizes
@@ -38,6 +39,7 @@
 		pos: root.width-300, 0
 		size_hint: None, None
 		text_size: self.width, root.height
+		font_size: 12
 		text: root.titleid
 		size: 140, self.texture_size[1]
 		padding: [3, 2]
@@ -54,6 +56,7 @@
 		pos: root.width-160, 0
 		size_hint: None, None
 		text_size: self.width, root.height
+		font_size: 12
 		text: root.version
 		size: 80, self.texture_size[1]
 		padding: [3, 2]
@@ -70,6 +73,7 @@
 		pos: root.width-80, 0
 		size_hint: None, None
 		text_size: self.width, root.height
+		font_size: 12
 		text: root.filesize_text
 		size: 80, self.texture_size[1]
 		padding: [3, 2]

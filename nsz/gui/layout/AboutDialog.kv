@@ -46,7 +46,7 @@
 				url_text: "Contributors"
 			ScrollView:
 				id: license_text_scrlv
-				size_hint: (1, .8)
+				size_hint: (1, .83)
 				TextInput:
 					id: license_text
 					background_color: (0,0,0,1)
@@ -57,8 +57,8 @@
 					text: 'Failed to load license text!'
 
 			BoxLayout:
-				size_hint_y: None
-				size_hint: (1, .1)
+				size_hint: (1, .085)
 				Button:
+					font_size: 18
 					text: "Cancel"
 					on_release: root.closeAboutDialog()
