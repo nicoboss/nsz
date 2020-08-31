@@ -1,5 +1,6 @@
 global-exclude *
 global-include *.py
+include nsz/gui/fonts/*.*
 include nsz/gui/json/*.json
 include nsz/gui/layout/*.kv
 include nsz/gui/shaders/*.shader

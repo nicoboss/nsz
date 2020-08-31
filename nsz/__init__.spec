@@ -7,6 +7,7 @@ a = Analysis(['__init__.py'],
              pathex=['C:\\Users\\Administrator\\Documents\\nsz\\nsz'],
              binaries=[],
              datas=[
+             ('gui/fonts/*.*', 'nsz/gui/fonts'),
              ('gui/json/*.json', 'nsz/gui/json'),
              ('gui/layout/*.kv', 'nsz/gui/layout'),
              ('gui/shaders/*.shader', 'nsz/gui/shaders'),
