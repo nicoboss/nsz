@@ -13,16 +13,17 @@
 	filesize_text: '0 KB'
 	pos: self.pos
 	size: self.size
+	on_size: self.height = self.ids.id_filename.height #Booth required due to the way how Kivy resizes
 	Label:
 		id: id_filename
 		valign: "top"
 		halign: "left"
 		pos: 0, 0
 		size_hint: None, None
-		text_size: self.width, root.height
+		text_size: self.width, None
 		text: root.filename_text
 		size: root.width-300, self.texture_size[1]
-		on_size: root.height = self.height
+		on_size: root.height = self.height #Booth required due to the way how Kivy resizes
 		padding: [3, 2]
 		canvas.before:
 			Color:
