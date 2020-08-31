@@ -228,7 +228,7 @@ def main():
 								continue
 						elif filePath.suffix == '.ncz':
 							outFile = Path(changeExtension(outFolder.joinpath(filePath.name), ".nca"))
-							if not args.overwrite and outfile.is_file():
+							if not args.overwrite and outFile.is_file():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
 								'If you want to overwrite it use the -w parameter!'.format(outFile.name))
 								continue

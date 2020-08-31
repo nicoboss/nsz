@@ -121,7 +121,10 @@ class GameList(StackLayout):
 			self.refresh()
 		elif path.is_file():
 			if isGame(path) or isCompressedGameFile(path):
-				(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
+				if isGame(path):
+					(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
+				else:
+					(titleIDExtracted, versionExtracted) = ("None", 0)
 				self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
 				self.refresh()
 		else:
