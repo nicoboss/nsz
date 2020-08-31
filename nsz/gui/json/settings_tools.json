@@ -12,5 +12,12 @@
 		"desc": "Regex specifying which files inside the container should be extracted",
 		"section": "Tools",
 		"key": "extractregex"
+	},
+	{
+		"type": "bool",
+		"title": "Kivy always on top",
+		"desc": "Specifies if the Kivy window should be topmost (always on top of any other window) to improve the drag & drop experience (Windows platform only)",
+		"section": "Tools",
+		"key": "kivy_topmost"
 	}
 ]

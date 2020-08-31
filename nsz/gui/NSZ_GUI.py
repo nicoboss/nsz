@@ -52,7 +52,7 @@ class GUI(App):
 		return root
 	
 	def on_start(self, *args):
-		if platform == 'win':
+		if platform == 'win' and int(self.config.get('Tools', 'kivy_topmost')) == 1:
 			import nsz.gui.KivyOnTop
 			nsz.gui.KivyOnTop.register_topmost(Window, self.title)
 
@@ -75,7 +75,8 @@ class GUI(App):
 		})
 		config.setdefaults('Tools', {
 			'depth': 1,
-			'extractregex': ''
+			'extractregex': '',
+			'kivy_topmost': 1,
 		})
 
 	def build_settings(self, settings):
