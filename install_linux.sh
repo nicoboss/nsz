@@ -22,7 +22,7 @@ then
 		libavformat-dev \
 		libavcodec-dev \
 		zlib1g-dev
-	apt remove cython3
+	apt remove -y cython3
 	# Install gstreamer for audio, video (optional)
 	apt install -y \
 		libgstreamer1.0 \
@@ -30,22 +30,45 @@ then
 		gstreamer1.0-plugins-good
 elif [ -n "`which dnf`" ]
 then
-	dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+	#Add required repositories
+	if [ ! $(rpm -E %fedora) = "%fedora" ]
+	then
+		dnf install -y --nogpgcheck https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+	fi
+	
+	if [ ! $(rpm -E %rhel) = "%rhel" ]
+	then
+		dnf install -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm
+		dnf install -y dnf-plugins-core
+		dnf config-manager --enable PowerTools
+		dnf update
+	fi
+	dnf -y upgrade
+	
+	dnf -y groupinstall "Development Tools"
+	
 	# Install necessary system packages
-	dnf install -y python3-devel ffmpeg-libs SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel portmidi-devel libavdevice libavc1394-devel zlibrary-devel ccache mesa-libGL mesa-libGL-devel
+	dnf install -y git
+	dnf install -y python3-devel
+	dnf install -y ffmpeg-libs
+	dnf install -y SDL2-devel
+	dnf install -y SDL2_image-devel
+	dnf install -y SDL2_mixer-devel
+	dnf install -y SDL2_ttf-devel
+	dnf install -y portmidi-devel
+	dnf install -y libavdevice
+	dnf install -y libavc1394-devel
+	dnf install -y zlibrary-devel
+	dnf install -y ccache mesa-libGL
+	dnf install -y mesa-libGL-devel
+	dnf install -y libXrandr-devel
+	
 	# Install xclip in case you run a kivy app using your computer, and the app requires a CutBuffer provider:
 	dnf install -y xclip
-	
-	# In case you get the following error preventing kivy install:
-	#  annobin: _event.c: Error: plugin built for compiler version (8.0.1) but run with compiler version (8.1.1)
-	#  cc1: error: fail to initialize plugin /usr/lib/gcc/86_64-redhat-linux/8/plugin/annobin.so
-	# This has been resolved in later updates after the on-disk release of Fedora 28, so upgrade your packages:
-	#  sudo dnf -y upgrade
 	
 	# avoid pip Cython conflict with packaged version:
 	dnf remove python3-Cython
 fi
-
 
 # make sure pip and setuptools are updated
 python3 -m pip install --upgrade --user pip setuptools
