@@ -1,4 +1,7 @@
 pywin32;platform_system == "Windows"
-kivy_deps.sdl2==0.1.22
-kivy_deps.glew==0.1.12
-kivy==1.11.1
+pypiwin32;platform_system == "Windows"
+docutils
+pygments
+kivy.deps.sdl2
+kivy.deps.glew
+kivy[base] --pre --extra-index-url https://kivy.org/downloads/simple/

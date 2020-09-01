@@ -22,7 +22,7 @@ then
 		libavformat-dev \
 		libavcodec-dev \
 		zlib1g-dev
-		
+	apt remove cython3
 	# Install gstreamer for audio, video (optional)
 	apt install -y \
 		libgstreamer1.0 \
@@ -47,25 +47,25 @@ then
 fi
 
 
-# make sure pip, virtualenv and setuptools are updated
-python3 -m pip install --upgrade --user pip virtualenv setuptools
-
-# then create a virtualenv named "kivy_venv" in your home with:
-#python3 -m virtualenv ~/kivy_venv
-
-# load the virtualenv
-#source ~/kivy_venv/bin/activate
+# make sure pip and setuptools are updated
+python3 -m pip install --upgrade --user pip setuptools
 
 # if you'd like to be able to use the x11 winodw backend do:
 export USE_X11=1
 
-# install the correct Cython version
-python3 -m pip install Cython==0.29.10
+#Building Kivy from source
+python3 -m pip install pygments docutils pillow
+python3 -m pip install --upgrade Cython>=0.24,<=0.29.14,!=0.27,!=0.27.2
+rm -rf kivy
+git clone git://github.com/kivy/kivy.git
+cd kivy
+sed -i 's/PYTHON = python/PYTHON = python3/g' Makefile
+python3 setup.py build_ext --inplace -f
+pip3 install .
+cd ..
+rm -rf kivy
 
-# Install stable version of Kivy into the virtualenv
-python3 -m pip install --no-binary :all kivy==1.11.1
-
-
+#Installing NSZ dependencies
 python3 -m pip install pycryptodome>=3.9.0
 python3 -m pip install zstandard
 python3 -m pip install enlighten
