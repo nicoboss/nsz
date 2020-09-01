@@ -64,6 +64,7 @@ python3 setup.py build_ext --inplace -f
 pip3 install .
 cd ..
 rm -rf kivy
+pip3 install .
 
 #Installing NSZ dependencies
 python3 -m pip install pycryptodome>=3.9.0
