@@ -79,10 +79,6 @@ class XciStream(BaseFile):
 				return True
 		return False
 
-	def setHfs0Size(self, sz):
-		self.seek(0x138)
-		self.writeInt64(sz)
-
 	def close(self):
 		if self.isOpen():
 			if self.hfs0:
@@ -94,9 +90,6 @@ class XciStream(BaseFile):
 
 			self.seek(0)
 			self.writeHeader()
-
-			if hfs0Size:
-				self.setHfs0Size(hfs0Size)
 
 			super(XciStream, self).close()
 
