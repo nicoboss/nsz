@@ -55,7 +55,7 @@ export USE_X11=1
 
 #Building Kivy from source
 python3 -m pip install pygments docutils pillow
-python3 -m pip install --upgrade Cython>=0.24,<=0.29.14,!=0.27,!=0.27.2
+python3 -m pip install --upgrade "Cython>=0.24,<=0.29.14,!=0.27,!=0.27.2"
 rm -rf kivy
 git clone git://github.com/kivy/kivy.git
 cd kivy
