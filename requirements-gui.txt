@@ -1,3 +1,6 @@
+pycryptodome>=3.9.0
+zstandard
+enlighten
 pywin32;platform_system == "Windows"
 pypiwin32;platform_system == "Windows"
 docutils
