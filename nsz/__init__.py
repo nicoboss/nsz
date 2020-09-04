@@ -280,17 +280,15 @@ def main():
 			Print.info('\033[0mError while processing {0}'.format(e["filename"]))
 			Print.info(e["error"])
 
-		Print.info('Done!')
+		Print.info('\nDone!\n')
+		print()
+		print()
 		if len(argv) <= 1:
-			print()
-			print()
 			input("Press Enter to exit...")	
 		exit(1)
 	
-		Print.info('Done!')
+	Print.info('\nDone!\n')
 	if len(argv) <= 1:
-		print()
-		print()
 		input("Press Enter to exit...")
 	exit(0)
 	#breakpoint()
