@@ -113,6 +113,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	useBlockCompression = blockMagic == b'NCZBLOCK'
 	blockSize = -1
 	if useBlockCompression:
+		Print.info("[NCZBLOCK]   Using Block decompresion")
 		BlockHeader = Header.Block(nspf)
 		blockDecompressorReader = BlockDecompressorReader.BlockDecompressorReader(nspf, BlockHeader)
 	pos = nspf.tell()

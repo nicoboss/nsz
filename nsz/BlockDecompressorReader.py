@@ -24,13 +24,16 @@ class BlockDecompressorReader:
 	def __decompressBlock(self, blockID):
 		if self.CurrentBlockId == blockID:
 			return self.CurrentBlock
-		if(blockID >= len(self.CompressedBlockOffsetList)):
-			raise EOFError("BlockID exceeds the amounts of compressed blocks in that file!")
+		decompressedBlockSize = self.BlockSize
+		if blockID >= len(self.CompressedBlockOffsetList) - 1:
+			if blockID >= len(self.CompressedBlockOffsetList):
+				raise EOFError("BlockID exceeds the amounts of compressed blocks in that file!")
+			decompressedBlockSize = self.BlockHeader.decompressedSize % BlockSize
 		self.nspf.seek(self.CompressedBlockOffsetList[blockID])
-		if self.CompressedBlockSizeList[blockID] < self.BlockSize:
-			self.CurrentBlock = ZstdDecompressor().decompress(self.nspf.read(self.BlockSize))
+		if self.CompressedBlockSizeList[blockID] < decompressedBlockSize:
+			self.CurrentBlock = ZstdDecompressor().decompress(self.nspf.read(decompressedBlockSize))
 		else:
-			self.CurrentBlock = self.nspf.read(self.BlockSize)
+			self.CurrentBlock = self.nspf.read(decompressedBlockSize)
 		self.CurrentBlockId = blockID
 		return self.CurrentBlock
 
