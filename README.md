@@ -2,7 +2,7 @@
 A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch ROMs loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
 
 ## Installation:
-There are several ways to use the script. You can find details on installation for all below.\
+There are several ways the install the script. You can find details on installation for all of them below.\
 \
 **You need to have a hactool compatible keys file in a suitable directory to use the script**.\
 The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory.\
@@ -18,23 +18,23 @@ You can also use the Windows binaries. They do not require any external librarie
 Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system.\
 `pip3 install --upgrade nsz`
 
-If you are interested in installing the GUI for the script, you can do so by running the following command on Python 3.6 or Python 3.7. This works on Windows and on some Linux distributions however on Linux it's hight recommended to build from source using `./install_linux.sh`\
+If you are interested in installing the GUI for the script, you can do so by running one of the following commands. On Linux it's highly recommended to follow "Running from source on Linux" instead.
+Python 3.6 and Python 3.7
 `pip3 install --upgrade nsz[gui]`
 
-Python 3.8 and later requires Kivy 2.0 preview:\
-```
-pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew --extra-index-url https://kivy.org/downloads/packages/simple
-pip install kivy[base] kivy_examples --pre --extra-index-url https://kivy.org/downloads/simple/
-```
+Python 3.8 and later: Download requirements-gui.txt and execute:\
+`pip3 install -r requirements-gui.txt`
 
-### Running from source
-The script can also be run by cloning the repo locally. You need to install the pre-requisite modules by running the following command.\
+### Running from source on Linux
+
+On Linux just clone and execute `pip3 install -r requirements.txt` for the no-GUI version and `./install_linux.sh` if you want GUI.
+
+### Running from source on Windows
+The script can also be run by cloning the repo locally. You need to install the dependencies by running the following command.\
 `pip3 install -r requirements.txt`
 
 GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command on Python 3.6 and Python 3.7 on Windows\
 `pip3 install -r requirements-gui.txt`
-
-On Linux just execute `./install_linux.sh` to get NSZ with GUI.
 
 ## Usage
 ```
