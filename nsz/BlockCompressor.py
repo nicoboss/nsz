@@ -124,6 +124,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
 				
 				partNr = 0
+				decompressedBytesOld = nspf.tell()//1048576
 				bar.count = nspf.tell()//1048576
 				subBars.count = f.tell()//1048576
 				bar.refresh()
@@ -154,9 +155,11 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 					blockID += 1
 					chunkRelativeBlockID += 1
 					decompressedBytes += len(buffer)
-					bar.count = decompressedBytes//1048576
-					subBars.count = compressedBytes//1048576
-					bar.refresh()
+					if decompressedBytes - decompressedBytesOld > 10485760: #Refresh every 10 MB
+						decompressedBytesOld = decompressedBytes
+						bar.count = decompressedBytes//1048576
+						subBars.count = compressedBytes//1048576
+						bar.refresh()
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
