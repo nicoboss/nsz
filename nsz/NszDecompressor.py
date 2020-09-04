@@ -124,6 +124,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 		bar = enlighten.Counter(total=nca_size//1048576, desc='Decompress', unit="MiB", color='red', bar_format=BAR_FMT)
 	decompressedBytes = len(header)
+	decompressedBytesOld = decompressedBytes
 	if f != None:
 		f.write(header)
 	if statusReportInfo != None:
@@ -167,11 +168,13 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 			decompressedBytes += lenInputChunk
 			if statusReportInfo != None:
 				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size]
-			else:
+			elif decompressedBytes - decompressedBytesOld > 52428800: #Refresh every 50 MB
+				decompressedBytesOld = decompressedBytes
 				bar.count = decompressedBytes//1048576
 				bar.refresh()
 
 	if statusReportInfo == None:
+		bar.count = decompressedBytes//1048576
 		bar.close()
 		#Line break after closing the process bar is required to prevent
 		#the next output from being on the same line as the process bar
