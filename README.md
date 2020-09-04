@@ -12,26 +12,29 @@ It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/rel
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
 
-**Methods listed below requires you to have Python 3.6+ and the pip package manager installed.**\
-**Python 3.8 and later requires kivy 2.0 preview if you want GUI:**
+**Methods listed below requires you to have Python 3.6+ installed.**\
+
+### PIP Package
+Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system.\
+`pip3 install --upgrade nsz`
+
+If you are interested in installing the GUI for the script, you can do so by running the following command on Python 3.6 or Python 3.7. This works on Windows and on some Linux distributions however on Linux it's hight recommended to build from source using `./install_linux.sh`\
+`pip3 install --upgrade nsz[gui]`
+
+Python 3.8 and later requires Kivy 2.0 preview:\
 ```
 pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew --extra-index-url https://kivy.org/downloads/packages/simple
 pip install kivy[base] kivy_examples --pre --extra-index-url https://kivy.org/downloads/simple/
 ```
 
-### PIP Package
-Simplest way to install would be using the following command in a terminal or a command prompt.\
-`pip3 install --upgrade nsz`
-
-If you are interested in installing the GUI for the script, you can do so by running the following command.\
-`pip3 install --upgrade nsz[gui]`
-
 ### Running from source
 The script can also be run by cloning the repo locally. You need to install the pre-requisite modules by running the following command.\
 `pip3 install -r requirements.txt`
 
-GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command\
+GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command on Python 3.6 and Python 3.7 on Windows\
 `pip3 install -r requirements-gui.txt`
+
+On Linux just execute `./install_linux.sh` to get NSZ with GUI.
 
 ## Usage
 ```
@@ -95,7 +98,7 @@ optional arguments:
   -x, --extract         Extract a NSP/XCI/NSZ/XCZ/NSPZ
   --extractregex EXTRACTREGEX
                         Regex specifying which files inside the container
-                        should be extracted. Excample: "^.*\.(cert|tik)$"
+                        should be extracted. Example: "^.*\.(cert|tik)$"
   --titlekeys           Extracts titlekeys from your NSP/NSZ files and adds
                         missing keys to ./titlekeys.txt and JSON files inside
                         ./titledb/ (obtainable from
@@ -119,7 +122,7 @@ optional arguments:
 
 ## Few Usage Examples
 * To compress all files in a folder: `nsz -C /path/to/folder/with/roms/`
-* To compress all files in a folder and verifying signature of compressed files: `nsz --verify -C /path/to/folder/with/roms/`
+* To compress all files in a folder and verifying integrity of compressed files: `nsz --verify -C /path/to/folder/with/roms/`
 * To compress all files in a folder with 8 threads and outputting resulting files to a new directory: `nsz --threads 8 --output /path/to/out/dir/ -C /path/to/folder/with/roms/`
 * To compress all files in a folder with level 22 compression level: `nsz --level 22 -C /path/to/folder/with/roms/`
 * To decompress all files in a folder: `nsz -D /path/to/folder/with/roms/`
@@ -129,25 +132,23 @@ To view all the possible flags and a description on what each flag, check the [U
 ## File Format Details
 
 ### NSZ
-NSZ files are not a real format, they are functionally identical to NSP files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
+NSZ files are functionally identical to NSP files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
-NSC_Builder supports compressing NSP to NSZ, and decompressing NSZ to NSP. The sample scripts located here are just examples of how the format works.
-
-NSC_Builder can be downloaded at https://github.com/julesontheroad/NSC_BUILDER
+As an alternative to this tool NSC_Builder also supports compressing NSP to NSZ, and decompressing NSZ to NSP. NSC_Builder can be downloaded at https://github.com/julesontheroad/NSC_BUILDER
 
 ### XCZ
-XCZ files are not a real format, they are functionally identical to XCI files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
+XCZ files are functionally identical to XCI files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
 ### NCZ
-These are compressed NCA files. The NCA's are decrypted, and then compressed using zStandard. Only NCA's with a 0x4000 byte header are supported (CNMT nca's are not supported).
+These are compressed NCA files. The NCA's are decrypted, and then compressed using zStandard.
 
-The first 0x4000 bytes of a NCZ file is exactly the same as the original NCA (and still encrypted).
+The first 0x4000 bytes of an NCZ file is exactly the same as the original NCA (and still encrypted). This applies even if the first section doesn't start at 0x4000.
 
 At 0x4000, there is the variable sized NCZ Header. It contains a list of sections which tell the decompressor how to re-encrypt the NCA data after decompression. It can also contain an optional block compression header allowing random read access.
 
-All of the information in the header can be derived from the original NCA + Ticket, however it is provided preparsed to make decompression as easy as possible for third parties.
+All of the information in the header can be derived from the original NCA + Ticket, however it is provided pre-parsed to make decompression as easy as possible for third parties.
 
-Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splatted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py
+Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splitted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py
 
 ```python
 class Section:
