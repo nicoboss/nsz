@@ -150,7 +150,11 @@ class arguments:
 		self.rm_source = True if int(config.get('Advanced', 'rm_source')) == 1 else None
 		self.depth = int(config.get('Tools', 'depth'))
 		self.extractregex = str(config.get('Tools', 'extractregex'))
-
+		self.undupe = None
+		self.undupe_dryrun = None
+		self.undupe_prioritylist = ""
+		self.undupe_whitelist = ""
+		self.undupe_old_versions = False
 
 if __name__ == '__main__':
 	GUI().run()
