@@ -59,17 +59,15 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 		return(titleId, version)
 	return None
 
-def CreateTargetDict(targetFolder, parseCnmt, extension):
-	filesAtTarget = {}
-	alreadyExists = {}
-	for file in scandir(str(targetFolder)):
+def CreateTargetDict(targetFolder, parseCnmt, extension, filesAtTarget = {}, alreadyExists = {}):
+	for filePath in expandFiles(targetFolder):
 		try:
-			filePath = Path(targetFolder).joinpath(file.name)
 			filePath_str = str(filePath)
-			if filePath.suffix == extension:
-				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(file.name))
-				filesAtTarget[file.name.lower()] = filePath_str
-				extractedIdVersion = ExtractTitleIDAndVersion(file, parseCnmt)
+			if (isGame(filePath) or filePath.suffix == ".nspz") and (extension == None or filePath.suffix == extension):
+				print(filePath)
+				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(filePath.name))
+				filesAtTarget[filePath.name.lower()] = filePath_str
+				extractedIdVersion = ExtractTitleIDAndVersion(filePath, parseCnmt)
 				if extractedIdVersion == None:
 					if parseCnmt:
 						Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))

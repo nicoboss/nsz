@@ -24,6 +24,12 @@ class ParseArguments:
 		parser.add_argument('-x', '--extract', action="store_true", help='Extract a NSP/XCI/NSZ/XCZ/NSPZ')
 		parser.add_argument('--extractregex', type=str, default="", help='Regex specifying which files inside the container should be extracted. Example: "^.*\.(cert|tik)$"')
 		parser.add_argument('--titlekeys', action='store_true', default=False, help="Extracts titlekeys from your NSP/NSZ files and adds missing keys to ./titlekeys.txt and JSON files inside ./titledb/ (obtainable from https://github.com/blawar/titledb). Titlekeys can be used to unlock updates using NUT OG (OG fork obtainable from https://github.com/plato79/nut). There is currently no publicly known way of optioning NSX files. To MitM: Apply disable_ca_verification & disable_browser_ca_verification patches, use your device's nx_tls_client_cert.pfx (Password: switch, Install to OS and import for Fiddler or import into Charles/OWASP ZAP). Use it for aauth-lp1.ndas.srv.nintendo.net:443, dauth-lp1.ndas.srv.nintendo.net:443 and app-b01-lp1.npns.srv.nintendo.net:443. Try with your WiiU first as there you won't get banned if you mess up.")
+		parser.add_argument('--undupe', action='store_true', help="Deleted all duplicates (games with same ID and Version). The Files folder will get parsed in order so the later in the argument list the more likely the file is to be deleted")
+		parser.add_argument('--undupe-dryrun' , action='store_true', help="Shows what files would get deleted using --undupe")
+		parser.add_argument('--undupe-prioritylist', type=str, default="", help='Regex specifying which dublicates delegtion should be prioritized before following the normal deletion order. Example: "^.*\.(nsp|xci)$"')
+		parser.add_argument('--undupe-whitelist', type=str, default="", help='Regex specifying which dublicates should under no circumstances be deleted. Example: "^.*\.(nsz|xcz)$"')
+		parser.add_argument('--undupe-blacklist', type=str, default="", help='Regex specifying which files should always be deleted - even if they are not even a dublicate! Be careful! Example: "^.*\.(nsp|xci)$"')
+		parser.add_argument('--undupe-old-versions',action="store_true", default=False, help='Removes every old version as long there is a newer one of the same titleID.')
 		parser.add_argument('-c', '--create', help='create / pack a NSP')
 	
 		args = parser.parse_args()

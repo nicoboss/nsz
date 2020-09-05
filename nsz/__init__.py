@@ -19,6 +19,7 @@ from nsz.FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, dele
 from nsz.ParseArguments import *
 from nsz.PathTools import *
 from nsz.ExtractTitlekeys import *
+from nsz.undupe import undupe
 import enlighten
 import time
 
@@ -131,6 +132,9 @@ def main():
 					else:
 						container.unpack(outFolder, args.extractregex)
 					container.close()
+
+		if args.undupe or args.undupe_dryrun:
+			undupe(args);
 
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))

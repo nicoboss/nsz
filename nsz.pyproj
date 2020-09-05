@@ -25,6 +25,7 @@
     <Content Include="dev\test.cmd" />
     <Content Include="dev\testPip.cmd" />
     <Content Include="dev\testPyInstaller.cmd" />
+    <Content Include="install_linux.sh" />
     <Content Include="LICENSE" />
     <Content Include="MANIFEST.in" />
     <Content Include="nsz\gui\json\settings_advanced.json" />
@@ -44,7 +45,6 @@
     <Content Include="README.md" />
     <Content Include="requirements-gui.txt" />
     <Content Include="requirements.txt" />
-    <Content Include="requirements_linux.sh" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="nsz.py" />
@@ -91,6 +91,7 @@
     <Compile Include="nsz\SectionFs.py" />
     <Compile Include="nsz\SolidCompressor.py" />
     <Compile Include="nsz\ThreadSafeCounter.py" />
+    <Compile Include="nsz\undupe.py" />
     <Compile Include="nsz\__init__.py" />
     <Compile Include="setup.py" />
   </ItemGroup>
