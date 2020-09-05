@@ -22,7 +22,7 @@ from nsz.ExtractTitlekeys import *
 from nsz.undupe import undupe
 import enlighten
 import time
-
+import sys
 
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id):
 	while True:
@@ -289,12 +289,12 @@ def main():
 		print()
 		if len(argv) <= 1:
 			input("Press Enter to exit...")	
-		exit(1)
+		sys.exit(1)
 	
 	Print.info('\nDone!\n')
 	if len(argv) <= 1:
 		input("Press Enter to exit...")
-	exit(0)
+	sys.exit(0)
 	#breakpoint()
 
 

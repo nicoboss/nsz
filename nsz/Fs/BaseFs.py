@@ -124,7 +124,7 @@ class BaseFs(File):
 			for entry in entries:
 				#print('offset = %x' % self.tell())
 				entry.printInfo()
-				#exit(0)
+				#sys.exit(0)
 		#else:
 		#	print('unknown offset = %x' % self.tell())
 				

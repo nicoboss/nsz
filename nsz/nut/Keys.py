@@ -165,5 +165,5 @@ else:
 	errorMsg = "{0} or {1} not found!\nPlease dump your keys using https://github.com/shchmue/Lockpick_RCM/releases".format(str(keypath), str(dumpedKeys))
 	Print.error(errorMsg)
 	input("Press Enter to exit...")
-	exit(1)
+	sys.exit(1)
 

@@ -217,7 +217,7 @@ class Nca(File):
 		self.header.seek(0x400)
 		#Print.info('reading')
 		#Hex.dump(self.header.read(0x200))
-		#exit()
+		#sys.exit()
 
 		for i in range(4):
 			hdr = self.header.read(0x200)
