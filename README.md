@@ -22,7 +22,7 @@ If you are interested in installing the GUI for the script, you can do so by run
 Python 3.6 and Python 3.7:\
 `pip3 install --upgrade nsz[gui]`
 
-Python 3.8 and later: Download [requirements-gui.txt](https://github.com/nicoboss/nsz/blob/master/requirements-gui.txt) and execute:\
+Python 3.8 and later: Download [requirements-gui.txt](https://raw.githubusercontent.com/nicoboss/nsz/master/requirements-gui.txt) and execute:\
 `pip3 install -r requirements-gui.txt`
 
 ### Running from source on Linux
