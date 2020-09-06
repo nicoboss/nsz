@@ -33,7 +33,7 @@ On Linux just clone and execute `pip3 install -r requirements.txt` for the no-GU
 The script can also be run by cloning the repo locally. You need to install the dependencies by running the following command.\
 `pip3 install -r requirements.txt`
 
-GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command on Python 3.6 and Python 3.7 on Windows\
+GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command on Python 3.6 and Python 3.7 on Windows:\
 `pip3 install -r requirements-gui.txt`
 
 ## Usage
