@@ -15,11 +15,11 @@ You can also use the Windows binaries. They do not require any external librarie
 **Methods listed below requires you to have Python 3.6+ installed.**\
 
 ### PIP Package
-Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system.\
+Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system with Python 3.6 and later.\
 `pip3 install --upgrade nsz`
 
 If you are interested in installing the GUI for the script, you can do so by running one of the following commands. On Linux it's highly recommended to follow "Running from source on Linux" instead.
-Python 3.6 and Python 3.7
+Python 3.6 and Python 3.7:\
 `pip3 install --upgrade nsz[gui]`
 
 Python 3.8 and later: Download requirements-gui.txt and execute:\
