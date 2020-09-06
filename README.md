@@ -18,11 +18,11 @@ You can also use the Windows binaries. They do not require any external librarie
 Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system with Python 3.6 and later.\
 `pip3 install --upgrade nsz`
 
-If you are interested in installing the GUI for the script, you can do so by running one of the following commands. On Linux it's highly recommended to follow [Running from source on Linux](https://github.com/nicoboss/nsz#running-from-source-on-linux) instead.
+If you are interested in installing the GUI for the script, you can do so by running one of the following commands. On Linux it's highly recommended to follow [Running from source on Linux](https://github.com/nicoboss/nsz#running-from-source-on-linux) instead.\
 Python 3.6 and Python 3.7:\
 `pip3 install --upgrade nsz[gui]`
 
-Python 3.8 and later: Download requirements-gui.txt and execute:\
+Python 3.8 and later: Download [requirements-gui.txt](https://github.com/nicoboss/nsz/blob/master/requirements-gui.txt) and execute:\
 `pip3 install -r requirements-gui.txt`
 
 ### Running from source on Linux
