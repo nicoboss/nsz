@@ -166,7 +166,7 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error when compressing file: %s' % filePath)
+						Print.error('Error while compressing file: %s' % filePath)
 						err.append({"filename":filePath,"error":format_exc() })
 						print_exc()
 			
@@ -242,7 +242,7 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error when decompressing file: {0}'.format(filePath))
+						Print.error('Error while decompressing file: {0}'.format(filePath))
 						err.append({"filename":filePath, "error":format_exc()})
 						print_exc()
 
@@ -266,7 +266,7 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error when verifying file: {0}'.format(filePath))
+						Print.error('Error while verifying file: {0}'.format(filePath))
 						err.append({"filename":filePath,"error":format_exc()})
 						print_exc()
 

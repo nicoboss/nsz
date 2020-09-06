@@ -120,13 +120,16 @@ class GameList(StackLayout):
 					self.filelist[str(filepath.resolve())] = filepath.stat().st_size
 			self.refresh()
 		elif path.is_file():
-			if isGame(path) or isCompressedGameFile(path):
-				if isGame(path):
-					(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
-				else:
-					(titleIDExtracted, versionExtracted) = ("None", 0)
-				self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
-				self.refresh()
+			try:
+				if isGame(path) or isCompressedGameFile(path):
+					if isGame(path):
+						(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
+					else:
+						(titleIDExtracted, versionExtracted) = ("None", 0)
+					self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
+					self.refresh()
+			except BaseException as e:
+				print('Error while adding file to gamelist: {0}'.format(str(e)))
 		else:
 			print("Warning: {0} isn't a file or folder!".format(fullPath))
 
