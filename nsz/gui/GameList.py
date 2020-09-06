@@ -18,6 +18,7 @@ from nsz.gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
 from nsz.PathTools import *
 from nsz import FileExistingChecks
+from traceback import print_exc
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
 	
@@ -113,14 +114,14 @@ class GameList(StackLayout):
 	def handledrops(self, widget, rawPath):
 		path = Path(rawPath.decode('utf-8'))
 		fullPath = str(path.resolve())
-		if path.is_dir():
-			for file in scandir(str(path)):
-				filepath = path.joinpath(file)
-				if isGame(filepath) or isCompressedGameFile(filepath):
-					self.filelist[str(filepath.resolve())] = filepath.stat().st_size
-			self.refresh()
-		elif path.is_file():
-			try:
+		try:
+			if path.is_dir():
+				for file in scandir(str(path)):
+					filepath = path.joinpath(file)
+					if isGame(filepath) or isCompressedGameFile(filepath):
+						self.filelist[str(filepath.resolve())] = filepath.stat().st_size
+				self.refresh()
+			elif path.is_file():
 				if isGame(path) or isCompressedGameFile(path):
 					if isGame(path):
 						(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
@@ -128,10 +129,11 @@ class GameList(StackLayout):
 						(titleIDExtracted, versionExtracted) = ("None", 0)
 					self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
 					self.refresh()
-			except BaseException as e:
-				print('Error while adding file to gamelist: {0}'.format(str(e)))
-		else:
-			print("Warning: {0} isn't a file or folder!".format(fullPath))
+			else:
+				print("Warning: {0} isn't a file or folder!".format(fullPath))
+		except BaseException as e:
+			print('Error while adding {0} to gamelist: {1}'.format(fullPath, str(e)))
+			print_exc()
 
 	def refresh(self):
 		if self.ids.DragAndDropFloatLayout:
