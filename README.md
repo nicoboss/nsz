@@ -38,12 +38,16 @@ GUI is optional and requires extra modules to run with GUI. To install the modul
 
 ## Usage
 ```
-nsz.py --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p]
-              [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
-              [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
-              [--titlekeys] [-c CREATE]
-              [file [file ...]]
+nsz --help
+usage: nsz [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-t THREADS]
+           [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i]
+           [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX] [--titlekeys]
+           [--undupe] [--undupe-dryrun]
+           [--undupe-prioritylist UNDUPE_PRIORITYLIST]
+           [--undupe-whitelist UNDUPE_WHITELIST]
+           [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions]
+           [-c CREATE]
+           [file [file ...]]
 
 positional arguments:
   file
@@ -116,6 +120,25 @@ optional arguments:
                         app-b01-lp1.npns.srv.nintendo.net:443. Try with your
                         WiiU first as there you won't get banned if you mess
                         up.
+  --undupe              Deleted all duplicates (games with same ID and
+                        Version). The Files folder will get parsed in order so
+                        the later in the argument list the more likely the
+                        file is to be deleted
+  --undupe-dryrun       Shows what files would get deleted using --undupe
+  --undupe-prioritylist UNDUPE_PRIORITYLIST
+                        Regex specifying which dublicates delegtion should be
+                        prioritized before following the normal deletion
+                        order. Example: "^.*\.(nsp|xci)$"
+  --undupe-whitelist UNDUPE_WHITELIST
+                        Regex specifying which dublicates should under no
+                        circumstances be deleted. Example: "^.*\.(nsz|xcz)$"
+  --undupe-blacklist UNDUPE_BLACKLIST
+                        Regex specifying which files should always be deleted
+                        - even if they are not even a dublicate! Be careful!
+                        Example: "^.*\.(nsp|xci)$"
+  --undupe-old-versions
+                        Removes every old version as long there is a newer one
+                        of the same titleID.
   -c CREATE, --create CREATE
                         create / pack a NSP
 ```
