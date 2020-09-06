@@ -12,7 +12,7 @@ It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/rel
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
 
-**Methods listed below requires you to have Python 3.6+ installed.**\
+**Methods listed below requires you to have Python 3.6+ installed.**
 
 ### PIP Package
 Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system with Python 3.6 and later.\
