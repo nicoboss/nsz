@@ -112,23 +112,36 @@ class GameList(StackLayout):
 		self.name = "gameList"
 
 	def handledrops(self, widget, rawPath):
-		path = Path(rawPath.decode('utf-8'))
+		path = Path(rawPath.decode('utf-8')).absolute()
+		self.addFiles(path)
+		
+	def addFiles(self, path):
 		fullPath = str(path.resolve())
 		try:
 			if path.is_dir():
+				requireRefresh = False
 				for file in scandir(str(path)):
 					filepath = path.joinpath(file)
 					if isGame(filepath) or isCompressedGameFile(filepath):
-						self.filelist[str(filepath.resolve())] = filepath.stat().st_size
-				self.refresh()
+						filepathStr = str(filepath.resolve())
+						if isGame(filepath):
+							(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(filepathStr, True)
+						else:
+							(titleIDExtracted, versionExtracted) = ("None", 0)
+						if not filepathStr in self.filelist:
+							requireRefresh = True
+							self.filelist[filepathStr] = (titleIDExtracted, versionExtracted, filepath.stat().st_size)
+				if requireRefresh:
+					self.refresh()
 			elif path.is_file():
 				if isGame(path) or isCompressedGameFile(path):
 					if isGame(path):
 						(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath, True)
 					else:
 						(titleIDExtracted, versionExtracted) = ("None", 0)
-					self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
-					self.refresh()
+					if not fullPath in self.filelist:
+						self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
+						self.refresh()
 			else:
 				print("Warning: {0} isn't a file or folder!".format(fullPath))
 		except BaseException as e:

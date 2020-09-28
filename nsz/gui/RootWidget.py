@@ -7,6 +7,7 @@ from nsz.gui.FileDialogs import *
 from nsz.gui.AboutDialog import *
 from nsz.gui.GuiPath import *
 from nsz.PathTools import *
+from nsz import FileExistingChecks
 
 class RootWidget(FloatLayout):
 	loadfile = ObjectProperty(None)
@@ -77,20 +78,16 @@ class RootWidget(FloatLayout):
 	def showNoFiles(self, foldername, filename):
 		return False
 
-	def setInputFileFolder(self, path, filename):
+	def setInputFileFolder(self, rawPath, filename):
 		if len(filename) == 0:
-			pathObj = Path(path)
-			if pathObj.is_dir():
-				for file in scandir(path):
-					filepath = pathObj.joinpath(file)
-					if isGame(filepath) or isCompressedGameFile(filepath):
-						self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
+			return
+		path = Path(rawPath).joinpath(filename[0])
+		if len(filename) == 1:
+			self.gameList.addFiles(path)
 		else:
-			for file in filename:
-				filepath = Path(path).joinpath(file)
-				if filepath.is_file():
-					self.gameList.filelist[str(filepath.resolve())] = filepath.stat().st_size
-		self.gameList.refresh()
+			for file in filename[1:]:
+				filepath = path.joinpath(file)
+				self.gameList.addFiles(filepath)
 		self.dismissPopup()
 
 	def setOutputFileFolder(self, path, filename):
