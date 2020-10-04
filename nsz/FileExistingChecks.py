@@ -63,7 +63,7 @@ def CreateTargetDict(targetFolder, parseCnmt, extension, filesAtTarget = {}, alr
 	for filePath in expandFiles(targetFolder):
 		try:
 			filePath_str = str(filePath)
-			if (isGame(filePath) or filePath.suffix == ".nspz") and (extension == None or filePath.suffix == extension):
+			if (isGame(filePath) or filePath.suffix == ".nspz" or filePath.suffix == ".nsx") and (extension == None or filePath.suffix == extension):
 				print(filePath)
 				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(filePath.name))
 				filesAtTarget[filePath.name.lower()] = filePath_str

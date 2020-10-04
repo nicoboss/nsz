@@ -1,14 +1,15 @@
 from pathlib import Path
 from nsz.FileExistingChecks import CreateTargetDict
-from nsz.nut import Print	
+from nsz.nut import Print
+import os
 import re
 
 def isOnWhitelist(args, file):
 	if not args.undupe_whitelist == "" and re.match(args.undupe_whitelist, file):
-		if args.undupe_dryrun:
-			Print.info("[DRYRUN] [WHITELISTED]: " + file)
-		else:
-			Print.info("[WHITELISTED]: " + file)
+		#if args.undupe_dryrun:
+		#	Print.info("[DRYRUN] [WHITELISTED]: " + file)
+		#else:
+		#	Print.info("[WHITELISTED]: " + file)
 		return True
 	return False
 
@@ -29,7 +30,7 @@ def undupe(args):
 						if args.undupe_dryrun:
 							Print.info("[DRYRUN] [DELETE] [OLD_VERSION]: " + file)
 						else:
-							del file
+							os.remove(file)
 							Print.info("[DELETED] [OLD_VERSION]: " + file)
 				continue
 
@@ -41,7 +42,7 @@ def undupe(args):
 						if args.undupe_dryrun:
 							Print.info("[DRYRUN] [DELETE] [BLACKLIST]: " + file)
 						else:
-							del file
+							os.remove(file)
 							Print.info("[DRYRUN] [DELETED] [BLACKLIST]: " + file)
 
 			if not args.undupe_prioritylist == "":
@@ -51,13 +52,25 @@ def undupe(args):
 						if args.undupe_dryrun:
 							Print.info("[DRYRUN] [DELETE] [PRIORITYLIST]: " + file)
 						else:
-							del file
+							os.remove(file)
 							Print.info("[DRYRUN] [DELETED] [PRIORITYLIST]: " + file)
 
+			firstDeleted = False
 			for file in list(version_value[1:]):
 				if not isOnWhitelist(args, file):
 					if args.undupe_dryrun:
 						Print.info("[DRYRUN] [DELETE] [DUPE]: " + file)
+						Print.info("Keeping " + version_value[0])
 					else:
-						del file
+						os.remove(file)
 						Print.info("[DELETED] [DUPE]: " + file)
+						Print.info("Keeping " + version_value[0])
+				elif not firstDeleted and not isOnWhitelist(args, version_value[0]):
+					firstDeleted = True
+					if args.undupe_dryrun:
+						Print.info("[DRYRUN] [DELETE] [DUPE]: " + version_value[0])
+						Print.info("Keeping " + file)
+					else:
+						os.remove(version_value[0])
+						Print.info("[DELETED] [DUPE]: " + version_value[0])
+						Print.info("Keeping " + file)
