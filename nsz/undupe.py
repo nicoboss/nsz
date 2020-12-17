@@ -74,3 +74,18 @@ def undupe(args):
 						os.remove(version_value[0])
 						Print.info("[DELETED] [DUPE]: " + version_value[0])
 						Print.info("Keeping " + file)
+			if args.undupe_rename:
+				for file in version_value:
+					if not isOnWhitelist(args, file):
+						newName = str(Path(file).parent.joinpath("["+titleID_key+"][v"+str(version_key)+"].nsz"))
+						if file == newName:
+							#Print.info("[RENAME] [SKIPPED] " + newName)
+							pass
+						elif Path(newName).is_file():
+							Print.info("[RENAME] [ERROR_ALREADY_EXIST] " + newName)
+						else:
+							if args.undupe_dryrun:
+								Print.info("[DRYRUN] [RENAME]: " + "os.rename(" + file + ", " + newName)
+							else:
+								Print.info("[RENAME]: " + "os.rename(" + file+  ", " + newName)
+								os.rename(file, newName)
