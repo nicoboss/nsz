@@ -26,20 +26,21 @@ def ExtractHashes(gamePath):
 		container.close()
 	return fileHashes
 
-def ExtractTitleIDAndVersion(gamePath, parseCnmt):
+def ExtractTitleIDAndVersion(gamePath, args):
 	titleId = ""
 	version = -1
 	gameName = Path(gamePath).name
 	titleIdResult = search(r'0100[0-9A-Fa-f]{12}', gameName)
-	if titleIdResult:
-		titleId = titleIdResult.group().upper()
-	versionResult = search(r'\[v\d+\]', gameName)
-	if versionResult:
-		version = int(versionResult.group()[2:-1])
-	if titleId != "" and version > -1 and version%65536 == 0:
-		return(titleId, version)
-	elif not parseCnmt:
-		return None
+	if args.alwaysParseCnmt:
+		if titleIdResult:
+			titleId = titleIdResult.group().upper()
+		versionResult = search(r'\[v\d+\]', gameName)
+		if versionResult:
+			version = int(versionResult.group()[2:-1])
+		if titleId != "" and version > -1 and version%65536 == 0:
+			return(titleId, version)
+		elif not args.parseCnmt:
+			return None
 	gamePath = Path(gamePath).resolve()
 	container = factory(gamePath)
 	container.open(str(gamePath), 'rb')
@@ -59,7 +60,7 @@ def ExtractTitleIDAndVersion(gamePath, parseCnmt):
 		return(titleId, version)
 	return None
 
-def CreateTargetDict(targetFolder, parseCnmt, extension, filesAtTarget = {}, alreadyExists = {}):
+def CreateTargetDict(targetFolder, args, extension, filesAtTarget = {}, alreadyExists = {}):
 	for filePath in expandFiles(targetFolder):
 		try:
 			filePath_str = str(filePath)
@@ -67,9 +68,9 @@ def CreateTargetDict(targetFolder, parseCnmt, extension, filesAtTarget = {}, alr
 				print(filePath)
 				Print.infoNoNewline('Extract TitleID/Version: {0} '.format(filePath.name))
 				filesAtTarget[filePath.name.lower()] = filePath_str
-				extractedIdVersion = ExtractTitleIDAndVersion(filePath, parseCnmt)
+				extractedIdVersion = ExtractTitleIDAndVersion(filePath, args)
 				if extractedIdVersion == None:
-					if parseCnmt:
+					if args.parseCnmt or args.alwaysParseCnmt:
 						Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))
 					else:
 						Print.error('Failed to extract TitleID/Version from filename "{0}". Use -p to extract from Cnmt.'.format(Path(filePath).name))
@@ -90,11 +91,11 @@ def CreateTargetDict(targetFolder, parseCnmt, extension, filesAtTarget = {}, alr
 			Print.error('Error: ' + str(e))
 	return(filesAtTarget, alreadyExists)
 
-def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite, parseCnmt):
+def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite, args):
 	(filesAtTarget, alreadyExists) = targetDict
-	extractedIdVersion = ExtractTitleIDAndVersion(filePath, parseCnmt)
+	extractedIdVersion = ExtractTitleIDAndVersion(filePath, args)
 	if extractedIdVersion == None:
-		if parseCnmt:
+		if args.parseCnmt or args.alwaysParseCnmt:
 			Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))
 		else:
 			Print.error('Failed to extract TitleID/Version from filename "{0}". Use -p to extract from Cnmt.'.format(Path(filePath).name))

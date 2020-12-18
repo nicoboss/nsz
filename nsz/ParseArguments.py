@@ -13,6 +13,7 @@ class ParseArguments:
 		parser.add_argument('-s', '--bs', type=int, default=20, help='Block Size for random read access 2^x while x between 14 and 32. Default: 20 => 1 MB')
 		parser.add_argument('-V', '--verify', action="store_true", default=False, help='Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter')
 		parser.add_argument('-p', '--parseCnmt', action="store_true", default=False, help='Extract TitleId/Version from Cnmt if this information cannot be obtained from the filename. Required for skipping/overwriting existing files and --rm-old-version to work properly if some not every file is named properly. Supported filenames: *TitleID*[vVersion]*')
+		parser.add_argument('-P', '--alwaysParseCnmt', action="store_true", default=False, help='Always extract TitleId/Version from Cnmt and never trust filenames')
 		parser.add_argument('-t', '--threads', type=int, default=-1, help='Number of threads to compress with. Numbers < 1 corresponds to the number of logical CPU cores for block compression and 3 for solid compression')
 		parser.add_argument('-m', '--multi', type=int, default=4, help='Executes multiple compression tasks in parallel. Take a look at available RAM especially if compression level is over 18.')
 		parser.add_argument('-o', '--output', nargs='?', help='Directory to save the output NSZ files')
