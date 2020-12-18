@@ -39,15 +39,15 @@ GUI is optional and requires extra modules to run with GUI. To install the modul
 ## Usage
 ```
 nsz --help
-usage: nsz [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-t THREADS]
-           [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i]
-           [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX] [--titlekeys]
-           [--undupe] [--undupe-dryrun]
-           [--undupe-prioritylist UNDUPE_PRIORITYLIST]
-           [--undupe-whitelist UNDUPE_WHITELIST]
-           [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions]
-           [-c CREATE]
-           [file [file ...]]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-P]
+              [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
+              [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
+              [--titlekeys] [--undupe] [--undupe-dryrun] [--undupe-rename]
+              [--undupe-prioritylist UNDUPE_PRIORITYLIST]
+              [--undupe-whitelist UNDUPE_WHITELIST]
+              [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions]
+              [-c CREATE]
+              [file [file ...]]
 
 positional arguments:
   file
@@ -81,6 +81,9 @@ optional arguments:
                         version to work properly if some not every file is
                         named properly. Supported filenames:
                         *TitleID*[vVersion]*
+  -P, --alwaysParseCnmt
+                        Always extract TitleId/Version from Cnmt and never
+                        trust filenames
   -t THREADS, --threads THREADS
                         Number of threads to compress with. Numbers < 1
                         corresponds to the number of logical CPU cores for
@@ -125,6 +128,8 @@ optional arguments:
                         the later in the argument list the more likely the
                         file is to be deleted
   --undupe-dryrun       Shows what files would get deleted using --undupe
+  --undupe-rename       Renames files to minimal standard:
+                        [TitleId][vVersion].nsz
   --undupe-prioritylist UNDUPE_PRIORITYLIST
                         Regex specifying which dublicates delegtion should be
                         prioritized before following the normal deletion
