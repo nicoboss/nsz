@@ -262,7 +262,7 @@ def main():
 					try:
 						if isGame(filePath):
 							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath), filePath.name))
-							verify(filePath, False)
+							verify(filePath, True)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
