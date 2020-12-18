@@ -20,9 +20,11 @@ def solidCompress(filePath, compressionLevel, outputDir, threads, stusReport, id
 def processContainer(readContainer, writeContainer, compressionLevel, threads, stusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('Skipping delta fragment {0}'.format(nspf._path))
+			Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
 			continue
-	
+		if nspf._path.endswith('.cnmt.xml'):
+			Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path), pleaseNoPrint)
+			continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
 				

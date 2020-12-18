@@ -51,7 +51,10 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		CHUNK_SZ = 0x100000
 		f = None
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('skipping delta fragment', pleaseNoPrint)
+			Print.info('[SKIPPED]    Delta fragment', pleaseNoPrint)
+			continue
+		if nspf._path.endswith('.cnmt.xml'):
+			Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path), pleaseNoPrint)
 			continue
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')

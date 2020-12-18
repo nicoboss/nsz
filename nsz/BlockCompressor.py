@@ -57,7 +57,10 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('Skipping delta fragment {0}'.format(nspf._path))
+			Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path))
+			continue
+		if nspf._path.endswith('.cnmt.xml'):
+			Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path))
 			continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
@@ -118,7 +121,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 				if offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE > 0:
 					partitions.append(nspf.partition(offset = UNCOMPRESSABLE_HEADER_SIZE, size = offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE, cryptoType = Type.Crypto.CTR.NONE, autoOpen = True))
 				for section in sections:
-					#Print.info('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))), pleaseNoPrint)
+					#Print.info('offset: %x\t\tsize: %x\t\ttype: %d\t\tiv%s' % (section.offset, section.size, section.cryptoType, str(hx(section.cryptoCounter))))
 					partitions.append(nspf.partition(offset = section.offset, size = section.size, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
 				if UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection > 0:
 						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
