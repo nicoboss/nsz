@@ -152,12 +152,12 @@ def main():
 						outFolder = argOutFolder if argOutFolder else filePath.parent.absolute()
 						if filePath.suffix == '.nsp':
 							if not outFolder in targetDictNsz:
-								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".nsz")
+								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args, ".nsz")
 							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						elif filePath.suffix == '.xci':
 							if not outFolder in targetDictXcz:
-								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args.parseCnmt, ".xcz")
+								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
 							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
 								continue
 						compress(filePath, outFolder, args, work, amountOfTastkQueued)
