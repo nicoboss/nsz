@@ -146,28 +146,28 @@ class BaseFs(File):
 		raise("No Cnmt found!")
 	
 	def printInfo(self, maxDepth = 3, indent = 0):
-		tabs = '\t' * indent
-		Print.info(tabs + 'magic = ' + str(self.magic))
-		Print.info(tabs + 'fsType = ' + str(self.fsType))
-		Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
-		Print.info(tabs + 'size = ' + str(self.size))
-		Print.info(tabs + 'offset = %s - (%s)' % (str(self.offset), str(self.sectionStart)))
-		if self.cryptoCounter:
-			Print.info(tabs + 'cryptoCounter = ' + str(hx(self.cryptoCounter)))
-			
-		if self.cryptoKey:
-			Print.info(tabs + 'cryptoKey = ' + str(hx(self.cryptoKey)))
-		
-		Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
-		Print.info('\n%s\tFiles:\n' % (tabs))
+		#tabs = '\t' * indent
+		#Print.info(tabs + 'magic = ' + str(self.magic))
+		#Print.info(tabs + 'fsType = ' + str(self.fsType))
+		#Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
+		#Print.info(tabs + 'size = ' + str(self.size))
+		#Print.info(tabs + 'offset = %s - (%s)' % (str(self.offset), str(self.sectionStart)))
+		#if self.cryptoCounter:
+		#	Print.info(tabs + 'cryptoCounter = ' + str(hx(self.cryptoCounter)))
+		#	
+		#if self.cryptoKey:
+		#	Print.info(tabs + 'cryptoKey = ' + str(hx(self.cryptoKey)))
+		#
+		#Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
+		#Print.info('\n%s\tFiles:\n' % (tabs))
 		
 		if(indent+1 < maxDepth):
 			for f in self:
 				f.printInfo(maxDepth, indent+1)
-				Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
+				#Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
 				
-		if self.bktrRelocation:
-			self.bktrRelocation.printInfo(maxDepth, indent+1)
-
-		if self.bktrSubsection:
-			self.bktrSubsection.printInfo(maxDepth, indent+1)
+		#if self.bktrRelocation:
+		#	self.bktrRelocation.printInfo(maxDepth, indent+1)
+		#
+		#if self.bktrSubsection:
+		#	self.bktrSubsection.printInfo(maxDepth, indent+1)

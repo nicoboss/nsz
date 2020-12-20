@@ -201,24 +201,25 @@ class Ticket(File):
 
 
 	def printInfo(self, maxDepth = 3, indent = 0):
-		tabs = '\t' * indent
-
-		rightsId = format(self.getRightsId(), 'X').zfill(32)
-		titleId = rightsId[0:16]
-		titleKey = format(self.getTitleKeyBlock(), 'X').zfill(32)
-
-		Print.info('\n%sTicket\n' % (tabs))
-		super(Ticket, self).printInfo(maxDepth, indent)
-		Print.info(tabs + 'signatureType = ' + str(self.signatureType))
-		Print.info(tabs + 'keyType = ' + str(self.keyType))
-		Print.info(tabs + 'masterKeyRev = ' + str(self.masterKeyRevision))
-		Print.info(tabs + 'ticketId = ' + str(self.ticketId))
-		Print.info(tabs + 'deviceId = ' + str(self.deviceId))
-		Print.info(tabs + 'rightsId = ' + rightsId)
-		Print.info(tabs + 'accountId = ' + str(self.accountId))
-		Print.info(tabs + 'titleId = ' + titleId)
-		Print.info(tabs + 'titleKey = ' + titleKey)
-		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
+		pass
+		#tabs = '\t' * indent
+		#
+		#rightsId = format(self.getRightsId(), 'X').zfill(32)
+		#titleId = rightsId[0:16]
+		#titleKey = format(self.getTitleKeyBlock(), 'X').zfill(32)
+		#
+		#Print.info('\n%sTicket\n' % (tabs))
+		#super(Ticket, self).printInfo(maxDepth, indent)
+		#Print.info(tabs + 'signatureType = ' + str(self.signatureType))
+		#Print.info(tabs + 'keyType = ' + str(self.keyType))
+		#Print.info(tabs + 'masterKeyRev = ' + str(self.masterKeyRevision))
+		#Print.info(tabs + 'ticketId = ' + str(self.ticketId))
+		#Print.info(tabs + 'deviceId = ' + str(self.deviceId))
+		#Print.info(tabs + 'rightsId = ' + rightsId)
+		#Print.info(tabs + 'accountId = ' + str(self.accountId))
+		#Print.info(tabs + 'titleId = ' + titleId)
+		#Print.info(tabs + 'titleKey = ' + titleKey)
+		#Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
 
 
 

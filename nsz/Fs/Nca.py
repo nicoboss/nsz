@@ -17,6 +17,7 @@ from nsz.Fs.BaseFs import BaseFs
 from nsz.nut import Titles
 
 MEDIA_SIZE = 0x200
+total_sum_fragment_size = 0
 
 
 class SectionTableEntry:
@@ -266,30 +267,35 @@ class Nca(File):
 			return None
 		
 	def printInfo(self, maxDepth = 3, indent = 0):
-		tabs = '\t' * indent
-		Print.info('\n%sNCA Archive\n' % (tabs))
-		super(Nca, self).printInfo(maxDepth, indent)
-		
-		Print.info(tabs + 'magic = ' + str(self.header.magic))
-		Print.info(tabs + 'titleId = ' + str(self.header.titleId))
-		Print.info(tabs + 'rightsId = ' + str(self.header.rightsId))
-		Print.info(tabs + 'isGameCard = ' + hex(self.header.isGameCard))
-		Print.info(tabs + 'contentType = ' + str(self.header.contentType))
-		Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
-		Print.info(tabs + 'Size: ' + str(self.header.size))
-		Print.info(tabs + 'crypto master key: ' + str(self.header.cryptoType))
-		Print.info(tabs + 'crypto master key2: ' + str(self.header.cryptoType2))
-		Print.info(tabs + 'key Index: ' + str(self.header.keyIndex))
-		#Print.info(tabs + 'key Block: ' + str(self.header.getKeyBlock()))
-		for key in self.header.keys:
-			if key:
-				Print.info(tabs + 'key Block: ' + str(hx(key)))
-		
-		if(indent+1 < maxDepth):
-			Print.info('\n%sPartitions:' % (tabs))
-		
-			for s in self:
-				s.printInfo(maxDepth, indent+1)
+		#tabs = '\t' * indent
+		#Print.info('\n%sNCA Archive\n' % (tabs))
+		#super(Nca, self).printInfo(maxDepth, indent)
+		#
+		#Print.info(tabs + 'magic = ' + str(self.header.magic))
+		#Print.info(tabs + 'titleId = ' + str(self.header.titleId))
+		#Print.info(tabs + 'rightsId = ' + str(self.header.rightsId))
+		#Print.info(tabs + 'isGameCard = ' + hex(self.header.isGameCard))
+		#Print.info(tabs + 'contentType = ' + str(self.header.contentType))
+		#Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
+		#Print.info(tabs + 'Size: ' + str(self.header.size))
+		#Print.info(tabs + 'crypto master key: ' + str(self.header.cryptoType))
+		#Print.info(tabs + 'crypto master key2: ' + str(self.header.cryptoType2))
+		#Print.info(tabs + 'key Index: ' + str(self.header.keyIndex))
+		##Print.info(tabs + 'key Block: ' + str(self.header.getKeyBlock()))
+		#for key in self.header.keys:
+		#	if key:
+		#		Print.info(tabs + 'key Block: ' + str(hx(key)))
+		#
+		#if(indent+1 < maxDepth):
+		#	Print.info('\n%sPartitions:' % (tabs))
+		#
+		#	for s in self:
+		#		s.printInfo(maxDepth, indent+1)
+		#
+		#if self.header.contentType == Fs.Type.Content.PROGRAM:
+		#	Print.info(tabs + 'build Id: ' + str(self.buildId()))
 
-		if self.header.contentType == Fs.Type.Content.PROGRAM:
-			Print.info(tabs + 'build Id: ' + str(self.buildId()))
+		if self.header.contentType == Fs.Type.Content.DATA:
+			global total_sum_fragment_size
+			total_sum_fragment_size += self.header.size
+			print("total_sum_fragment_size:", total_sum_fragment_size)
