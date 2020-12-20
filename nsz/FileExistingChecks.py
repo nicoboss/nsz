@@ -31,7 +31,7 @@ def ExtractTitleIDAndVersion(gamePath, args):
 	version = -1
 	gameName = Path(gamePath).name
 	titleIdResult = search(r'0100[0-9A-Fa-f]{12}', gameName)
-	if args.alwaysParseCnmt:
+	if not args.alwaysParseCnmt:
 		if titleIdResult:
 			titleId = titleIdResult.group().upper()
 		versionResult = search(r'\[v\d+\]', gameName)
