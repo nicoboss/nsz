@@ -17,7 +17,7 @@ def undupe(args):
 	filesAtTarget = {}
 	alreadyExists = {}
 	for f_str in args.file:
-		(filesAtTarget, alreadyExists) = CreateTargetDict(Path(f_str).absolute(), True, None, filesAtTarget, alreadyExists)
+		(filesAtTarget, alreadyExists) = CreateTargetDict(Path(f_str).absolute(), args, None, filesAtTarget, alreadyExists)
 	Print.info("")
 
 	for (titleID_key, titleID_value) in alreadyExists.items():
