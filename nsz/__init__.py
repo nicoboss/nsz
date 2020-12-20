@@ -153,12 +153,12 @@ def main():
 						if filePath.suffix == '.nsp':
 							if not outFolder in targetDictNsz:
 								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args, ".nsz")
-							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".nsz", targetDictNsz[outFolder], args):
 								continue
 						elif filePath.suffix == '.xci':
 							if not outFolder in targetDictXcz:
 								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
-							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz[outFolder], args.rm_old_version, args.overwrite, args.parseCnmt):
+							if not AllowedToWriteOutfile(filePath, ".xcz", targetDictXcz[outFolder], args):
 								continue
 						compress(filePath, outFolder, args, work, amountOfTastkQueued)
 						if args.rm_source:
@@ -223,12 +223,12 @@ def main():
 						if filePath.suffix == '.nsz':
 							if not outFolder in targetDictNsz:
 								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
-							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz[outFolder], args.rm_old_version, args.overwrite, args):
+							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz[outFolder], args):
 								continue
 						elif filePath.suffix == '.xcz':
 							if not outFolder in targetDictXcz:
 								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
-							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz[outFolder], args.rm_old_version, args.overwrite, args):
+							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz[outFolder], args):
 								continue
 						elif filePath.suffix == '.ncz':
 							outFile = Path(changeExtension(outFolder.joinpath(filePath.name), ".nca"))

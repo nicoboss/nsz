@@ -26,12 +26,12 @@ def ExtractHashes(gamePath):
 		container.close()
 	return fileHashes
 
-def ExtractTitleIDAndVersion(gamePath, args):
+def ExtractTitleIDAndVersion(gamePath, args = None):
 	titleId = ""
 	version = -1
 	gameName = Path(gamePath).name
 	titleIdResult = search(r'0100[0-9A-Fa-f]{12}', gameName)
-	if not args.alwaysParseCnmt:
+	if args == None or not args.alwaysParseCnmt:
 		if titleIdResult:
 			titleId = titleIdResult.group().upper()
 		versionResult = search(r'\[v\d+\]', gameName)
@@ -39,7 +39,7 @@ def ExtractTitleIDAndVersion(gamePath, args):
 			version = int(versionResult.group()[2:-1])
 		if titleId != "" and version > -1 and version%65536 == 0:
 			return(titleId, version)
-		elif not args.parseCnmt:
+		elif args != None and not args.parseCnmt:
 			return None
 	gamePath = Path(gamePath).resolve()
 	container = factory(gamePath)
@@ -91,7 +91,7 @@ def CreateTargetDict(targetFolder, args, extension, filesAtTarget = {}, alreadyE
 			Print.error('Error: ' + str(e))
 	return(filesAtTarget, alreadyExists)
 
-def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, overwrite, args):
+def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, args):
 	(filesAtTarget, alreadyExists) = targetDict
 	extractedIdVersion = ExtractTitleIDAndVersion(filePath, args)
 	if extractedIdVersion == None:
@@ -99,7 +99,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 			Print.error('Failed to extract TitleID/Version from booth filename "{0}" and Cnmt - Outdated keys.txt?'.format(Path(filePath).name))
 		else:
 			Print.error('Failed to extract TitleID/Version from filename "{0}". Use -p to extract from Cnmt.'.format(Path(filePath).name))
-		return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
+		return fileNameCheck(filePath, targetFileExtension, filesAtTarget, args.rm_old_version, args.overwrite)
 	(titleIDExtracted, versionExtracted) = extractedIdVersion
 	titleIDEntry = alreadyExists.get(titleIDExtracted)
 
@@ -109,19 +109,19 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 		exitFlag = False
 		for versionEntry in titleIDEntry.keys():
 			if versionEntry == versionExtracted:
-				if overwrite:
+				if args.overwrite:
 					DuplicateEntriesToDelete.append(versionEntry)
 				else:
 					Print.info('{0} with the same ID and version already exists in the output directory.\n'\
 					'If you want to overwrite it use the -w parameter!'.format(titleIDEntry[versionEntry]))
 					return False
 			elif versionEntry < versionExtracted:
-				if removeOld:
+				if args.rm_old_version:
 					if versionEntry == 0:
 						raise ValueError("rm-old-version: A titleID containing updates should never have any version v0 with the same titleID!")
 					OutdatedEntriesToDelete.append(versionEntry)
 			else: #versionEntry > versionExtracted
-				if removeOld:
+				if args.rm_old_version:
 					exitFlag = True
 		if exitFlag:
 			Print.info('{0} with a the same ID and newer version already exists in the output directory.\n'\
@@ -141,7 +141,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, removeOld, 
 				del filesAtTarget[Path(delFilePath).name.lower()]
 			del titleIDEntry[versionEntry]
 	
-	return fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite)
+	return fileNameCheck(filePath, targetFileExtension, filesAtTarget, args.rm_old_version, args.overwrite)
 
 def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overwrite):
 	outFile = str(Path(changeExtension(filePath, targetFileExtension)).name).lower()
