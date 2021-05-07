@@ -11,13 +11,13 @@ UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000
 
 
-def solidCompress(filePath, compressionLevel, outputDir, threads, stusReport, id, pleaseNoPrint):
+def solidCompress(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
 	if filePath.suffix == '.nsp':
-		return solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport, id, pleaseNoPrint)
+		return solidCompressNsp(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint)
 	elif filePath.suffix == '.xci':
-		return solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport, id, pleaseNoPrint)
+		return solidCompressXci(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint)
 		
-def processContainer(readContainer, writeContainer, compressionLevel, threads, stusReport, id, pleaseNoPrint):
+def processContainer(readContainer, writeContainer, compressionLevel, threads, statusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 			Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
@@ -68,7 +68,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 					
 					
-					stusReport[id] = [0, 0, nspf.size]
+					statusReport[id] = [0, 0, nspf.size, 'Compressing']
 					
 					partitions = []
 					if offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE > 0:
@@ -80,7 +80,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
 					
 					partNr = 0
-					stusReport[id] = [nspf.tell(), f.tell(), nspf.size]
+					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 					if threads > 1:
 						cctx = ZstdCompressor(level=compressionLevel, threads=threads)
 					else:
@@ -99,13 +99,13 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 						compressor.write(buffer)
 				
 						decompressedBytes += len(buffer)
-						stusReport[id] = [nspf.tell(), f.tell(), nspf.size]
+						statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 					partitions[partNr].close()
 					partitions[partNr] = None
 		
 					compressor.flush(FLUSH_FRAME)
 					compressor.flush(COMPRESSOBJ_FLUSH_FINISH)
-					stusReport[id] = [nspf.tell(), f.tell(), nspf.size]
+					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 		
 					written = f.tell() - start
 					Print.info('Compressed {0}% {1} -> {2}  - {3}'.format(written * 100 / nspf.size, decompressedBytes, written, nspf._path), pleaseNoPrint)
@@ -121,7 +121,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport, id, pleaseNoPrint):
+def solidCompressNsp(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -131,7 +131,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport,
 	
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
-			processContainer(container, nsp, compressionLevel, threads, stusReport, id, pleaseNoPrint)
+			processContainer(container, nsp, compressionLevel, threads, statusReport, id, pleaseNoPrint)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -141,7 +141,7 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads, stusReport,
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport, id, pleaseNoPrint):
+def solidCompressXci(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -153,7 +153,7 @@ def solidCompressXci(filePath, compressionLevel, outputDir, threads, stusReport,
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
-				processContainer(secureIn, secureOut, compressionLevel, threads, stusReport, id, pleaseNoPrint)
+				processContainer(secureIn, secureOut, compressionLevel, threads, statusReport, id, pleaseNoPrint)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:
