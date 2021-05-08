@@ -6,13 +6,13 @@ from pathlib import Path
 
 from sys import argv
 from nsz.nut import Print
-from os import listdir, _exit
+from os import listdir, _exit, remove
 from time import sleep
 from nsz.Fs import Nsp, Hfs0, factory
 from nsz.BlockCompressor import blockCompress
 from nsz.SolidCompressor import solidCompress
 from traceback import print_exc, format_exc
-from nsz.NszDecompressor import verify as NszVerify, decompress as NszDecompress
+from nsz.NszDecompressor import verify as NszVerify, decompress as NszDecompress, VerificationException
 from multiprocessing import cpu_count, freeze_support, Process, Manager
 from nsz.ThreadSafeCounter import Counter
 from nsz.FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
@@ -36,7 +36,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 			outFile = solidCompress(filePath, compressionLevel, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
-				verify(outFile, True, [statusReport, id], pleaseNoPrint)
+				try:
+					verify(outFile, True, [statusReport, id], pleaseNoPrint)
+				except VerificationException:
+					Print.error("[BAD VERIFY] {0}".format(outFile))
+					Print.error("[DELETE NSZ] {0}".format(outFile))
+					remove(outFile)
 		except KeyboardInterrupt:
 			Print.info('Keyboard exception')
 		except BaseException as e:

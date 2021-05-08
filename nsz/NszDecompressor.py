@@ -8,6 +8,8 @@ from nsz.PathTools import *
 from nsz import Header, BlockDecompressorReader, FileExistingChecks
 import enlighten
 
+class VerificationException(Exception):
+	pass
 
 def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
 	if isNspNsz(filePath):
@@ -73,7 +75,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 				else:
 					Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
 					if raiseVerificationException:
-						raise Exception("Verification detected hash missmatch!")
+						raise VerificationException("Verification detected hash mismatch!")
 			elif not write:
 				Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 			continue
@@ -88,7 +90,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		else:
 			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
 			if raiseVerificationException:
-				raise Exception("Verification detected hash missmatch")
+				raise VerificationException("Verification detected hash mismatch")
 
 
 def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
@@ -196,16 +198,19 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	
-	if write:
-		filename = changeExtension(filePath, '.nsp')
-		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
-		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
-		with Pfs0.Pfs0Stream(outPath) as nsp:
-			__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
-	else:
-		__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
-
-	container.close()
+	try:
+		if write:
+			filename = changeExtension(filePath, '.nsp')
+			outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
+			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
+			with Pfs0.Pfs0Stream(outPath) as nsp:
+				__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+		else:
+			__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+	except BaseException:
+		raise
+	finally:
+		container.close()
 
 
 def __decompressXcz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
