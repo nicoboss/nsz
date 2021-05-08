@@ -182,7 +182,7 @@ def main():
 			if parallelTasks < 0:
 				parallelTasks = 4
 			for i in range(parallelTasks):
-				statusReport.append([0, 0, 100])
+				statusReport.append([0, 0, 100, 'Compressing'])
 				p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
 				p.start()
 				pool.append(p)
@@ -197,11 +197,12 @@ def main():
 					continue
 				pleaseNoPrint.increment()
 				for i in range(parallelTasks):
-					compressedRead, compressedWritten, total = statusReport[i]
+					compressedRead, compressedWritten, total, currentStep = statusReport[i]
 					if bars[i].total != total:
 						bars[i].total = total//1048576
 					bars[i].count = compressedRead//1048576
 					compressedSubBars[i].count = compressedWritten//1048576
+					bars[i].desc = currentStep
 					bars[i].refresh()
 				pleaseNoPrint.decrement()
 			pleaseKillYourself.increment()

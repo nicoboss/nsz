@@ -98,6 +98,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	blockID = 0
 	nspf.seek(0)
 	header = nspf.read(UNCOMPRESSABLE_HEADER_SIZE)
+	currentStep = 'Decompress' if f != None else 'Verifying'
 	if f != None:
 		start = f.tell()
 
@@ -135,7 +136,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		f.write(header)
 	if statusReportInfo != None:
 		statusReport, id = statusReportInfo
-		statusReport[id] = [len(header), 0, nca_size]
+		statusReport[id] = [len(header), 0, nca_size, currentStep]
 	else:
 		bar.count = decompressedBytes//1048576
 		bar.refresh()
@@ -173,7 +174,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 			i += lenInputChunk
 			decompressedBytes += lenInputChunk
 			if statusReportInfo != None:
-				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size]
+				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size, currentStep]
 			elif decompressedBytes - decompressedBytesOld > 52428800: #Refresh every 50 MB
 				decompressedBytesOld = decompressedBytes
 				bar.count = decompressedBytes//1048576
