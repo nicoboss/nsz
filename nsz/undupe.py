@@ -13,7 +13,7 @@ def isOnWhitelist(args, file):
 		return True
 	return False
 
-def undupe(args):
+def undupe(args, argOutFolder):
 	filesAtTarget = {}
 	alreadyExists = {}
 	for f_str in args.file:
@@ -74,18 +74,31 @@ def undupe(args):
 						os.remove(version_value[0])
 						Print.info("[DELETED] [DUPE]: " + version_value[0])
 						Print.info("Keeping " + file)
-			if args.undupe_rename:
+			if args.undupe_rename or args.undupe_hardlink:
 				for file in version_value:
 					if not isOnWhitelist(args, file):
-						newName = str(Path(file).parent.joinpath("["+titleID_key+"][v"+str(version_key)+"].nsz"))
-						if file == newName:
-							#Print.info("[RENAME] [SKIPPED] " + newName)
-							pass
-						elif Path(newName).is_file():
-							Print.info("[RENAME] [ERROR_ALREADY_EXIST] " + newName)
-						else:
-							if args.undupe_dryrun:
-								Print.info("[DRYRUN] [RENAME]: " + "os.rename(" + file + ", " + newName)
+						newName = str(argOutFolder.joinpath("["+titleID_key+"][v"+str(version_key)+"]"+Path(file).suffix))
+						if args.undupe_hardlink:
+							if Path(newName).is_file():
+								if Path(file).samefile(Path(newName)):
+									Print.info("[HARDLINK] [SKIPPED] " + newName)
+								else:
+									Print.info("[HARDLINK] [ERROR_ALREADY_EXIST] " + newName)
 							else:
-								Print.info("[RENAME]: " + "os.rename(" + file+  ", " + newName)
-								os.rename(file, newName)
+								if args.undupe_dryrun:
+									Print.info("[DRYRUN] [HARDLINK]: " + "os.link(" + file + ", " + newName)
+								else:
+									Print.info("[HARDLINK]: " + "os.link(" + file+  ", " + newName)
+									os.link(file, newName)
+						if args.undupe_rename:
+							if Path(newName).is_file():
+								if Path(file).samefile(Path(newName)):
+									Print.info("[RENAME] [SKIPPED] " + newName)
+								else:
+									Print.info("[RENAME] [ERROR_ALREADY_EXIST] " + newName)
+							else:
+								if args.undupe_dryrun:
+									Print.info("[DRYRUN] [RENAME]: " + "os.rename(" + file + ", " + newName)
+								else:
+									Print.info("[RENAME]: " + "os.rename(" + file+  ", " + newName)
+									os.rename(file, newName)

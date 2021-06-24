@@ -139,7 +139,7 @@ def main():
 					container.close()
 
 		if args.undupe or args.undupe_dryrun:
-			undupe(args);
+			undupe(args, argOutFolder);
 
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))

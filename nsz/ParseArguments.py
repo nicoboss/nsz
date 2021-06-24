@@ -28,6 +28,7 @@ class ParseArguments:
 		parser.add_argument('--undupe', action='store_true', help="Deleted all duplicates (games with same ID and Version). The Files folder will get parsed in order so the later in the argument list the more likely the file is to be deleted")
 		parser.add_argument('--undupe-dryrun' , action='store_true', help="Shows what files would get deleted using --undupe")
 		parser.add_argument('--undupe-rename' , action='store_true', help="Renames files to minimal standard: [TitleId][vVersion].nsz")
+		parser.add_argument('--undupe-hardlink' , action='store_true', help="Hardlinks files to minimal standard: [TitleId][vVersion].nsz")
 		parser.add_argument('--undupe-prioritylist', type=str, default="", help='Regex specifying which dublicates delegtion should be prioritized before following the normal deletion order. Example: "^.*\.(nsp|xci)$"')
 		parser.add_argument('--undupe-whitelist', type=str, default="", help='Regex specifying which dublicates should under no circumstances be deleted. Example: "^.*\.(nsz|xcz)$"')
 		parser.add_argument('--undupe-blacklist', type=str, default="", help='Regex specifying which files should always be deleted - even if they are not even a dublicate! Be careful! Example: "^.*\.(nsp|xci)$"')

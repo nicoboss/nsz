@@ -43,11 +43,11 @@ usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-P]
               [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
               [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
               [--titlekeys] [--undupe] [--undupe-dryrun] [--undupe-rename]
-              [--undupe-prioritylist UNDUPE_PRIORITYLIST]
+              [--undupe-hardlink] [--undupe-prioritylist UNDUPE_PRIORITYLIST]
               [--undupe-whitelist UNDUPE_WHITELIST]
               [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions]
               [-c CREATE]
-              [file [file ...]]
+              [file ...]
 
 positional arguments:
   file
@@ -129,6 +129,8 @@ optional arguments:
                         file is to be deleted
   --undupe-dryrun       Shows what files would get deleted using --undupe
   --undupe-rename       Renames files to minimal standard:
+                        [TitleId][vVersion].nsz
+  --undupe-hardlink     Hardlinks files to minimal standard:
                         [TitleId][vVersion].nsz
   --undupe-prioritylist UNDUPE_PRIORITYLIST
                         Regex specifying which dublicates delegtion should be
