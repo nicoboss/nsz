@@ -17,8 +17,8 @@ def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
 	elif isXciXcz(filePath):
 		__decompressXcz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
 	elif isCompressedGameFile(filePath):
-		filename = changeExtension(filePath, '.nca')
-		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
+		filePathNca = changeExtension(filePath, '.nca')
+		outPath = filePathNca if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNca).name))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		try:
 			inFile = factory(filePath)
@@ -27,7 +27,7 @@ def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
 				written, hexHash = __decompressNcz(inFile, outFile, statusReportInfo, pleaseNoPrint)
 				fileNameHash = Path(filePath).stem.lower()
 				if hexHash[:32] == fileNameHash:
-					Print.info('[VERIFIED]   {0}'.format(filename), pleaseNoPrint)
+					Print.info('[VERIFIED]   {0}'.format(filePathNca), pleaseNoPrint)
 				else:
 					Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]), pleaseNoPrint)
 		except BaseException as ex:
@@ -201,8 +201,8 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 	
 	try:
 		if write:
-			filename = changeExtension(filePath, '.nsp')
-			outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
+			filePathNsp	= changeExtension(filePath, '.nsp')
+			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 			with Pfs0.Pfs0Stream(outPath) as nsp:
 				__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
@@ -221,8 +221,8 @@ def __decompressXcz(filePath, outputDir, write, raiseVerificationException, stat
 	secureIn = container.hfs0['secure']
 	
 	if write:
-		filename = changeExtension(filePath, '.xci')
-		outPath = filename if outputDir == None else str(Path(outputDir).joinpath(filename))
+		filePathXci = changeExtension(filePath, '.xci')
+		outPath = filePathXci if outputDir == None else str(Path(outputDir).joinpath(Path(filePathXci).name))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
