@@ -201,7 +201,7 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 	
 	try:
 		if write:
-			filePathNsp	= changeExtension(filePath, '.nsp')
+			filePathNsp = changeExtension(filePath, '.nsp')
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 			with Pfs0.Pfs0Stream(outPath) as nsp:
