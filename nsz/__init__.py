@@ -258,7 +258,7 @@ def main():
 					filePath_str = str(filePath)
 					Print.info(filePath_str)
 					f = factory(filePath)
-					f.open(filePath_str, 'r+b')
+					f.open(filePath_str, 'rb')
 					f.printInfo(args.depth+1)
 					f.close()
 
