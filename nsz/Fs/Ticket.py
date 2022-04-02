@@ -16,7 +16,6 @@ class Ticket(File):
 		self.issuer = None
 		self.titleKeyBlock = None
 		self.keyType = None
-		self.masterKeyRevision = None
 		self.ticketId = None
 		self.deviceId = None
 		self.rightsId = None
@@ -47,15 +46,11 @@ class Ticket(File):
 		self.titleKeyBlock = self.read(0x100)
 		self.readInt8() # unknown
 		self.keyType = self.readInt8()
-		self.read(0x4) # unknown
-		self.masterKeyRevision = self.readInt8()
-		self.read(0x9) # unknown
+		self.read(0xE) # unknown
 		self.ticketId = hx(self.read(0x8)).decode('utf-8')
 		self.deviceId = hx(self.read(0x8)).decode('utf-8')
 		self.rightsId = hx(self.read(0x10)).decode('utf-8')
 		self.accountId = hx(self.read(0x4)).decode('utf-8')
-		self.seek(0x286)
-		self.masterKeyRevision = self.readInt8()
 
 	def seekStart(self, offset):
 		self.seek(0x4 + self.signatureSizes[self.signatureType] + self.signaturePadding + offset)
@@ -133,14 +128,15 @@ class Ticket(File):
 
 	def getMasterKeyRevision(self):
 		self.seekStart(0x145)
-		self.masterKeyRevision = self.readInt8() | self.readInt8()
-		return self.masterKeyRevision
+		rev = self.readInt8()
+		if rev == 0:
+			rev = self.readInt8()
+		return rev
 
 	def setMasterKeyRevision(self, value):
 		self.seekStart(0x145)
-		self.masterKeyRevision = value
 		self.writeInt8(value)
-		return self.masterKeyRevision
+		return value
 
 
 	def getTicketId(self):
@@ -206,19 +202,20 @@ class Ticket(File):
 		rightsId = format(self.getRightsId(), 'X').zfill(32)
 		titleId = rightsId[0:16]
 		titleKey = format(self.getTitleKeyBlock(), 'X').zfill(32)
+		masterKeyRevision = self.getMasterKeyRevision()
 
 		Print.info('\n%sTicket\n' % (tabs))
 		super(Ticket, self).printInfo(maxDepth, indent)
 		Print.info(tabs + 'signatureType = ' + str(self.signatureType))
 		Print.info(tabs + 'keyType = ' + str(self.keyType))
-		Print.info(tabs + 'masterKeyRev = ' + str(self.masterKeyRevision))
+		Print.info(tabs + 'masterKeyRev = ' + str(masterKeyRevision))
 		Print.info(tabs + 'ticketId = ' + str(self.ticketId))
 		Print.info(tabs + 'deviceId = ' + str(self.deviceId))
 		Print.info(tabs + 'rightsId = ' + rightsId)
 		Print.info(tabs + 'accountId = ' + str(self.accountId))
 		Print.info(tabs + 'titleId = ' + titleId)
 		Print.info(tabs + 'titleKey = ' + titleKey)
-		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), self.masterKeyRevision))))
+		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), masterKeyRevision))))
 
 
 
