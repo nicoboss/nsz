@@ -47,15 +47,13 @@ class Ticket(File):
 		self.titleKeyBlock = self.read(0x100)
 		self.readInt8() # unknown
 		self.keyType = self.readInt8()
-		self.read(0x4) # unknown
+		self.read(0x3) # unknown
 		self.masterKeyRevision = self.readInt8()
-		self.read(0x9) # unknown
+		self.read(0xA) # unknown
 		self.ticketId = hx(self.read(0x8)).decode('utf-8')
 		self.deviceId = hx(self.read(0x8)).decode('utf-8')
 		self.rightsId = hx(self.read(0x10)).decode('utf-8')
 		self.accountId = hx(self.read(0x4)).decode('utf-8')
-		self.seek(0x286)
-		self.masterKeyRevision = self.readInt8()
 
 	def seekStart(self, offset):
 		self.seek(0x4 + self.signatureSizes[self.signatureType] + self.signaturePadding + offset)
