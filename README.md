@@ -7,7 +7,7 @@ There are several ways the install the script. You can find details on installat
 **You need to have a hactool compatible keys file in a suitable directory to use the script**.\
 The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory.\
 \
-It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/release).
+It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/releases).
 
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
