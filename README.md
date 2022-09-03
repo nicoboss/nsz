@@ -12,28 +12,22 @@ It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/rel
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
 
-**Methods listed below requires you to have Python 3.6+ installed.**
+**Methods listed below requires you to have Python 3.6+ and pip3 installed.**
 
 ### PIP Package
-Simplest way to install would be using the following command in a terminal or a command prompt. This works on every operating system with Python 3.6 and later.\
+Use the following command to install the console-only version:\
 `pip3 install --upgrade nsz`
 
-If you are interested in installing the GUI for the script, you can do so by running one of the following commands. On Linux it's highly recommended to follow [Running from source on Linux](https://github.com/nicoboss/nsz#running-from-source-on-linux) instead.\
-Python 3.6 and Python 3.7:\
+Use the following command to install the GUI version:\
 `pip3 install --upgrade nsz[gui]`
 
-Python 3.8 and later: Download [requirements-gui.txt](https://raw.githubusercontent.com/nicoboss/nsz/master/requirements-gui.txt) and execute:\
-`pip3 install -r requirements-gui.txt`
+### Running from source
+The tool can also be run by cloning the repository, installing the requirements and then executing nsz using `python3 nsz.py`
 
-### Running from source on Linux
-
-On Linux just clone and execute `pip3 install -r requirements.txt` for the no-GUI version and `./install_linux.sh` if you want GUI.
-
-### Running from source on Windows
-The script can also be run by cloning the repo locally. You need to install the dependencies by running the following command.\
+Use the following command to install the console-only versions requirements:\
 `pip3 install -r requirements.txt`
 
-GUI is optional and requires extra modules to run with GUI. To install the modules required to run GUI, run the following command on Python 3.6 and Python 3.7 on Windows:\
+Use the following command to install the GUI versions requirements:\
 `pip3 install -r requirements-gui.txt`
 
 ## Usage
