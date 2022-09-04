@@ -15,7 +15,7 @@ setuptools.setup(
 	long_description=long_description,
 	long_description_content_type="text/markdown",
 	url="https://github.com/nicoboss/nsz",
-	packages=['nsz', 'nsz/Fs', 'nsz/nut', 'nsz/gui'],
+	packages=['nsz', 'nsz.Fs', 'nsz.nut', 'nsz.gui', 'nsz.gui.txt', 'nsz.gui.shaders', 'nsz.gui.layout', 'nsz.gui.json', 'nsz.gui.fonts'],
 	classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",
