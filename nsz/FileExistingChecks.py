@@ -117,8 +117,6 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, args):
 					return False
 			elif versionEntry < versionExtracted:
 				if args.rm_old_version:
-					if versionEntry == 0:
-						raise ValueError("rm-old-version: A titleID containing updates should never have any version v0 with the same titleID!")
 					OutdatedEntriesToDelete.append(versionEntry)
 			else: #versionEntry > versionExtracted
 				if args.rm_old_version:
