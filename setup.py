@@ -22,17 +22,15 @@ setuptools.setup(
 		"Operating System :: OS Independent",
 	],
 	install_requires=[
-		'pycryptodome>=3.9.0',
+		'pycryptodome',
 		'zstandard',
 		'enlighten',
 	],
 	extras_require={
 		'gui': [
 			'pywin32;platform_system=="Windows"',
-			'kivy_deps.sdl2==0.1.22;platform_system=="Windows"',
-			'kivy_deps.glew==0.1.12;platform_system=="Windows"',
-			'pygame;platform_system=="Linux"',
-			'kivy==1.11.1'
+			'pypiwin32;platform_system=="Windows"',
+			'kivy'
 		]
 	},
 	entry_points = {'console_scripts': ['nsz = nsz:main']},
