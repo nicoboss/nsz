@@ -33,7 +33,7 @@ class ParseArguments:
 		parser.add_argument('--undupe-whitelist', type=str, default="", help='Regex specifying which dublicates should under no circumstances be deleted. Example: "^.*\.(nsz|xcz)$"')
 		parser.add_argument('--undupe-blacklist', type=str, default="", help='Regex specifying which files should always be deleted - even if they are not even a dublicate! Be careful! Example: "^.*\.(nsp|xci)$"')
 		parser.add_argument('--undupe-old-versions',action="store_true", default=False, help='Removes every old version as long there is a newer one of the same titleID.')
-		parser.add_argument('-c', '--create', help='create / pack a NSP')
+		parser.add_argument('-c', '--create', help='Inverse of --extract. Repacks files/folders to an NSP. Example: --create out.nsp .\in')
 	
 		args = parser.parse_args()
 		return args

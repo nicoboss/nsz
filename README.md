@@ -46,7 +46,7 @@ usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-P]
 positional arguments:
   file
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
@@ -141,7 +141,8 @@ optional arguments:
                         Removes every old version as long there is a newer one
                         of the same titleID.
   -c CREATE, --create CREATE
-                        create / pack a NSP
+                        Inverse of --extract. Repacks files/folders to an NSP.
+                        Example: --create out.nsp .\in
 ```
 
 ## Few Usage Examples

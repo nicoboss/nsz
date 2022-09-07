@@ -17,6 +17,7 @@ import enlighten
 import shutil
 from nsz.nut import Titles
 from nsz.nut.Titles import Title
+from nsz.PathTools import *
 
 MEDIA_SIZE = 0x200
 
@@ -387,15 +388,16 @@ class Nsp(Pfs0):
 		t.update(len(hd))
 		
 		done = 0
-		for file in files:
-			Print.info('\t\tAppending %s...' % os.path.basename(file))
-			with open(file, 'rb') as inf:
-				while True:
-					buf = inf.read(4096)
-					if not buf:
-						break
-					outf.write(buf)
-					t.update(len(buf))
+		for f_str in files:
+			for filePath in expandFiles(Path(f_str)):
+				Print.info('\t\tAppending %s...' % os.path.basename(filePath))
+				with open(filePath, 'rb') as inf:
+					while True:
+						buf = inf.read(4096)
+						if not buf:
+							break
+						outf.write(buf)
+						t.update(len(buf))
 		t.close()
 		
 		Print.info('\t\tRepacked to %s!' % outf.name)
