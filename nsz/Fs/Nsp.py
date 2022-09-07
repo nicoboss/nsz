@@ -381,14 +381,14 @@ class Nsp(Pfs0):
 			
 		t = enlighten.Counter(total=totalSize, unit='B', desc=os.path.basename(self.path), leave=False)
 		
-		t.write('\t\tWriting header...')
+		Print.info('\t\tWriting header...')
 		outf = open(self.path, 'wb')
 		outf.write(hd)
 		t.update(len(hd))
 		
 		done = 0
 		for file in files:
-			t.write('\t\tAppending %s...' % os.path.basename(file))
+			Print.info('\t\tAppending %s...' % os.path.basename(file))
 			with open(file, 'rb') as inf:
 				while True:
 					buf = inf.read(4096)
