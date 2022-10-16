@@ -3,7 +3,7 @@ from nsz.nut import Print
 from time import sleep
 from pathlib import Path
 from traceback import format_exc
-from zstandard import ZstdCompressor
+from zstandard import ZstdCompressionParameters, ZstdCompressor
 from nsz.ThreadSafeCounter import Counter
 from nsz.SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
@@ -25,7 +25,8 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, bloc
 		if compressionLevel == 0 and len(buffer) == blockSize: # https://github.com/nicoboss/nsz/issues/79
 			out_list[chunkRelativeBlockID] = buffer
 		else:
-			compressed = ZstdCompressor(level=compressionLevel).compress(buffer)
+			params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True)
+			compressed = ZstdCompressor(compression_params=params).compress(buffer)
 			out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
 def blockCompress(filePath, compressionLevel, blockSizeExponent, outputDir, threads):

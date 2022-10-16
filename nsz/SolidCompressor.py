@@ -4,7 +4,7 @@ from pathlib import Path
 from traceback import format_exc
 from nsz.SectionFs import isNcaPacked, sortedFs
 from nsz.Fs import factory, Ticket, Pfs0, Hfs0, Nca, Type, Xci
-from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressor
+from zstandard import FLUSH_FRAME, COMPRESSOBJ_FLUSH_FINISH, ZstdCompressionParameters, ZstdCompressor
 from nsz.PathTools import *
 
 UNCOMPRESSABLE_HEADER_SIZE = 0x4000
@@ -82,9 +82,11 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					partNr = 0
 					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 					if threads > 1:
-						cctx = ZstdCompressor(level=compressionLevel, threads=threads)
+						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True, threads=threads)
+						cctx = ZstdCompressor(compression_params=params)
 					else:
-						cctx = ZstdCompressor(level=compressionLevel)
+						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True)
+						cctx = ZstdCompressor(compression_params=params)
 					compressor = cctx.stream_writer(f)
 					while True:
 			
