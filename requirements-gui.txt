@@ -1,5 +1,5 @@
 pycryptodome
-zstandard
+zstandard==0.15.2
 enlighten
 pywin32;platform_system == "Windows"
 pypiwin32;platform_system == "Windows"

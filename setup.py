@@ -23,7 +23,7 @@ setuptools.setup(
 	],
 	install_requires=[
 		'pycryptodome',
-		'zstandard',
+		'zstandard==0.15.2',
 		'enlighten',
 	],
 	extras_require={
