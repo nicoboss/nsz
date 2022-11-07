@@ -162,7 +162,6 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 				inputChunk = blockDecompressorReader.read(chunkSz)
 			else:
 				inputChunk = decompressor.read(chunkSz)
-				decompressor.flush()
 			if not len(inputChunk):
 				break
 			if useCrypto:

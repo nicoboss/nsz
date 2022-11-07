@@ -108,8 +108,6 @@ def __decompressNcz(nspf, f):
 				inputChunk = decompressor.read(chunkSz)
 			if not len(inputChunk):
 				break
-			if not useBlockCompression:
-				decompressor.flush()
 			if s.cryptoType in (3, 4):
 				inputChunk = crypto.encrypt(inputChunk)
 			f.write(inputChunk)
