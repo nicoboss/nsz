@@ -81,11 +81,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					
 					partNr = 0
 					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
-					if threads > 1:
-						cctx = ZstdCompressor(level=compressionLevel, threads=threads)
-					else:
-						cctx = ZstdCompressor(level=compressionLevel)
-					compressor = cctx.stream_writer(f)
+					data = b""
 					while True:
 			
 						buffer = partitions[partNr].read(CHUNK_SZ)
@@ -96,14 +92,15 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 							buffer += partitions[partNr].read(CHUNK_SZ - len(buffer))
 						if len(buffer) == 0:
 							break
-						compressor.write(buffer)
+						data += buffer
 				
 						decompressedBytes += len(buffer)
 						statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 					partitions[partNr].close()
 					partitions[partNr] = None
 		
-					compressor.flush(FLUSH_FRAME)
+					compressed = ZstdCompressor(level=compressionLevel).compress(data)
+					f.write(compressed)
 					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 		
 					written = f.tell() - start
