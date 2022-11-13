@@ -228,12 +228,12 @@ def main():
 						outFolder = argOutFolder if argOutFolder else filePath.parent.absolute()
 						if filePath.suffix == '.nsz':
 							if not outFolder in targetDictNsz:
-								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
+								targetDictNsz[outFolder] = CreateTargetDict(outFolder, args, ".nsp")
 							if not AllowedToWriteOutfile(filePath, ".nsp", targetDictNsz[outFolder], args):
 								continue
 						elif filePath.suffix == '.xcz':
 							if not outFolder in targetDictXcz:
-								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args, ".xcz")
+								targetDictXcz[outFolder] = CreateTargetDict(outFolder, args, ".xci")
 							if not AllowedToWriteOutfile(filePath, ".xci", targetDictXcz[outFolder], args):
 								continue
 						elif filePath.suffix == '.ncz':
