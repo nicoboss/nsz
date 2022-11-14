@@ -217,7 +217,7 @@ def main():
 			barManager.stop()
 
 			for filePath in sourceFileToDelete:
-				delete_source_file(filePath)
+				delete_source_file(filePath, outFolder)
 
 		if args.D:
 			for f_str in args.file:
@@ -244,7 +244,7 @@ def main():
 								continue
 						decompress(filePath, outFolder)
 						if args.rm_source:
-							delete_source_file(filePath)
+							delete_source_file(filePath, outFolder)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
