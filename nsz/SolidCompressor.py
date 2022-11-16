@@ -64,6 +64,18 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					startChunkBlockID = 0
 					blocksHeaderFilePos = f.tell()
 					compressedblockSizeList = []
+					blockSizeExponent = 27
+					bytesToCompress = nspf.size - UNCOMPRESSABLE_HEADER_SIZE
+					blocksToCompress = 1
+					header = b'NCZBLOCK' #Magic
+					header += b'\x02' #Version
+					header += b'\x01' #Type
+					header += b'\x00' #Unused
+					header += blockSizeExponent.to_bytes(1, 'little') #blockSizeExponent in bits: 2^x
+					header += blocksToCompress.to_bytes(4, 'little') #Amount of Blocks
+					header += bytesToCompress.to_bytes(8, 'little') #Decompressed Size
+					header += b'\x00' * (blocksToCompress*4)
+					f.write(header)
 		
 					decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 					
