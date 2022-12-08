@@ -36,6 +36,15 @@ def isXciXcz(filePath):
 def changeExtension(filePath, newExtension):
 	return str(filePath.parent.resolve().joinpath(filePath.stem + newExtension))
 
+def targetExtension(filePath):
+	if filePath.suffix == '.nsp': newExtension = '.nsz'
+	if filePath.suffix == '.xci': newExtension = '.xcz'
+	if filePath.suffix == '.nca': newExtension = '.ncz'
+	if filePath.suffix == '.nsz': newExtension = '.nsp'
+	if filePath.suffix == '.xcz': newExtension = '.xci'
+	if filePath.suffix == '.ncz': newExtension = '.nca'
+	return str(filePath.parent.resolve().joinpath(filePath.stem + newExtension))
+
 def getExtensionName(filePath):
 	return str(Path(filePath).suffix[1:].upper())
 

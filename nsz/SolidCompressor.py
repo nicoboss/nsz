@@ -106,7 +106,6 @@ def processContainer(readContainer, writeContainer, compressionLevel, useLongDis
 					partitions[partNr] = None
 		
 					compressor.flush(FLUSH_FRAME)
-					compressor.flush(COMPRESSOBJ_FLUSH_FINISH)
 					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 		
 					written = f.tell() - start

@@ -153,9 +153,14 @@ def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overw
 	'If you want to overwrite it use the -w parameter!'.format(Path(filePath).name))
 	return False
 
-def delete_source_file(source_file_path):
-	if Path(source_file_path).exists():
-		Print.info("Deleting source file {0}".format(source_file_path))
-		remove(source_file_path)
+def delete_source_file(source_file_path, outFolder):
+	filePath = Path(source_file_path)
+	if filePath.exists():
+		resultFile = Path(targetExtension(outFolder.joinpath(filePath.name)))
+		if resultFile.exists():
+			Print.info("[DELETING]   Source file {0}".format(source_file_path))
+			remove(source_file_path)
+		else:
+			Print.warning("[WARNING]    Skipped deleting source file because target file doesn't exist")
 	else:
-		Print.warning("{0} was already removed.".format(source_file_path))
+		Print.warning("[WARNING]    {0} was already removed.".format(source_file_path))
