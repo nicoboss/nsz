@@ -8,6 +8,7 @@ class ParseArguments:
 		parser.add_argument('-C', action="store_true", help='Compress NSP/XCI')
 		parser.add_argument('-D', action="store_true", help='Decompress NSZ/XCZ/NCZ')
 		parser.add_argument('-l', '--level', type=int, default=18, help='Compression Level: Trade-off between compression speed and compression ratio. Default: 18, Max: 22')
+		parser.add_argument('-L', '--long', action="store_true", default=False, help='Enables zStandard long distance mode for even better compression')
 		parser.add_argument('-B', '--block', action="store_true", default=False, help="Use block compression option. This mode allows highly multi-threaded compression/decompression with random read access allowing compressed games to be played without decompression in the future however this comes with a slightly lower compression ratio cost. This is the default option for XCZ.")
 		parser.add_argument('-S', '--solid', action="store_true", default=False, help="Use solid compression option. Slightly higher compression ratio but won't allow for random read access. File compressed this way will never be mountable (have to be installed or decompressed first to run). This is the default option for NSZ.")
 		parser.add_argument('-s', '--bs', type=int, default=20, help='Block Size for random read access 2^x while x between 14 and 32. Default: 20 => 1 MB')

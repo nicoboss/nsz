@@ -33,7 +33,7 @@ Use the following command to install the GUI versions requirements:\
 ## Usage
 ```
 nsz --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-P]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-p] [-P]
               [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
               [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
               [--titlekeys] [--undupe] [--undupe-dryrun] [--undupe-rename]
@@ -46,13 +46,15 @@ usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-B] [-S] [-s BS] [-V] [-p] [-P]
 positional arguments:
   file
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
                         and compression ratio. Default: 18, Max: 22
+  -L, --long            Enables zStandard long distance mode for even better
+                        compression
   -B, --block           Use block compression option. This mode allows highly
                         multi-threaded compression/decompression with random
                         read access allowing compressed games to be played
