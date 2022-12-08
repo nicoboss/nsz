@@ -19,23 +19,23 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, bloc
 		#readyForWork.decrement() # https://github.com/nicoboss/nsz/issues/80
 		if pleaseKillYourself.value() > 0:
 			break
-		buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID = item # compressedblockSizeList IS UNUSED VARIABLE
+		buffer, compressionLevel, useLongDistanceMode, compressedblockSizeList, chunkRelativeBlockID = item # compressedblockSizeList IS UNUSED VARIABLE
 		if buffer == 0:
 			return
 		if compressionLevel == 0 and len(buffer) == blockSize: # https://github.com/nicoboss/nsz/issues/79
 			out_list[chunkRelativeBlockID] = buffer
 		else:
-			params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True)
+			params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=useLongDistanceMode)
 			compressed = ZstdCompressor(compression_params=params).compress(buffer)
 			out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
-def blockCompress(filePath, compressionLevel, blockSizeExponent, outputDir, threads):
+def blockCompress(filePath, compressionLevel, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	if filePath.suffix == '.nsp':
-		return blockCompressNsp(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
+		return blockCompressNsp(filePath, compressionLevel, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 	elif filePath.suffix == '.xci':
-		return blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, threads)
+		return blockCompressXci(filePath, compressionLevel, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 
-def blockCompressContainer(readContainer, writeContainer, compressionLevel, blockSizeExponent, threads):
+def blockCompressContainer(readContainer, writeContainer, compressionLevel, useLongDistanceMode, blockSizeExponent, threads):
 	CHUNK_SZ = 0x100000
 	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
@@ -154,7 +154,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 							break
 						chunkRelativeBlockID = 0
 						startChunkBlockID = blockID
-					work.put([buffer, compressionLevel, compressedblockSizeList, chunkRelativeBlockID])
+					work.put([buffer, compressionLevel, useLongDistanceMode,compressedblockSizeList, chunkRelativeBlockID])
 					readyForWork.decrement()
 					blockID += 1
 					chunkRelativeBlockID += 1
@@ -203,17 +203,17 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, bloc
 		sleep(0.02)
 
 
-def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, threads):
+def blockCompressNsp(filePath, compressionLevel, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	nszPath = outputDir.joinpath(filePath.stem + '.nsz')
 
-	Print.info('Block compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, nszPath))
+	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}')
 	
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
-			blockCompressContainer(container, nsp, compressionLevel, blockSizeExponent, threads)
+			blockCompressContainer(container, nsp, compressionLevel, useLongDistanceMode, blockSizeExponent, threads)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -223,19 +223,19 @@ def blockCompressNsp(filePath, compressionLevel , blockSizeExponent, outputDir, 
 	container.close()
 	return nszPath
 	
-def blockCompressXci(filePath, compressionLevel, blockSizeExponent, outputDir, threads):
+def blockCompressXci(filePath, compressionLevel, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	secureIn = container.hfs0['secure']
 	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
-	Print.info('Block compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, xczPath))
+	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {xczPath}')
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
-				blockCompressContainer(secureIn, secureOut, compressionLevel, blockSizeExponent, threads)
+				blockCompressContainer(secureIn, secureOut, compressionLevel, useLongDistanceMode, blockSizeExponent, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:

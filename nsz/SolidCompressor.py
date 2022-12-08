@@ -11,13 +11,13 @@ UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000
 
 
-def solidCompress(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompress(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	if filePath.suffix == '.nsp':
-		return solidCompressNsp(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 	elif filePath.suffix == '.xci':
-		return solidCompressXci(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressXci(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 		
-def processContainer(readContainer, writeContainer, compressionLevel, threads, statusReport, id, pleaseNoPrint):
+def processContainer(readContainer, writeContainer, compressionLevel, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
 		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 			Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
@@ -82,10 +82,10 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 					partNr = 0
 					statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 					if threads > 1:
-						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True, threads=threads)
+						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=useLongDistanceMode, threads=threads)
 						cctx = ZstdCompressor(compression_params=params)
 					else:
-						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=True)
+						params = ZstdCompressionParameters.from_level(compressionLevel, enable_ldm=useLongDistanceMode)
 						cctx = ZstdCompressor(compression_params=params)
 					compressor = cctx.stream_writer(f)
 					while True:
@@ -123,17 +123,17 @@ def processContainer(readContainer, writeContainer, compressionLevel, threads, s
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	nszPath = outputDir.joinpath(filePath.stem + '.nsz')
 
-	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, nszPath), pleaseNoPrint)
+	Print.info(f'Solid compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}', pleaseNoPrint)
 	
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
-			processContainer(container, nsp, compressionLevel, threads, statusReport, id, pleaseNoPrint)
+			processContainer(container, nsp, compressionLevel, useLongDistanceMode,threads, statusReport, id, pleaseNoPrint)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -143,19 +143,19 @@ def solidCompressNsp(filePath, compressionLevel, outputDir, threads, statusRepor
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressXci(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	secureIn = container.hfs0['secure']
 	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
-	Print.info('Solid compressing (level {0}) {1} -> {2}'.format(compressionLevel, filePath, xczPath), pleaseNoPrint)
+	Print.info(f'Solid compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {xczPath}', pleaseNoPrint)
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
-				processContainer(secureIn, secureOut, compressionLevel, threads, statusReport, id, pleaseNoPrint)
+				processContainer(secureIn, secureOut, compressionLevel, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:
