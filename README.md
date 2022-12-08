@@ -175,7 +175,7 @@ At 0x4000, there is the variable sized NCZ Header. It contains a list of section
 
 All of the information in the header can be derived from the original NCA + Ticket, however it is provided pre-parsed to make decompression as easy as possible for third parties.
 
-Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splitted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py
+Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splitted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py. CompressedBlockSizeList[blockID] must not exceed decompressedBlockSize. If smaller the block must be decompressed. If equal the block is stored in plain text.
 
 ```python
 class Section:
