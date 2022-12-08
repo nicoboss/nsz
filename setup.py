@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
 	name='nsz',
-	version='4.1.0',
+	version='4.2.0',
 	script="nsz.py",
 	author="Nico Bosshard",
 	author_email="nico@bosshome.ch",

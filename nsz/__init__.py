@@ -97,7 +97,7 @@ def main():
 		argOutFolder = Path(argOutFolderToPharse).resolve() if args.output else None
 		
 		Print.info('')
-		Print.info('             NSZ v4.1   ,;:;;,')
+		Print.info('             NSZ v4.2   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
