@@ -15,6 +15,13 @@
 	},
 	{
 		"type": "bool",
+		"title": "Long Distance Mode",
+		"desc": "Enables zStandard long distance mode for even better compression",
+		"section": "Advanced",
+		"key": "ldm"
+	},
+	{
+		"type": "bool",
 		"title": "Parse Cnmt",
 		"desc": "Extract TitleId/Version from Cnmt if this information cannot be obtained from the filename. Required for skipping/overwriting existing files and --rm-old-version to work properly if some not every file is named properly. Supported filenames: *TitleID*[vVersion]*",
 		"section": "Advanced",
