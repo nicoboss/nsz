@@ -23,6 +23,7 @@ class GUI(App):
 	
 	def run(self):
 		super(GUI, self).run()
+		Window.close()
 		if not self.rootWidget.hardExit:
 			return arguments(self.config, self.rootWidget)
 		else:
