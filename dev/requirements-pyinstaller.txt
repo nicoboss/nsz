@@ -1,0 +1,9 @@
+pycryptodome
+zstandard
+enlighten
+pywin32;platform_system == "Windows"
+pypiwin32;platform_system == "Windows"
+kivy
+opencv-python
+pyenchant
+pyinstaller
