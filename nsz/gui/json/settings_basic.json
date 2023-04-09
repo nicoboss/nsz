@@ -9,6 +9,13 @@
 	},
 	{
 		"type": "bool",
+		"title": "No Intro",
+		"desc": "Archive/No-Intro mode. This option compresses the PFS0 container reversible so it can be recreated in a bit-identical way",
+		"section": "Settings",
+		"key": "noIntro"
+	},
+	{
+		"type": "bool",
 		"title": "[NSZ] Use Block Compression",
 		"desc": "NSZ: Use block compression instead of solid compression. Block compression allows highly multithreaded compression/decompression with random read access allowing compressed games to be played without decompression in the future however this comes with a low compression ratio cost. Block compression is the default option for XCZ.",
 		"section": "Settings",

@@ -61,6 +61,7 @@ class GUI(App):
 		config.setdefaults(
 		'Settings', {
 			'level': '[Lv. 18] Great (default)',
+			'noIntro': 0,
 			'block': 0,
 			'solid': 0,
 			'bs': "1 MB (default)",
@@ -138,6 +139,7 @@ class arguments:
 		self.block = True if int(config.get('Settings', 'block')) == 1 else None
 		self.solid = True if int(config.get('Settings', 'solid')) == 1 else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
+		self.no_intro = True if int(config.get('Settings', 'noIntro')) == 1 else False
 		if rootWidget.verify is True \
 		or ((rootWidget.C is True or rootWidget.D is True) \
 		and int(config.get('Settings', 'verify')) == 1):

@@ -11,20 +11,21 @@ UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000
 
 
-def solidCompress(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompress(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	if filePath.suffix == '.nsp':
-		return solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressNsp(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 	elif filePath.suffix == '.xci':
-		return solidCompressXci(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressXci(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 		
-def processContainer(readContainer, writeContainer, compressionLevel, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint):
+def processContainer(readContainer, writeContainer, compressionLevel, noIntro, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
-		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
-			continue
-		if nspf._path.endswith('.cnmt.xml'):
-			Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path), pleaseNoPrint)
-			continue
+		if not noIntro:
+			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
+				Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
+				continue
+			if nspf._path.endswith('.cnmt.xml'):
+				Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path), pleaseNoPrint)
+				continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
 				
@@ -122,7 +123,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, useLongDis
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressNsp(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -132,7 +133,7 @@ def solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir,
 	
 	try:
 		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
-			processContainer(container, nsp, compressionLevel, useLongDistanceMode,threads, statusReport, id, pleaseNoPrint)
+			processContainer(container, nsp, compressionLevel, noIntro, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -142,7 +143,7 @@ def solidCompressNsp(filePath, compressionLevel, useLongDistanceMode, outputDir,
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressXci(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -154,7 +155,7 @@ def solidCompressXci(filePath, compressionLevel, useLongDistanceMode, outputDir,
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
-				processContainer(secureIn, secureOut, compressionLevel, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
+				processContainer(secureIn, secureOut, compressionLevel, noIntro, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:
