@@ -50,9 +50,6 @@ optional arguments:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
-  -K, --keep-delta      Keep all delta fragment files during compression so
-                        the PFS0 container can be recreated bit-identical
-                        during decompression
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
                         and compression ratio. Default: 18, Max: 22
@@ -74,6 +71,9 @@ optional arguments:
   -V, --verify          Verifies files after compression raising an unhandled
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter
+  -K, --keep-delta      Keep all useless delta fragments (NDV0) during
+                        compression so the NSP (PFS0) can be recreated bit-
+                        identical during decompression
   -p, --parseCnmt       Extract TitleId/Version from Cnmt if this information
                         cannot be obtained from the filename. Required for
                         skipping/overwriting existing files and --rm-old-
