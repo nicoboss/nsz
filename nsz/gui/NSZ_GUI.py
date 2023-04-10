@@ -65,7 +65,7 @@ class GUI(App):
 			'solid': 0,
 			'bs': "1 MB (default)",
 			'verify': 1,
-			'noIntro': 0,
+			'keepDelta': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
@@ -145,7 +145,7 @@ class arguments:
 			self.verify = True
 		else:
 			self.verify = None
-		self.no_intro = True if int(config.get('Settings', 'noIntro')) == 1 else False
+		self.keep_delta = True if int(config.get('Settings', 'keepDelta')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
 		self.long = True if int(config.get('Advanced', 'ldm')) == 1 else False

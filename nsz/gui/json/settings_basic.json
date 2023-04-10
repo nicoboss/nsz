@@ -41,6 +41,6 @@
 		"title": "Keep Delta Fragments",
 		"desc": "Keep all delta fragment files during compression so the PFS0 container can be recreated bit-identical during decompression",
 		"section": "Settings",
-		"key": "noIntro"
+		"key": "keepDelta"
 	}
 ]

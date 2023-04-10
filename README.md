@@ -50,7 +50,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
-  -K, --no-intro        Keep all delta fragment files during compression so
+  -K, --keep-delta      Keep all delta fragment files during compression so
                         the PFS0 container can be recreated bit-identical
                         during decompression
   -l LEVEL, --level LEVEL

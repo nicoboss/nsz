@@ -20,7 +20,7 @@ class RootWidget(FloatLayout):
 	D = False
 	output = False
 	verify = False
-	noIntro= False
+	keepDelta= False
 	info = False
 	titlekeys = False
 	extract = False

@@ -32,8 +32,8 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 		if pleaseKillYourself.value() > 0:
 			break
 		try:
-			filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threadsToUse, verifyArg = item
-			outFile = solidCompress(filePath, compressionLevel, noIntro, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
+			filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threadsToUse, verifyArg = item
+			outFile = solidCompress(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
@@ -53,13 +53,13 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		threadsToUseForBlockCompression = args.threads if args.threads > 0 else cpu_count()
-		outFile = blockCompress(filePath, compressionLevel, args.no_intro, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
+		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
 			verify(outFile, True)
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
-		work.put([filePath, compressionLevel, args.no_intro, args.long, outputDir, threadsToUseForSolidCompression, args.verify])
+		work.put([filePath, compressionLevel, args.keep_delta, args.long, outputDir, threadsToUseForSolidCompression, args.verify])
 		amountOfTastkQueued.increment()
 
 
