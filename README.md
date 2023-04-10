@@ -50,9 +50,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
-  -A, --no-intro        Archive/No-Intro mode. This option compresses the PFS0
-                        container reversible so it can be recreated in a bit-
-                        identical way
+  -K, --no-intro        Keep *.cnmt.xml and all delta fragment files during
+                        compression so the PFS0 container can be recreated
+                        bit-identical during decompression
   -l LEVEL, --level LEVEL
                         Compression Level: Trade-off between compression speed
                         and compression ratio. Default: 18, Max: 22

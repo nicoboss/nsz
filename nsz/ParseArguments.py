@@ -7,7 +7,7 @@ class ParseArguments:
 		parser.add_argument('file',nargs='*')
 		parser.add_argument('-C', action="store_true", help='Compress NSP/XCI')
 		parser.add_argument('-D', action="store_true", help='Decompress NSZ/XCZ/NCZ')
-		parser.add_argument('-A', '--no-intro', action="store_true", default=False, help='Archive/No-Intro mode. This option compresses the PFS0 container reversible so it can be recreated in a bit-identical way')
+		parser.add_argument('-K', '--no-intro', action="store_true", default=False, help='Keep *.cnmt.xml and all delta fragment files during compression so the PFS0 container can be recreated bit-identical during decompression')
 		parser.add_argument('-l', '--level', type=int, default=18, help='Compression Level: Trade-off between compression speed and compression ratio. Default: 18, Max: 22')
 		parser.add_argument('-L', '--long', action="store_true", default=False, help='Enables zStandard long distance mode for even better compression')
 		parser.add_argument('-B', '--block', action="store_true", default=False, help="Use block compression option. This mode allows highly multi-threaded compression/decompression with random read access allowing compressed games to be played without decompression in the future however this comes with a slightly lower compression ratio cost. This is the default option for XCZ.")

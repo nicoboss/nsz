@@ -9,8 +9,8 @@
 	},
 	{
 		"type": "bool",
-		"title": "No Intro",
-		"desc": "Archive/No-Intro mode. This option compresses the PFS0 container reversible so it can be recreated in a bit-identical way",
+		"title": "Keep",
+		"desc": "Keep *.cnmt.xml and all delta fragment files during compression so the PFS0 container can be recreated bit-identical during decompression",
 		"section": "Settings",
 		"key": "noIntro"
 	},
