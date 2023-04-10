@@ -61,9 +61,6 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, noIn
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 				Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path))
 				continue
-			if nspf._path.endswith('.cnmt.xml'):
-				Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path))
-				continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
 				

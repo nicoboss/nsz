@@ -61,11 +61,11 @@ class GUI(App):
 		config.setdefaults(
 		'Settings', {
 			'level': '[Lv. 18] Great (default)',
-			'noIntro': 0,
 			'block': 0,
 			'solid': 0,
 			'bs': "1 MB (default)",
 			'verify': 1,
+			'noIntro': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
@@ -139,13 +139,13 @@ class arguments:
 		self.block = True if int(config.get('Settings', 'block')) == 1 else None
 		self.solid = True if int(config.get('Settings', 'solid')) == 1 else None
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
-		self.no_intro = True if int(config.get('Settings', 'noIntro')) == 1 else False
 		if rootWidget.verify is True \
 		or ((rootWidget.C is True or rootWidget.D is True) \
 		and int(config.get('Settings', 'verify')) == 1):
 			self.verify = True
 		else:
 			self.verify = None
+		self.no_intro = True if int(config.get('Settings', 'noIntro')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
 		self.long = True if int(config.get('Advanced', 'ldm')) == 1 else False
