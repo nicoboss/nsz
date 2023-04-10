@@ -213,7 +213,7 @@ def blockCompressNsp(filePath, compressionLevel, noIntro, useLongDistanceMode, b
 	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}')
 	
 	try:
-		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
+		with Pfs0.Pfs0Stream(container.getHeaderSize(), str(nszPath)) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, noIntro, useLongDistanceMode, blockSizeExponent, threads)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:

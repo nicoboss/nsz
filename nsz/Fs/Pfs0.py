@@ -17,10 +17,10 @@ from nsz.nut import Titles
 MEDIA_SIZE = 0x200
 
 class Pfs0Stream(BaseFile):
-	def __init__(self, path, mode = 'wb'):
+	def __init__(self, headerSize, path, mode = 'wb'):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		super(Pfs0Stream, self).__init__(path, mode)
-		self.headerSize = 0x8000
+		self.headerSize = headerSize
 		self.files = []
 		
 		self.actualSize = 0
@@ -61,10 +61,16 @@ class Pfs0Stream(BaseFile):
 			self.seek(0)
 			self.write(self.getHeader())
 			super(Pfs0Stream, self).close()
+			
+	def getHeaderSize(self):
+		stringTable = '\x00'.join(file['name'] for file in self.files)
+		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
+		remainder = 0x10 - headerSize % 0x10
+		headerSize += remainder
+		return headerSize
 
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
-		
 		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
 		remainder = 0x10 - headerSize % 0x10
 		headerSize += remainder
@@ -89,7 +95,8 @@ class Pfs0Stream(BaseFile):
 		h += remainder * b'\x00'
 		
 		return h
-		
+
+
 class Pfs0(BaseFs):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Pfs0, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -100,33 +107,8 @@ class Pfs0(BaseFs):
 			#self.offset += sectionStart
 			#self.size -= sectionStart
 		
-	def getHeader(self):
-		stringTable = '\x00'.join(file.name for file in self.files)
-		
-		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
-		remainder = 0x10 - headerSize % 0x10
-		headerSize += remainder
-	
-		h = b''
-		h += b'PFS0'
-		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (len(stringTable)+remainder).to_bytes(4, byteorder='little')
-		h += b'\x00\x00\x00\x00'
-		
-		stringOffset = 0
-		
-		for f in range(len(self.files)):
-			h += f.offset.to_bytes(8, byteorder='little')
-			h += f.size.to_bytes(8, byteorder='little')
-			h += stringOffset.to_bytes(4, byteorder='little')
-			h += b'\x00\x00\x00\x00'
-			
-			stringOffset += len(f.name) + 1
-			
-		h += stringTable.encode()
-		h += remainder * b'\x00'
-		
-		return h
+	def getHeaderSize(self):
+		return self._headerSize;
 		
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(Pfs0, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
@@ -149,7 +131,7 @@ class Pfs0(BaseFs):
 		stringTable = self.read(stringTableSize)
 		stringEndOffset = stringTableSize
 		
-		headerSize = 0x10 + 0x18 * fileCount + stringTableSize
+		self._headerSize = 0x10 + 0x18 * fileCount + stringTableSize
 		self.files = []
 
 		for i in range(fileCount):
@@ -170,7 +152,7 @@ class Pfs0(BaseFs):
 			f.offset = offset
 			f.size = size
 			
-			self.files.append(self.partition(offset + headerSize, f.size, f, autoOpen = False))
+			self.files.append(self.partition(offset + self._headerSize, f.size, f, autoOpen = False))
 
 		ticket = None
 

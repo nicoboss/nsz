@@ -132,7 +132,7 @@ def solidCompressNsp(filePath, compressionLevel, noIntro, useLongDistanceMode, o
 	Print.info(f'Solid compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}', pleaseNoPrint)
 	
 	try:
-		with Pfs0.Pfs0Stream(str(nszPath)) as nsp:
+		with Pfs0.Pfs0Stream(container.getHeaderSize(), str(nszPath)) as nsp:
 			processContainer(container, nsp, compressionLevel, noIntro, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:

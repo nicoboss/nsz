@@ -52,12 +52,6 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 	for nspf in readContainer:
 		CHUNK_SZ = 0x100000
 		f = None
-		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
-			Print.info('[SKIPPED]    Delta fragment', pleaseNoPrint)
-			continue
-		if nspf._path.endswith('.cnmt.xml'):
-			Print.info('[SKIPPED]    Content meta {0}'.format(nspf._path), pleaseNoPrint)
-			continue
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
 			if write:
@@ -203,7 +197,7 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 			filePathNsp = changeExtension(filePath, '.nsp')
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
-			with Pfs0.Pfs0Stream(outPath) as nsp:
+			with Pfs0.Pfs0Stream(container.getHeaderSize(), outPath) as nsp:
 				__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 		else:
 			__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
