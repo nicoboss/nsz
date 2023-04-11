@@ -11,11 +11,11 @@ import enlighten
 class VerificationException(Exception):
 	pass
 
-def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
+def decompress(filePath, outputDir, removePadding, statusReportInfo, pleaseNoPrint = None):
 	if isNspNsz(filePath):
-		__decompressNsz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
+		__decompressNsz(filePath, outputDir, removePadding, True, False, statusReportInfo, pleaseNoPrint)
 	elif isXciXcz(filePath):
-		__decompressXcz(filePath, outputDir, True, False, statusReportInfo, pleaseNoPrint)
+		__decompressXcz(filePath, outputDir, removePadding, True, False, statusReportInfo, pleaseNoPrint)
 	elif isCompressedGameFile(filePath):
 		filePathNca = changeExtension(filePath, '.nca')
 		outPath = filePathNca if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNca).name))
@@ -41,11 +41,11 @@ def decompress(filePath, outputDir, statusReportInfo, pleaseNoPrint = None):
 		raise NotImplementedError("Can't decompress {0} as that file format isn't implemented!".format(filePath))
 
 
-def verify(filePath, raiseVerificationException, statusReportInfo, pleaseNoPrint):
+def verify(filePath, removePadding, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	if isNspNsz(filePath):
-		__decompressNsz(filePath, None, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+		__decompressNsz(filePath, None, removePadding, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 	elif isXciXcz(filePath):
-		__decompressXcz(filePath, None, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+		__decompressXcz(filePath, None, removePadding, False, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 
 
 def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
@@ -187,7 +187,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	return (0, hexHash)
 
 
-def __decompressNsz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
+def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -197,7 +197,7 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 			filePathNsp = changeExtension(filePath, '.nsp')
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
-			with Pfs0.Pfs0Stream(container.getHeaderSize(), outPath) as nsp:
+			with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), outPath) as nsp:
 				__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 		else:
 			__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
@@ -207,7 +207,7 @@ def __decompressNsz(filePath, outputDir, write, raiseVerificationException, stat
 		container.close()
 
 
-def __decompressXcz(filePath, outputDir, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
+def __decompressXcz(filePath, outputDir, removePadding, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
 	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')

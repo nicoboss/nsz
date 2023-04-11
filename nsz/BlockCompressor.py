@@ -29,11 +29,11 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, bloc
 			compressed = ZstdCompressor(compression_params=params).compress(buffer)
 			out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
-def blockCompress(filePath, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompress(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	if filePath.suffix == '.nsp':
-		return blockCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, outputDir, threads)
+		return blockCompressNsp(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 	elif filePath.suffix == '.xci':
-		return blockCompressXci(filePath, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, outputDir, threads)
+		return blockCompressXci(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 
 def blockCompressContainer(readContainer, writeContainer, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, threads):
 	CHUNK_SZ = 0x100000
@@ -201,7 +201,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 		sleep(0.02)
 
 
-def blockCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompressNsp(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -210,7 +210,7 @@ def blockCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode,
 	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}')
 	
 	try:
-		with Pfs0.Pfs0Stream(container.getHeaderSize(), str(nszPath)) as nsp:
+		with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), str(nszPath)) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, threads)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
@@ -221,7 +221,7 @@ def blockCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode,
 	container.close()
 	return nszPath
 	
-def blockCompressXci(filePath, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompressXci(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')

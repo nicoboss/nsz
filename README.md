@@ -74,6 +74,9 @@ optional arguments:
   -K, --keep-delta      Keep all useless delta fragments (NDV0) during
                         compression so the NSP (PFS0) can be recreated bit-
                         identical during decompression
+  -R, --remove-padding  Remove the padding between the PFS0 header and the
+                        first file so the NSP matches the nxdumptool/no-intro
+                        standard
   -p, --parseCnmt       Extract TitleId/Version from Cnmt if this information
                         cannot be obtained from the filename. Required for
                         skipping/overwriting existing files and --rm-old-
@@ -132,7 +135,7 @@ optional arguments:
   --undupe-hardlink     Hardlinks files to minimal standard:
                         [TitleId][vVersion].nsz
   --undupe-prioritylist UNDUPE_PRIORITYLIST
-                        Regex specifying which dublicates delegtion should be
+                        Regex specifying which dublicate deletion should be
                         prioritized before following the normal deletion
                         order. Example: "^.*\.(nsp|xci)$"
   --undupe-whitelist UNDUPE_WHITELIST

@@ -70,6 +70,7 @@ class GUI(App):
 		config.setdefaults('Advanced', {
 			'threads': -1,
 			'multi': 4,
+			'removePadding': 0,
 			'ldm': 0,
 			'parseCnmt': 0,
 			'overwrite': 0,
@@ -148,6 +149,7 @@ class arguments:
 		self.keep_delta = True if int(config.get('Settings', 'keepDelta')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
+		self.remove_padding = True if int(config.get('Advanced', 'removePadding')) == 1 else False
 		self.long = True if int(config.get('Advanced', 'ldm')) == 1 else False
 		self.parseCnmt = True if int(config.get('Advanced', 'parseCnmt')) == 1 else None
 		self.overwrite = True if int(config.get('Advanced', 'overwrite')) == 1 else None

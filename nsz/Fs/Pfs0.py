@@ -69,6 +69,10 @@ class Pfs0Stream(BaseFile):
 		headerSize += remainder
 		return headerSize
 
+	def getFirstFileOffset(self):
+		print("OffsetP:", self.files[0].offset)
+		return self.files[0].offset
+
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
 		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
@@ -106,10 +110,14 @@ class Pfs0(BaseFs):
 			self.sectionStart = int.from_bytes(buffer[0x40:0x48], byteorder='little', signed=False)
 			#self.offset += sectionStart
 			#self.size -= sectionStart
-		
+
 	def getHeaderSize(self):
 		return self._headerSize;
-		
+
+	def getFirstFileOffset(self):
+		print("OffsetC:", self.files[0].offset)
+		return self.files[0].offset
+
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(Pfs0, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()

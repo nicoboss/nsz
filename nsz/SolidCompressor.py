@@ -11,11 +11,11 @@ UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 CHUNK_SZ = 0x1000000
 
 
-def solidCompress(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompress(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	if filePath.suffix == '.nsp':
-		return solidCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressNsp(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 	elif filePath.suffix == '.xci':
-		return solidCompressXci(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
+		return solidCompressXci(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint)
 		
 def processContainer(readContainer, writeContainer, compressionLevel, keepDelta, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint):
 	for nspf in readContainer:
@@ -120,7 +120,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, keepDelta,
 				f.write(buffer)
 
 
-def solidCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressNsp(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -129,7 +129,7 @@ def solidCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode,
 	Print.info(f'Solid compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}', pleaseNoPrint)
 	
 	try:
-		with Pfs0.Pfs0Stream(container.getHeaderSize(), str(nszPath)) as nsp:
+		with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), str(nszPath)) as nsp:
 			processContainer(container, nsp, compressionLevel, keepDelta, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
@@ -140,7 +140,7 @@ def solidCompressNsp(filePath, compressionLevel, keepDelta, useLongDistanceMode,
 	container.close()
 	return nszPath
 	
-def solidCompressXci(filePath, compressionLevel, keepDelta, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
+def solidCompressXci(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
