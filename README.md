@@ -1,13 +1,19 @@
 # NSZ
 A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch ROMs loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
 
+## Legal
+- This project does NOT incorporate any copyrighted material such as cryptographic keys. All keys must be provided by the user.
+- This project does NOT circumvent any technological protection measures. The NSZ file format purposely keeps all technological protection measures in place by not decrypting the most crucial parts.
+- This project shall only be used for legally purchased games.
+- This project is MIT licensed. Check [LICENSE](https://github.com/nicoboss/nsz/blob/master/LICENSE) for more information.
+
 ## Installation:
 There are several ways the install the script. You can find details on installation for all of them below.\
 \
 **You need to have a hactool compatible keys file in a suitable directory to use the script**.\
 The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory.\
 \
-It can be dumped with [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/releases).
+It can be dumped using Lockpick_RCM.
 
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
