@@ -198,9 +198,12 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 			with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), outPath) as nsp:
-				__decompressContainer(container, nsp, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 		else:
-			__decompressContainer(container, None, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+			with Pfs0.Pfs0VerifyStream(container.getHeaderSize() if removePadding else container.getFirstFileOffset()) as nsp:
+				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+				Print.info("[PFS0 HEAD]  " + nsp.getHeaderHash())
+				Print.info("[PFS0 DATA]  " + nsp.getHash())
 	except BaseException:
 		raise
 	finally:
