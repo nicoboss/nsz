@@ -70,7 +70,6 @@ class Pfs0Stream(BaseFile):
 		return headerSize
 
 	def getFirstFileOffset(self):
-		print("OffsetP:", self.files[0].offset)
 		return self.files[0].offset
 
 	def getHeader(self):
@@ -184,7 +183,6 @@ class Pfs0(BaseFs):
 		return self._headerSize;
 
 	def getFirstFileOffset(self):
-		print("OffsetC:", self.files[0].offset)
 		return self.files[0].offset
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
