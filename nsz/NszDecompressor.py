@@ -45,7 +45,7 @@ def verify(filePath, removePadding, raiseVerificationException, originalFilePath
 	if isNspNsz(filePath):
 		__decompressNsz(filePath, None, removePadding, False, raiseVerificationException, originalFilePath, statusReportInfo, pleaseNoPrint)
 	elif isXciXcz(filePath):
-		__decompressXcz(filePath, None, removePadding, False, raiseVerificationException, originalFilePath,statusReportInfo, pleaseNoPrint)
+		__decompressXcz(filePath, None, removePadding, False, raiseVerificationException, originalFilePath, statusReportInfo, pleaseNoPrint)
 
 
 def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, statusReportInfo, pleaseNoPrint):
