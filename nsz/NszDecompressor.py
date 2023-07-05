@@ -13,9 +13,9 @@ class VerificationException(Exception):
 
 def decompress(filePath, outputDir, removePadding, statusReportInfo, pleaseNoPrint = None):
 	if isNspNsz(filePath):
-		__decompressNsz(filePath, outputDir, removePadding, True, False, statusReportInfo, pleaseNoPrint)
+		__decompressNsz(filePath, outputDir, removePadding, True, False, statusReportInfo, None, pleaseNoPrint)
 	elif isXciXcz(filePath):
-		__decompressXcz(filePath, outputDir, removePadding, True, False, statusReportInfo, pleaseNoPrint)
+		__decompressXcz(filePath, outputDir, removePadding, True, False, statusReportInfo, None, pleaseNoPrint)
 	elif isCompressedGameFile(filePath):
 		filePathNca = changeExtension(filePath, '.nca')
 		outPath = filePathNca if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNca).name))
