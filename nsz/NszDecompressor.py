@@ -204,24 +204,25 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, statusReportInfo, pleaseNoPrint)
 				Print.info("[PFS0 HEAD]  " + nsp.getHeaderHash())
 				Print.info("[PFS0 DATA]  " + nsp.getHash())
-				originalContainer = factory(filePath)
-				originalContainer.open(str(filePath), 'rb')
-				with Pfs0.Pfs0VerifyStream(originalContainer.getHeaderSize() if removePadding else originalContainer.getFirstFileOffset()) as originalNsp:
-					__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, statusReportInfo, pleaseNoPrint)
-					Print.info("[PFS0 HEAD]  " + originalNsp.getHeaderHash())
-					Print.info("[PFS0 DATA]  " + originalNsp.getHash())
-					if nsp.getHeaderHash() == originalNsp.getHeaderHash():
-						Print.info("[VERIFIED] PFS0 Header")
-					else:
-						Print.info("[MISSMATCH] PFS0 Header") 
-						if raiseVerificationException:
-							raise VerificationException("Verification detected PFS0 hader hash mismatch!")
-					if nsp.getHash() == originalNsp.getHash():
-						Print.info("[VERIFIED] PFS0 Data")
-					else:
-						Print.info("[MISSMATCH] PFS0 Data")
-						if raiseVerificationException:
-							raise VerificationException("Verification detected PFS0 data hash mismatch!")
+				if originalFilePath != None: 
+					originalContainer = factory(originalFilePath)
+					originalContainer.open(str(originalFilePath), 'rb')
+					with Pfs0.Pfs0VerifyStream(originalContainer.getHeaderSize() if removePadding else originalContainer.getFirstFileOffset()) as originalNsp:
+						__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+						Print.info("[PFS0 HEAD]  " + originalNsp.getHeaderHash())
+						Print.info("[PFS0 DATA]  " + originalNsp.getHash())
+						if nsp.getHeaderHash() == originalNsp.getHeaderHash():
+							Print.info("[VERIFIED]   PFS0 Header")
+						else:
+							Print.info("[MISSMATCH]  PFS0 Header") 
+							if raiseVerificationException:
+								raise VerificationException("Verification detected PFS0 hader hash mismatch!")
+						if nsp.getHash() == originalNsp.getHash():
+							Print.info("[VERIFIED]   PFS0 Data")
+						else:
+							Print.info("[MISSMATCH]  PFS0 Data")
+							if raiseVerificationException:
+								raise VerificationException("Verification detected PFS0 data hash mismatch!")
 	except BaseException:
 		raise
 	finally:

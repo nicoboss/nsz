@@ -32,12 +32,14 @@ Use the following command to install the GUI versions requirements:\
 
 ## Usage
 ```
-nsz --help
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-p] [-P]
-              [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source]
-              [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX]
-              [--titlekeys] [--undupe] [--undupe-dryrun] [--undupe-rename]
-              [--undupe-hardlink] [--undupe-prioritylist UNDUPE_PRIORITYLIST]
+nsz.py --help
+Unconfirmed: crc32(master_key_0f) = 4082108335
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K]
+              [-R] [-p] [-P] [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r]
+              [--rm-source] [-i] [--depth DEPTH] [-x]
+              [--extractregex EXTRACTREGEX] [--titlekeys] [--undupe]
+              [--undupe-dryrun] [--undupe-rename] [--undupe-hardlink]
+              [--undupe-prioritylist UNDUPE_PRIORITYLIST]
               [--undupe-whitelist UNDUPE_WHITELIST]
               [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions]
               [-c CREATE]
@@ -46,7 +48,7 @@ usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-p] [-P]
 positional arguments:
   file
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
@@ -71,6 +73,8 @@ optional arguments:
   -V, --verify          Verifies files after compression raising an unhandled
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter
+  -Q, --quick-verify    Skips the expensive and mostly useless PFS0 hash
+                        verification and only verifies NCA hashes
   -K, --keep-delta      Keep all useless delta fragments (NDV0) during
                         compression so the NSP (PFS0) can be recreated bit-
                         identical during decompression

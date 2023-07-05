@@ -32,12 +32,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 		if pleaseKillYourself.value() > 0:
 			break
 		try:
-			filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threadsToUse, verifyArg = item
+			filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threadsToUse, verifyArg, quickVerify = item
 			outFile = solidCompress(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
-					verify(outFile, removePadding, True, filePath, [statusReport, id], pleaseNoPrint)
+					verify(outFile, removePadding, True, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -56,10 +56,10 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, filePath, args.remove_padding, True, filePath)
+			verify(outFile, filePath, args.remove_padding, True, None if args.quick_verify else filePath)
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
-		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify])
+		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
 		amountOfTastkQueued.increment()
 
 
@@ -86,6 +86,9 @@ def main():
 			if args == None:
 				Print.info("Done!")
 				return
+
+		if args.quick_verify:
+			args.verify = True
 		
 		if args.output:
 			argOutFolderToPharse = args.output
