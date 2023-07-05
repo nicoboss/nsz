@@ -37,7 +37,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
-					verify(outFile, removePadding, True, [statusReport, id], pleaseNoPrint)
+					verify(outFile, removePadding, True, filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -56,7 +56,7 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, args.remove_padding, True)
+			verify(outFile, filePath, args.remove_padding, True, filePath)
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
 		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify])
@@ -66,8 +66,8 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 def decompress(filePath, outputDir, removePadding, statusReportInfo = None):
 	NszDecompress(filePath, outputDir, removePadding, statusReportInfo)
 
-def verify(filePath, removePadding, raiseVerificationException, statusReportInfo = None, pleaseNoPrint = None):
-	NszVerify(filePath, removePadding, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+def verify(filePath, removePadding, raiseVerificationException, originalFilePath = None, statusReportInfo = None, pleaseNoPrint = None):
+	NszVerify(filePath, removePadding, raiseVerificationException, originalFilePath, statusReportInfo, pleaseNoPrint)
 
 err = []
 
