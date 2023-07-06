@@ -65,10 +65,13 @@ class GUI(App):
 			'solid': 0,
 			'bs': "1 MB (default)",
 			'verify': 1,
+			'keepDelta': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
 			'multi': 4,
+			'quick_verify': 0,
+			'removePadding': 0,
 			'ldm': 0,
 			'parseCnmt': 0,
 			'overwrite': 0,
@@ -144,8 +147,11 @@ class arguments:
 			self.verify = True
 		else:
 			self.verify = None
+		self.keep_delta = True if int(config.get('Settings', 'keepDelta')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
+		self.quick_verify = True if int(config.get('Advanced', 'quick_verify')) == 1 else False
+		self.remove_padding = True if int(config.get('Advanced', 'removePadding')) == 1 else False
 		self.long = True if int(config.get('Advanced', 'ldm')) == 1 else False
 		self.parseCnmt = True if int(config.get('Advanced', 'parseCnmt')) == 1 else None
 		self.overwrite = True if int(config.get('Advanced', 'overwrite')) == 1 else None

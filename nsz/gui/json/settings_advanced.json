@@ -15,6 +15,20 @@
 	},
 	{
 		"type": "bool",
+		"title": "Quick Verify",
+		"desc": "Skips the expensive and mostly useless PFS0 hash verification and only verifies NCA hashes",
+		"section": "Advanced",
+		"key": "quick_verify"
+	},
+	{
+		"type": "bool",
+		"title": "Remove Padding",
+		"desc": "Remove the padding between the PFS0 header and the first file so the NSP matches the nxdumptool/no-intro standard",
+		"section": "Advanced",
+		"key": "removePadding"
+	},
+	{
+		"type": "bool",
 		"title": "Long Distance Mode",
 		"desc": "Enables zStandard long distance mode for even better compression",
 		"section": "Advanced",

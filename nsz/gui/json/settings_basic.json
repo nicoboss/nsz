@@ -35,5 +35,12 @@
 		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter",
 		"section": "Settings",
 		"key": "verify"
+	},
+	{
+		"type": "bool",
+		"title": "Keep Delta Fragments",
+		"desc": "Keep all useless delta fragments (NDV0) during compression so the NSP (PFS0) can be recreated bit-identical during decompression",
+		"section": "Settings",
+		"key": "keepDelta"
 	}
 ]

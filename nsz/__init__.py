@@ -32,12 +32,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 		if pleaseKillYourself.value() > 0:
 			break
 		try:
-			filePath, compressionLevel, useLongDistanceMode, outputDir, threadsToUse, verifyArg = item
-			outFile = solidCompress(filePath, compressionLevel, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
+			filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threadsToUse, verifyArg, quickVerify = item
+			outFile = solidCompress(filePath, compressionLevel, keepDelta, removePadding, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
-					verify(outFile, True, [statusReport, id], pleaseNoPrint)
+					verify(outFile, removePadding, True, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -53,21 +53,21 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		threadsToUseForBlockCompression = args.threads if args.threads > 0 else cpu_count()
-		outFile = blockCompress(filePath, compressionLevel, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
+		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, True)
+			verify(outFile, args.remove_padding, True, None if args.quick_verify else filePath)
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
-		work.put([filePath, compressionLevel, args.long, outputDir, threadsToUseForSolidCompression, args.verify])
+		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
 		amountOfTastkQueued.increment()
 
 
-def decompress(filePath, outputDir, statusReportInfo = None):
-	NszDecompress(filePath, outputDir, statusReportInfo)
+def decompress(filePath, outputDir, removePadding, statusReportInfo = None):
+	NszDecompress(filePath, outputDir, removePadding, statusReportInfo)
 
-def verify(filePath, raiseVerificationException, statusReportInfo = None, pleaseNoPrint = None):
-	NszVerify(filePath, raiseVerificationException, statusReportInfo, pleaseNoPrint)
+def verify(filePath, removePadding, raiseVerificationException, originalFilePath = None, statusReportInfo = None, pleaseNoPrint = None):
+	NszVerify(filePath, removePadding, raiseVerificationException, originalFilePath, statusReportInfo, pleaseNoPrint)
 
 err = []
 
@@ -86,6 +86,9 @@ def main():
 			if args == None:
 				Print.info("Done!")
 				return
+
+		if args.quick_verify:
+			args.verify = True
 		
 		if args.output:
 			argOutFolderToPharse = args.output
@@ -242,7 +245,7 @@ def main():
 								Print.info('{0} with the same file name already exists in the output directory.\n'\
 								'If you want to overwrite it use the -w parameter!'.format(outFile.name))
 								continue
-						decompress(filePath, outFolder)
+						decompress(filePath, outFolder, args.remove_padding)
 						if args.rm_source:
 							delete_source_file(filePath, outFolder)
 					except KeyboardInterrupt:
@@ -268,7 +271,7 @@ def main():
 					try:
 						if isGame(filePath):
 							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath), filePath.name))
-							verify(filePath, True)
+							verify(filePath, args.remove_padding, True)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
