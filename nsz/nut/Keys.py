@@ -101,12 +101,14 @@ def unwrapAesWrappedTitlekey(wrappedKey, keyGeneration):
 
 def getKey(key):
 	if key not in keys:
-		raise IOError('{0} missing from {1}'.format(key, loadedKeysFile))
+		Print.error('{0} missing from {1}! This will lead to corrupted output.'.format(key, loadedKeysFile))
+		raise IOError('{0} missing from {1}! This will lead to corrupted output.'.format(key, loadedKeysFile))
 	foundKey = uhx(keys[key])
 	foundKeyChecksum = crc32(foundKey)
 	if key in crc32_checksum:
 		if crc32_checksum[key] != foundKeyChecksum:
-			raise IOError('{0} from {1} is invalid (crc32 missmatch)'.format(key, loadedKeysFile))
+			Print.error('{0} from {1} is invalid (crc32 missmatch)! This will lead to corrupted output.'.format(key, loadedKeysFile))
+			raise IOError('{0} from {1} is invalid (crc32 missmatch)! This will lead to corrupted output.'.format(key, loadedKeysFile))
 	elif current_process().name == 'MainProcess':
 		Print.info('Unconfirmed: crc32({0}) = {1}'.format(key, foundKeyChecksum))
 	return foundKey
