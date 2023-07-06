@@ -37,7 +37,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
-					verify(outFile, removePadding, True, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
+					verify(outFile, removePadding, True, keepDelta, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -56,7 +56,7 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, args.remove_padding, True, None if args.quick_verify else filePath)
+			verify(outFile, args.remove_padding, True, args.keep_delta, None if args.quick_verify else filePath)
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
 		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
@@ -66,8 +66,8 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 def decompress(filePath, outputDir, removePadding, statusReportInfo = None):
 	NszDecompress(filePath, outputDir, removePadding, statusReportInfo)
 
-def verify(filePath, removePadding, raiseVerificationException, originalFilePath = None, statusReportInfo = None, pleaseNoPrint = None):
-	NszVerify(filePath, removePadding, raiseVerificationException, originalFilePath, statusReportInfo, pleaseNoPrint)
+def verify(filePath, removePadding, raiseVerificationException, raisePfs0Exception, originalFilePath = None, statusReportInfo = None, pleaseNoPrint = None):
+	NszVerify(filePath, removePadding, raiseVerificationException, raisePfs0Exception, originalFilePath, statusReportInfo, pleaseNoPrint)
 
 err = []
 
@@ -271,7 +271,7 @@ def main():
 					try:
 						if isGame(filePath):
 							Print.info("[VERIFY {0}] {1}".format(getExtensionName(filePath), filePath.name))
-							verify(filePath, args.remove_padding, True)
+							verify(filePath, args.remove_padding, True, True)
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
