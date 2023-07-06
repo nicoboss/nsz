@@ -64,13 +64,12 @@ class GUI(App):
 			'block': 0,
 			'solid': 0,
 			'bs': "1 MB (default)",
-			'verify': 1,
+			'verify_options': "Quick (NCA hashes)",
 			'keepDelta': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
 			'multi': 4,
-			'quick_verify': 0,
 			'removePadding': 0,
 			'ldm': 0,
 			'parseCnmt': 0,
@@ -143,14 +142,18 @@ class arguments:
 		self.bs = bs_scrolloptions.get(config.get('Settings', 'bs'), 20)
 		if rootWidget.verify is True \
 		or ((rootWidget.C is True or rootWidget.D is True) \
-		and int(config.get('Settings', 'verify')) == 1):
+		and config.get('Settings', 'verify_options') == "Full (NCA & PFS0 hashes)"):
 			self.verify = True
 		else:
 			self.verify = None
+		if ((rootWidget.C is True or rootWidget.D is True) \
+		and config.get('Settings', 'verify_options') == "Quick (NCA hashes)"):
+			self.quick_verify = True
+		else:
+			self.quick_verify = None
 		self.keep_delta = True if int(config.get('Settings', 'keepDelta')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
-		self.quick_verify = True if int(config.get('Advanced', 'quick_verify')) == 1 else False
 		self.remove_padding = True if int(config.get('Advanced', 'removePadding')) == 1 else False
 		self.long = True if int(config.get('Advanced', 'ldm')) == 1 else False
 		self.parseCnmt = True if int(config.get('Advanced', 'parseCnmt')) == 1 else None

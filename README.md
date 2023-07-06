@@ -39,7 +39,6 @@ Use the following command to install the GUI versions requirements:\
 ## Usage
 ```
 nsz.py --help
-Unconfirmed: crc32(master_key_0f) = 4082108335
 usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K]
               [-R] [-p] [-P] [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r]
               [--rm-source] [-i] [--depth DEPTH] [-x]
@@ -78,9 +77,12 @@ options:
                         14 and 32. Default: 20 => 1 MB
   -V, --verify          Verifies files after compression raising an unhandled
                         exception on hash mismatch and verify existing NSP and
-                        NSZ files when given as parameter
-  -Q, --quick-verify    Skips the expensive and mostly useless PFS0 hash
-                        verification and only verifies NCA hashes
+                        NSZ files when given as parameter. Requires --keep-
+                        delta when used during compression.
+  -Q, --quick-verify    Same as --verify but skips the expensive and mostly
+                        useless PFS0 hash verification and only verifies NCA
+                        hashes. Does not require --keep-delta when used during
+                        compression.
   -K, --keep-delta      Keep all useless delta fragments (NDV0) during
                         compression so the NSP (PFS0) can be recreated bit-
                         identical during decompression

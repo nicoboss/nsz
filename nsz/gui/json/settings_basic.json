@@ -5,7 +5,7 @@
 		"desc": "Trade-off between compression speed and compression ratio. Default: 18, Max: 22",
 		"section": "Settings",
 		"key": "level",
-		"options": ["[Lv. 01] Debugging", "[Lv. 08] Faster", "[Lv. 12] Fast", "[Lv. 14] Normal", "[Lv. 18] Great (default)", "[Lv. 22] Ultra (recommended)"]
+		"options": [ "[Lv. 01] Debugging", "[Lv. 08] Faster", "[Lv. 12] Fast", "[Lv. 14] Normal", "[Lv. 18] Great (default)", "[Lv. 22] Ultra (recommended)" ]
 	},
 	{
 		"type": "bool",
@@ -27,14 +27,15 @@
 		"desc": "Block Size for random read access",
 		"section": "Settings",
 		"key": "bs",
-		"options": ["64 KB", "128 KB", "256 KB", "512 KB", "1 MB  (default)", "2 MB", "4 MB", "8 MB", "16 MB"]
+		"options": [ "64 KB", "128 KB", "256 KB", "512 KB", "1 MB  (default)", "2 MB", "4 MB", "8 MB", "16 MB" ]
 	},
 	{
-		"type": "bool",
+		"type": "scrolloptions",
 		"title": "Verify",
-		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter",
+		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter. Quick skips the expensive and mostly useless PFS0 hash verification and only verifies NCA hashes. Full requires --keep-delta when used for compression.",
 		"section": "Settings",
-		"key": "verify"
+		"key": "verify_options",
+		"options": [ "None", "Quick (NCA hashes)", "Full (NCA & PFS0 hashes)" ]
 	},
 	{
 		"type": "bool",
