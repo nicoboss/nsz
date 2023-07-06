@@ -208,14 +208,17 @@ class Ticket(File):
 		super(Ticket, self).printInfo(maxDepth, indent)
 		Print.info(tabs + 'signatureType = ' + str(self.signatureType))
 		Print.info(tabs + 'keyType = ' + str(self.keyType))
-		Print.info(tabs + 'masterKeyRev = ' + str(masterKeyRevision))
+		Print.info(tabs + 'masterKeyRev = ' + str(masterKeyRevision) + " (master_key_{0:02x})".format(masterKeyRevision - 1))
 		Print.info(tabs + 'ticketId = ' + str(self.ticketId))
 		Print.info(tabs + 'deviceId = ' + str(self.deviceId))
 		Print.info(tabs + 'rightsId = ' + rightsId)
 		Print.info(tabs + 'accountId = ' + str(self.accountId))
 		Print.info(tabs + 'titleId = ' + titleId)
 		Print.info(tabs + 'titleKey = ' + titleKey)
-		Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), masterKeyRevision))))
+		try:
+			Print.info(tabs + 'titleKeyDec = ' + str(hx(Keys.decryptTitleKey((self.getTitleKey()), masterKeyRevision - 1))))
+		except:
+			Print.info(tabs + 'titleKeyDec = An error occurred while obtaining titleKeyDec')
 
 
 
