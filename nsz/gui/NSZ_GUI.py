@@ -40,7 +40,7 @@ class GUI(App):
 		Window.minimum_height = 600
 		Logger.setLevel(realLevl)
 		Builder.load_file(getGuiPath('layout/GUI.kv'))
-		self.title = 'NSZ GUI 4.2'
+		self.title = 'NSZ GUI 4.3'
 		self.icon = getGuiPath('nsZip.png')
 		root = FloatLayout()
 		with open(getGuiPath('shaders/plasma.shader')) as stream:
