@@ -279,6 +279,7 @@ class BaseFile:
 		if self._path:
 			Print.info('%sFile Path: %s' % (tabs, self._path))
 		Print.info('%sFile Size: %s' % (tabs, self.size))
+		Print.info('%sFile Offset: %s' % (tabs, self.offset))
 
 	def sha256(self):
 		hash = hashlib.sha256()

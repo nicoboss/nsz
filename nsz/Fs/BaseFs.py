@@ -24,6 +24,7 @@ class BaseFs(File):
 		self.size = 0
 		self.cryptoCounter = None
 		self.magic = None
+		self._headerSize = None
 		self.bktrRelocation = None
 		self.bktrSubsection = None
 			
@@ -151,6 +152,7 @@ class BaseFs(File):
 		Print.info(tabs + 'fsType = ' + str(self.fsType))
 		Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
 		Print.info(tabs + 'size = ' + str(self.size))
+		Print.info(tabs + 'headerSize = %s' % (str(self._headerSize)))
 		Print.info(tabs + 'offset = %s - (%s)' % (str(self.offset), str(self.sectionStart)))
 		if self.cryptoCounter:
 			Print.info(tabs + 'cryptoCounter = ' + str(hx(self.cryptoCounter)))
