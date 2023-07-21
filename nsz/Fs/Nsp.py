@@ -407,8 +407,6 @@ class Nsp(Pfs0):
 		filesNb = len(files)
 		stringTable = '\x00'.join(os.path.basename(file) for file in files)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
-		remainder = 0x10 - headerSize%0x10
-		headerSize += remainder
 		
 		fileSizes = [os.path.getsize(file) for file in files]
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
@@ -419,7 +417,7 @@ class Nsp(Pfs0):
 		header =  b''
 		header += b'PFS0'
 		header += pk('<I', filesNb)
-		header += pk('<I', len(stringTable)+remainder)
+		header += pk('<I', len(stringTable))
 		header += b'\x00\x00\x00\x00'
 		for n in range(filesNb):
 			header += pk('<Q', fileOffsets[n])

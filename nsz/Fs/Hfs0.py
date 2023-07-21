@@ -68,13 +68,11 @@ class Hfs0Stream(BaseFile):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
 		
 		headerSize = 0x10 + len(self.files) * 0x40 + len(stringTable)
-		remainder = 0x10 - headerSize % 0x10
-		headerSize += remainder
 	
 		h = b''
 		h += b'HFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (len(stringTable)+remainder).to_bytes(4, byteorder='little')
+		h += (len(stringTable)).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
@@ -92,7 +90,6 @@ class Hfs0Stream(BaseFile):
 			stringOffset += len(f['name']) + 1
 			
 		h += stringTable.encode()
-		h += remainder * b'\x00'
 		
 		return h
 
