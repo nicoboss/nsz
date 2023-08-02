@@ -425,7 +425,6 @@ class Nsp(Pfs0):
 			header += pk('<I', stringTableOffsets[n])
 			header += b'\x00\x00\x00\x00'
 		header += stringTable.encode()
-		header += remainder * b'\x00'
 		
 		return header
 
