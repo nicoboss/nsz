@@ -1,8 +1,8 @@
-from multiprocessing import Value, Lock
+from multiprocessing import Manager, Lock
 
 class Counter(object):
-	def __init__(self, initval=0):
-		self.val = Value('i', initval)
+	def __init__(self, manager, initval=0):
+		self.val = manager.Value('i', initval)
 		self.lock = Lock()
 	def set(self, newValue):
 		with self.lock:
