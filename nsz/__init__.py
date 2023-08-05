@@ -100,7 +100,7 @@ def main():
 		argOutFolder = Path(argOutFolderToPharse).resolve() if args.output else None
 		
 		Print.info('')
-		Print.info('             NSZ v4.3   ,;:;;,')
+		Print.info('             NSZ v4.4   ,;:;;,')
 		Print.info('                       ;;;;;')
 		Print.info('               .=\',    ;:;;:,')
 		Print.info('              /_\', "=. \';:;:;')
@@ -113,12 +113,12 @@ def main():
 		barManager = enlighten.get_manager()
 		poolManager = Manager()
 		statusReport = poolManager.list()
-		readyForWork = Counter(0)
-		pleaseNoPrint = Counter(0)
-		pleaseKillYourself = Counter(0)
+		readyForWork = Counter(poolManager, 0)
+		pleaseNoPrint = Counter(poolManager, 0)
+		pleaseKillYourself = Counter(poolManager, 0)
 		pool = []
 		work = poolManager.Queue()
-		amountOfTastkQueued = Counter(0)
+		amountOfTastkQueued = Counter(poolManager, 0)
 		targetDictNsz = dict()
 		targetDictXcz = dict()
 		

@@ -27,6 +27,14 @@ Use the following command to install the console-only version:\
 Use the following command to install the GUI version:\
 `pip3 install --upgrade nsz[gui]`
 
+### Android
+1. Install "Pydroid 3" and the "Pydroid repository plugin" from the Play Store
+2. Open "Pydroid 3" and navigate to "Pip"
+3. Enter "nsz" and unselect "use prebuild" then press install
+4. Navigate to "Terminal" to use the "nsz" command
+5. The first time it will tell you where to copy your prod.keys which you should do using the "cp" command
+6. Use any command line arguments you want like "nsz -D file.nsz" to decompress your game
+
 ### Running from source
 The tool can also be run by cloning the repository, installing the requirements and then executing nsz using `python3 nsz.py`
 

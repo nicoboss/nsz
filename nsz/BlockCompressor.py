@@ -43,8 +43,8 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 	blockSize = 2**blockSizeExponent
 	manager = Manager()
 	results = manager.list()
-	readyForWork = Counter(0)
-	pleaseKillYourself = Counter(0)
+	readyForWork = Counter(manager, 0)
+	pleaseKillYourself = Counter(manager, 0)
 	TasksPerChunk = 209715200//blockSize
 	for i in range(TasksPerChunk):
 		results.append(b"")
