@@ -197,17 +197,17 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 			filePathNsp = changeExtension(filePath, '.nsp')
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
-			with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), outPath) as nsp:
+			with Pfs0.Pfs0Stream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), None if removePadding else container.getStringTableSize(), outPath) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 		else:
-			with Pfs0.Pfs0VerifyStream(container.getHeaderSize() if removePadding else container.getFirstFileOffset()) as nsp:
+			with Pfs0.Pfs0VerifyStream(container.getHeaderSize() if removePadding else container.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 				Print.info("[PFS0 HEAD]  " + nsp.getHeaderHash())
 				Print.info("[PFS0 DATA]  " + nsp.getHash())
 				if originalFilePath != None: 
 					originalContainer = factory(originalFilePath)
 					originalContainer.open(str(originalFilePath), 'rb')
-					with Pfs0.Pfs0VerifyStream(originalContainer.getHeaderSize() if removePadding else originalContainer.getFirstFileOffset()) as originalNsp:
+					with Pfs0.Pfs0VerifyStream(originalContainer.getHeaderSize() if removePadding else originalContainer.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as originalNsp:
 						__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 						Print.info("[PFS0 HEAD]  " + originalNsp.getHeaderHash())
 						Print.info("[PFS0 DATA]  " + originalNsp.getHash())

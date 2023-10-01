@@ -96,7 +96,9 @@ options:
                         identical during decompression
   -R, --remove-padding  Remove the padding between the PFS0 header and the
                         first file so the NSP matches the nxdumptool/no-intro
-                        standard
+                        standard. This also removes padding added to the
+                        FileEntryTable as there should not be any padding
+                        there.
   -p, --parseCnmt       Extract TitleId/Version from Cnmt if this information
                         cannot be obtained from the filename. Required for
                         skipping/overwriting existing files and --rm-old-

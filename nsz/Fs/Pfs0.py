@@ -17,10 +17,11 @@ from nsz.nut import Titles
 MEDIA_SIZE = 0x200
 
 class Pfs0Stream(BaseFile):
-	def __init__(self, headerSize, path, mode = 'wb'):
+	def __init__(self, headerSize, stringTableSize, path, mode = 'wb'):
 		os.makedirs(os.path.dirname(path), exist_ok = True)
 		super(Pfs0Stream, self).__init__(path, mode)
 		self.headerSize = headerSize
+		self._stringTableSize = stringTableSize
 		self.files = []
 		
 		self.actualSize = 0
@@ -64,20 +65,29 @@ class Pfs0Stream(BaseFile):
 			
 	def getHeaderSize(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
-		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
+		headerSize = 0x10 + len(self.files) * 0x18 + self.stringTableSize
 		return headerSize
+	
+	def getStringTableSize(self):
+		stringTable = '\x00'.join(file['name'] for file in self.files)
+		stringTableLen = len(stringTable)
+		if self._stringTableSize == None:
+			self._stringTableSize = stringTableLen
+		if stringTableLen > self._stringTableSize:
+			self._stringTableSize = stringTableLen
+		return self._stringTableSize
 
 	def getFirstFileOffset(self):
 		return self.files[0].offset
 
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
-		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
+		headerSize = 0x10 + len(self.files) * 0x18 + self.getStringTableSize()
 	
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (len(stringTable)).to_bytes(4, byteorder='little')
+		h += (self.getStringTableSize()).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
@@ -96,10 +106,11 @@ class Pfs0Stream(BaseFile):
 
 
 class Pfs0VerifyStream():
-	def __init__(self, headerSize, mode = 'wb'):
+	def __init__(self, headerSize, stringTableSize, mode = 'wb'):
 		self.files = []
 		self.binhash = sha256()
 		self.pos = headerSize
+		self._stringTableSize = stringTableSize
 
 	def __enter__(self):
 		return self
@@ -129,18 +140,27 @@ class Pfs0VerifyStream():
 	def close(self):
 		pass
 	
+	def getStringTableSize(self):
+		stringTable = '\x00'.join(file['name'] for file in self.files)
+		stringTableLen = len(stringTable)
+		if self._stringTableSize == None:
+			self._stringTableSize = stringTableLen
+		if stringTableLen > self._stringTableSize:
+			self._stringTableSize = stringTableLen
+		return self._stringTableSize
+	
 	def getHash(self):
 		hexHash = self.binhash.hexdigest()
 		return hexHash
 
 	def getHeaderHash(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)
-		headerSize = 0x10 + len(self.files) * 0x18 + len(stringTable)
+		headerSize = 0x10 + len(self.files) * 0x18 + self.getStringTableSize()
 	
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (len(stringTable)).to_bytes(4, byteorder='little')
+		h += (self.getStringTableSize()).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
@@ -173,6 +193,9 @@ class Pfs0(BaseFs):
 
 	def getHeaderSize(self):
 		return self._headerSize;
+	
+	def getStringTableSize(self):
+		return self._stringTableSize;
 
 	def getFirstFileOffset(self):
 		return self.files[0].offset
@@ -191,14 +214,14 @@ class Pfs0(BaseFs):
 			
 
 		fileCount = self.readInt32()
-		stringTableSize = self.readInt32()
+		self._stringTableSize = self.readInt32()
 		self.readInt32() # junk data
 
 		self.seek(0x10 + fileCount * 0x18)
-		stringTable = self.read(stringTableSize)
-		stringEndOffset = stringTableSize
+		stringTable = self.read(self._stringTableSize)
+		stringEndOffset = self._stringTableSize
 		
-		self._headerSize = 0x10 + 0x18 * fileCount + stringTableSize
+		self._headerSize = 0x10 + 0x18 * fileCount + self._stringTableSize
 		self.files = []
 
 		for i in range(fileCount):
