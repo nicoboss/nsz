@@ -64,12 +64,12 @@ class Pfs0Stream(BaseFile):
 			super(Pfs0Stream, self).close()
 			
 	def getHeaderSize(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
+		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		headerSize = 0x10 + len(self.files) * 0x18 + self.stringTableSize
 		return headerSize
 	
 	def getStringTableSize(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
+		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		stringTableLen = len(stringTable)
 		if self._stringTableSize == None:
 			self._stringTableSize = stringTableLen
