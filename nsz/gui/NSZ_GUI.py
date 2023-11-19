@@ -1,6 +1,6 @@
 from nsz.gui.GuiPath import *
 from kivy.config import Config
-Config.set("kivy", "default_font", ["MPLUS1p", getGuiPath("fonts/MPLUS1p-Medium.ttf")])
+from kivy.core.text import LabelBase, DEFAULT_FONT
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
@@ -16,12 +16,12 @@ from nsz.gui.SettingScrollOptions import *
 import logging
 import os
 
-
 class GUI(App):
 	
 	rootWidget = None
 	
 	def run(self):
+		LabelBase.register(DEFAULT_FONT, getGuiPath('fonts/MPLUS1p-Medium.ttf'))
 		super(GUI, self).run()
 		Window.close()
 		if not self.rootWidget.hardExit:
