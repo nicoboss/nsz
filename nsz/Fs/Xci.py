@@ -221,6 +221,16 @@ class GamecardCertificate(File):
 class Xci(File):
 	def __init__(self, file = None):
 		super(Xci, self).__init__()
+		
+		self.headerOffset = 0x0
+
+		self.challengeResponseAuthData = None
+		self.challengeResponseAuthMac = None
+		self.challengeResponseAuthNonce = None
+
+		self.titleKey1 = None
+		self.titleKey2 = None
+
 		self.header = None
 		self.signature = None
 		self.magic = None
@@ -251,8 +261,23 @@ class Xci(File):
 		if file:
 			self.open(file)
 		
+	def isFullXci(self):
+		self.seek(0x100)
+		magic = self.read(0x4)
+		self.seek(0x0)
+		return magic != b'HEAD'
+
+	def readKeyArea(self):
+		self.packageId = self.readInt64()
+		self.seek(0x10)
+		self.challengeResponseAuthData = self.read(0x10)
+		self.challengeResponseAuthMac = self.read(0x10)
+		self.challengeResponseAuthNonce = self.read(0x10)
+		self.seek(0x200)
+		self.titleKey1 = self.read(0x8)
+		self.titleKey2 = self.read(0x8)
+
 	def readHeader(self):
-	
 		self.signature = self.read(0x100)
 		self.magic = self.read(0x4)
 		self.secureOffset = self.readInt32()
@@ -281,10 +306,14 @@ class Xci(File):
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		r = super(Xci, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+		if self.isFullXci():
+			self.readKeyArea()
+			self.headerOffset = 0x1000
+		self.seek(self.headerOffset)
 		self.readHeader()
-		self.seek(0xF000)
+		self.seek(self.hfs0Offset + self.headerOffset)
 		self.hfs0 = Hfs0(None, cryptoKey = None)
-		self.partition(0xf000, None, self.hfs0, cryptoKey = None)
+		self.partition(self.hfs0Offset + self.headerOffset, None, self.hfs0, cryptoKey = None)
 
 	def unpack(self, path, extractregex="*"):
 		os.makedirs(str(path), exist_ok=True)
