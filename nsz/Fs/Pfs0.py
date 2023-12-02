@@ -142,6 +142,10 @@ class Pfs0VerifyStream():
 	def close(self):
 		pass
 	
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
+	def allign0x20(self, n):
+		return 0x20-n%0x20
+
 	def getStringTableSize(self):
 		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
