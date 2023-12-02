@@ -10,7 +10,7 @@ if __name__ == '__main__':
 	import multiprocessing
 	multiprocessing.freeze_support()
 	try:
-		import nsp
+		import nsz
 	except ImportError:
 		path = pathlib.Path(__file__).resolve().parent.absolute()
 		sys.path.append(str(path))
