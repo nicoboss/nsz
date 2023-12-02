@@ -73,8 +73,8 @@ class Pfs0Stream(BaseFile):
 		stringTableSizePadded = len(stringTableNonPadded) + self.allign0x20(headerSizeNonPadded)
 		if self._stringTableSize == None:
 			self._stringTableSize = stringTableSizePadded
-		if stringTableSizePadded > self._stringTableSize:
-			self._stringTableSize = stringTableSizePadded
+		elif len(stringTableNonPadded) > self._stringTableSize:
+			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
 
 	def getFirstFileOffset(self):
@@ -152,8 +152,8 @@ class Pfs0VerifyStream():
 		stringTableSizePadded = len(stringTableNonPadded) + self.allign0x20(headerSizeNonPadded)
 		if self._stringTableSize == None:
 			self._stringTableSize = stringTableSizePadded
-		if stringTableSizePadded > self._stringTableSize:
-			self._stringTableSize = stringTableSizePadded
+		elif len(stringTableNonPadded) > self._stringTableSize:
+			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
 	
 	def getHash(self):
@@ -169,7 +169,7 @@ class Pfs0VerifyStream():
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (self.getStringTableSize()).to_bytes(4, byteorder='little')
+		h += (stringTableSizePadded).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
