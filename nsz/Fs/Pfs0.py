@@ -23,10 +23,9 @@ class Pfs0Stream(BaseFile):
 		self.headerSize = headerSize
 		self._stringTableSize = stringTableSize
 		self.files = []
-		
 		self.actualSize = 0
-
 		self.f.seek(self.headerSize)
+		self.addpos = self.headerSize
 
 	def __enter__(self):
 		return self
@@ -41,13 +40,15 @@ class Pfs0Stream(BaseFile):
 
 	def add(self, name, size, pleaseNoPrint = None):
 		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
-		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
-		return self.partition(self.f.tell(), size, n = BaseFile())
+		partition = self.partition(self.f.tell(), size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
+		self.addpos += size
+		return partition
 
 	def get(self, name):
 		for i in self.files:
 			if i['name'] == name:
-				return i
+				return i['partition']
 		return None
 
 	def resize(self, name, size):
@@ -112,6 +113,7 @@ class Pfs0VerifyStream():
 		self.files = []
 		self.binhash = sha256()
 		self.pos = headerSize
+		self.addpos = headerSize
 		self._stringTableSize = stringTableSize
 
 	def __enter__(self):
@@ -129,7 +131,8 @@ class Pfs0VerifyStream():
 
 	def add(self, name, size, pleaseNoPrint = None):
 		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
-		self.files.append({'name': name, 'size': size, 'offset': self.pos})
+		self.files.append({'name': name, 'size': size, 'offset': self.addpos})
+		self.addpos += size
 		return self
 
 	def get(self, name):
@@ -150,13 +153,13 @@ class Pfs0VerifyStream():
 			self._stringTableSize = stringTableSizePadded
 		elif len(stringTableNonPadded) > self._stringTableSize:
 			self._stringTableSize = len(stringTableNonPadded)
-		return self._stringTableSize
+		return self._stringTableSize-1
 	
 	def getHash(self):
 		hexHash = self.binhash.hexdigest()
 		return hexHash
 
-	def getHeaderHash(self):
+	def updateHashHeader(self):
 		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		stringTableSizePadded = self.getStringTableSize()
 		stringTable = stringTableNonPadded + ('\x00'*(stringTableSizePadded-len(stringTableNonPadded)))
@@ -169,21 +172,23 @@ class Pfs0VerifyStream():
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
-		
 		for f in self.files:
 			h += (f['offset'] - headerSize).to_bytes(8, byteorder='little')
 			h += f['size'].to_bytes(8, byteorder='little')
 			h += stringOffset.to_bytes(4, byteorder='little')
-			h += b'\x00\x00\x00\x00'
-			
+			h += b'\x00\x00\x00\x00'	
 			stringOffset += len(f['name']) + 1
-			
+		
+		stringTable += '\x00' * 12
 		h += stringTable.encode()
 		
-		headerBinhash = sha256()
-		headerBinhash.update(h)
-		headerHexHash = headerBinhash.hexdigest()
-		return headerHexHash
+		headerHex = h.hex()
+		#print(headerHex)
+		#print(len(h), self.files[0]['offset']-headerSize)
+		self.binhash.update(h)
+		#print(self.binhash.hexdigest())
+		#exit()
+		
 
 
 class Pfs0(BaseFs):

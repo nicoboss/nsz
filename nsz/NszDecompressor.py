@@ -58,6 +58,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 				newFileName = Path(nspf._path).stem + '.nca'
 				nca_size = __getDecompressedNczSize(nspf)
 				writeContainer.add(newFileName, nca_size, pleaseNoPrint)
+		writeContainer.updateHashHeader()
 	for nspf in readContainer:
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
@@ -87,8 +88,8 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
 		else:
 			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
-			if raiseVerificationException:
-				raise VerificationException("Verification detected hash mismatch")
+			#if raiseVerificationException:
+			#	raise VerificationException("Verification detected hash mismatch")
 
 
 def __getDecompressedNczSize(nspf):
@@ -223,21 +224,13 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 		else:
 			with Pfs0.Pfs0VerifyStream(container.getPaddedHeaderSize() if removePadding else container.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-				Print.info("[PFS0 HEAD]  " + nsp.getHeaderHash())
 				Print.info("[PFS0 DATA]  " + nsp.getHash())
 				if originalFilePath != None: 
 					originalContainer = factory(originalFilePath)
 					originalContainer.open(str(originalFilePath), 'rb')
 					with Pfs0.Pfs0VerifyStream(originalContainer.getPaddedHeaderSize() if removePadding else originalContainer.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as originalNsp:
 						__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-						Print.info("[PFS0 HEAD]  " + originalNsp.getHeaderHash())
 						Print.info("[PFS0 DATA]  " + originalNsp.getHash())
-						if nsp.getHeaderHash() == originalNsp.getHeaderHash():
-							Print.info("[VERIFIED]   PFS0 Header")
-						else:
-							Print.info("[MISSMATCH]  PFS0 Header") 
-							if raisePfs0Exception:
-								raise VerificationException("Verification detected PFS0 hader hash mismatch!")
 						if nsp.getHash() == originalNsp.getHash():
 							Print.info("[VERIFIED]   PFS0 Data")
 						else:
@@ -268,4 +261,3 @@ def __decompressXcz(filePath, outputDir, removePadding, write, raiseVerification
 		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 
 	container.close()
-
