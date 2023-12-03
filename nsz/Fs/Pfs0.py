@@ -200,6 +200,13 @@ class Pfs0(BaseFs):
 			#self.offset += sectionStart
 			#self.size -= sectionStart
 
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
+	def allign0x20(self, n):
+		return 0x20-n%0x20
+
+	def getPaddedHeaderSize(self):
+		return self._headerSize + self.allign0x20(self._headerSize);
+
 	def getHeaderSize(self):
 		return self._headerSize;
 	
