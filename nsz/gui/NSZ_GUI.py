@@ -65,7 +65,7 @@ class GUI(App):
 			'solid': 0,
 			'bs': "1 MB (default)",
 			'verify_options': "Quick (NCA hashes)",
-			'keepDelta': 0,
+			'keep': 0,
 		})
 		config.setdefaults('Advanced', {
 			'threads': -1,
@@ -151,7 +151,7 @@ class arguments:
 			self.quick_verify = True
 		else:
 			self.quick_verify = None
-		self.keep_delta = True if int(config.get('Settings', 'keepDelta')) == 1 else False
+		self.keep = True if int(config.get('Settings', 'keep')) == 1 else False
 		self.threads = int(config.get('Advanced', 'threads'))
 		self.multi = int(config.get('Advanced', 'multi'))
 		self.fix_padding = True if int(config.get('Advanced', 'fixPadding')) == 1 else False

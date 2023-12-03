@@ -29,13 +29,13 @@ def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, bloc
 			compressed = ZstdCompressor(compression_params=params).compress(buffer)
 			out_list[chunkRelativeBlockID] = compressed if len(compressed) < len(buffer) else buffer
 
-def blockCompress(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompress(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	if filePath.suffix == '.nsp':
-		return blockCompressNsp(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
+		return blockCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 	elif filePath.suffix == '.xci':
-		return blockCompressXci(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
+		return blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads)
 
-def blockCompressContainer(readContainer, writeContainer, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, threads):
+def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads):
 	CHUNK_SZ = 0x100000
 	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
@@ -57,7 +57,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 		pool.append(p)
 
 	for nspf in readContainer:
-		if not keepDelta:
+		if not keep:
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 				Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path))
 				continue
@@ -201,7 +201,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 		sleep(0.02)
 
 
-def blockCompressNsp(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -211,7 +211,7 @@ def blockCompressNsp(filePath, compressionLevel, keepDelta, fixPadding, useLongD
 	
 	try:
 		with Pfs0.Pfs0Stream(container.getPaddedHeaderSize() if fixPadding else container.getFirstFileOffset(), None if fixPadding else container.getStringTableSize(), str(nszPath)) as nsp:
-			blockCompressContainer(container, nsp, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, threads)
+			blockCompressContainer(container, nsp, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
@@ -221,7 +221,7 @@ def blockCompressNsp(filePath, compressionLevel, keepDelta, fixPadding, useLongD
 	container.close()
 	return nszPath
 	
-def blockCompressXci(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
+def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
@@ -233,7 +233,7 @@ def blockCompressXci(filePath, compressionLevel, keepDelta, fixPadding, useLongD
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
-				blockCompressContainer(secureIn, secureOut, compressionLevel, keepDelta, useLongDistanceMode, blockSizeExponent, threads)
+				blockCompressContainer(secureIn, secureOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
 			
 			xci.hfs0.resize('secure', secureOut.actualSize)
 	except BaseException as ex:

@@ -32,12 +32,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 		if pleaseKillYourself.value() > 0:
 			break
 		try:
-			filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, outputDir, threadsToUse, verifyArg, quickVerify = item
-			outFile = solidCompress(filePath, compressionLevel, keepDelta, fixPadding, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
+			filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, outputDir, threadsToUse, verifyArg, quickVerify = item
+			outFile = solidCompress(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, outputDir, threadsToUse, statusReport, id, pleaseNoPrint)
 			if verifyArg:
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
-					verify(outFile, fixPadding, True, keepDelta, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
+					verify(outFile, fixPadding, True, keep, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -54,11 +54,11 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		threadsToUseForBlockCompression = args.threads if args.threads > 0 else cpu_count()
-		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.fix_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
+		outFile = blockCompress(filePath, compressionLevel, args.keep, args.fix_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
 			try:
-				verify(outFile, args.fix_padding, True, args.keep_delta, None if args.quick_verify else filePath)
+				verify(outFile, args.fix_padding, True, args.keep, None if args.quick_verify else filePath)
 			except VerificationException:
 				Print.error("[BAD VERIFY] {0}".format(outFile))
 				Print.error("[DELETE NSZ] {0}".format(outFile))
@@ -66,7 +66,7 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 				raise
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
-		work.put([filePath, compressionLevel, args.keep_delta, args.fix_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
+		work.put([filePath, compressionLevel, args.keep, args.fix_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
 		amountOfTastkQueued.increment()
 
 
@@ -158,8 +158,8 @@ def main():
 			nsp.pack(args.file)
 
 		if args.C:
-			if args.verify and not args.quick_verify and not args.keep_delta:
-				Print.info("Warning: --verify requires --keep-delta when used during compression or it will detect removed NDV0 fragments as errors. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.3.0.")
+			if args.verify and not args.quick_verify and not args.keep:
+				Print.info("Warning: --verify requires --keep when used during compression or it will detect removed NDV0 fragments as errors. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.3.0.")
 				args.quick_verify = True
 			if args.verify and not args.quick_verify and args.fix_padding:
 				Print.info("Warning: --verify and --fix-padding are incompatible with each others. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.6.0.")

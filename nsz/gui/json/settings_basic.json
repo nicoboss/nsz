@@ -32,16 +32,16 @@
 	{
 		"type": "scrolloptions",
 		"title": "Verify",
-		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter. Quick skips the expensive and mostly useless PFS0 hash verification and only verifies NCA hashes. Full requires --keep-delta when used for compression.",
+		"desc": "Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP and NSZ files when given as parameter. Quick skips the expensive and mostly useless PFS0 hash verification and only verifies NCA hashes. Full requires --keep when used for compression.",
 		"section": "Settings",
 		"key": "verify_options",
 		"options": [ "None", "Quick (NCA hashes)", "Full (NCA & PFS0 hashes)" ]
 	},
 	{
 		"type": "bool",
-		"title": "Keep Delta Fragments",
-		"desc": "Keep all useless delta fragments (NDV0) during compression so the NSP (PFS0) can be recreated bit-identical during decompression",
+		"title": "Keep Everything",
+		"desc": "Keep all useless files and partitions during compression to allow bit-identical recreation",
 		"section": "Settings",
-		"key": "keepDelta"
+		"key": "keep"
 	}
 ]
