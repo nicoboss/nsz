@@ -144,17 +144,18 @@ def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
-	secureIn = container.hfs0['secure']
 	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
 	Print.info(f'Solid compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {xczPath}', pleaseNoPrint)
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
-				processContainer(secureIn, secureOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
-			
-			xci.hfs0.resize('secure', secureOut.actualSize)
+			for name, partition in container.hfs0.items():
+				if keep == False and name != 'secure':
+					continue
+				with Hfs0.Hfs0Stream(xci.hfs0.add(name, 0, pleaseNoPrint), xci.f.tell()) as partitionOut:
+					processContainer(partition, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
+					xci.hfs0.resize(name, partitionOut.actualSize)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())

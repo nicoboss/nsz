@@ -225,17 +225,19 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	filePath = filePath.resolve()
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
-	secureIn = container.hfs0['secure']
 	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
 	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {xczPath}')
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0), xci.f.tell()) as secureOut:
-				blockCompressContainer(secureIn, secureOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
 			
-			xci.hfs0.resize('secure', secureOut.actualSize)
+			for name, partition in container.hfs0.items():
+				if keep == False and name != 'secure':
+					continue
+				with Hfs0.Hfs0Stream(xci.hfs0.add(name, 0), xci.f.tell()) as partitionOut:
+					blockCompressContainer(secureIn, partitionOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
+					xci.hfs0.resize(name, partitionOut.actualSize)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
