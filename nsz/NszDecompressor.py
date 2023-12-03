@@ -6,7 +6,7 @@ from zstandard import ZstdDecompressor
 from nsz.Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
 from nsz.PathTools import *
 from nsz import Header, BlockDecompressorReader, FileExistingChecks
-import enlighten
+import os, enlighten
 
 class VerificationException(Exception):
 	pass
@@ -229,13 +229,27 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 					originalContainer = factory(originalFilePath)
 					CHUNK_SZ = 0x100000
 					originalHash = sha256()
+					filesize = os.path.getsize(str(originalFilePath))
+					if statusReportInfo == None:
+						BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+						bar = enlighten.Counter(total=filesize//CHUNK_SZ, desc='Verifying', unit="MiB", color='yellow', bar_format=BAR_FMT)
+					blockCount = 0
 					with open(str(originalFilePath), 'rb') as f:
 						while True:
 							data = f.read(CHUNK_SZ)
+							blockCount += 1
+							if statusReportInfo != None:
+								statusReport, id = statusReportInfo
+								statusReport[id] = [blockCount, 0, filesize, 'Verifying']
+							else:
+								bar.count = blockCount
+								bar.refresh()
 							if not data:
 								break
 							originalHash.update(data)
 					originalHashHex = originalHash.hexdigest()
+					if statusReportInfo == None:
+						bar.close()
 					Print.info("[NSP SHA256] " + originalHashHex)
 					if nsp.getHash() == originalHashHex:
 						Print.info("[VERIFIED]   NSP SHA256")
