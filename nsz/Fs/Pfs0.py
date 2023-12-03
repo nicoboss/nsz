@@ -62,32 +62,34 @@ class Pfs0Stream(BaseFile):
 			self.seek(0)
 			self.write(self.getHeader())
 			super(Pfs0Stream, self).close()
-			
-	def getHeaderSize(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
-		headerSize = 0x10 + len(self.files) * 0x18 + self.stringTableSize
-		return headerSize
+	
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
+	def allign0x20(self, n):
+		return 0x20-n%0x20
 	
 	def getStringTableSize(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
-		stringTableLen = len(stringTable)
+		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
+		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
+		stringTableSizePadded = len(stringTableNonPadded) + self.allign0x20(headerSizeNonPadded)
 		if self._stringTableSize == None:
-			self._stringTableSize = stringTableLen
-		if stringTableLen > self._stringTableSize:
-			self._stringTableSize = stringTableLen
+			self._stringTableSize = stringTableSizePadded
+		elif len(stringTableNonPadded) > self._stringTableSize:
+			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
 
 	def getFirstFileOffset(self):
 		return self.files[0].offset
 
 	def getHeader(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
-		headerSize = 0x10 + len(self.files) * 0x18 + self.getStringTableSize()
+		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
+		stringTableSizePadded = self.getStringTableSize()
+		stringTable = stringTableNonPadded + ('\x00'*(stringTableSizePadded-len(stringTableNonPadded)))
+		headerSize = 0x10 + len(self.files) * 0x18 + stringTableSizePadded
 	
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (self.getStringTableSize()).to_bytes(4, byteorder='little')
+		h += (stringTableSizePadded).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
@@ -140,13 +142,18 @@ class Pfs0VerifyStream():
 	def close(self):
 		pass
 	
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
+	def allign0x20(self, n):
+		return 0x20-n%0x20
+
 	def getStringTableSize(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
-		stringTableLen = len(stringTable)
+		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
+		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
+		stringTableSizePadded = len(stringTableNonPadded) + self.allign0x20(headerSizeNonPadded)
 		if self._stringTableSize == None:
-			self._stringTableSize = stringTableLen
-		if stringTableLen > self._stringTableSize:
-			self._stringTableSize = stringTableLen
+			self._stringTableSize = stringTableSizePadded
+		elif len(stringTableNonPadded) > self._stringTableSize:
+			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
 	
 	def getHash(self):
@@ -154,13 +161,15 @@ class Pfs0VerifyStream():
 		return hexHash
 
 	def getHeaderHash(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
-		headerSize = 0x10 + len(self.files) * 0x18 + self.getStringTableSize()
+		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
+		stringTableSizePadded = self.getStringTableSize()
+		stringTable = stringTableNonPadded + ('\x00'*(stringTableSizePadded-len(stringTableNonPadded)))
+		headerSize = 0x10 + len(self.files) * 0x18 + stringTableSizePadded
 	
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
-		h += (self.getStringTableSize()).to_bytes(4, byteorder='little')
+		h += (stringTableSizePadded).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
 		
 		stringOffset = 0
@@ -190,6 +199,13 @@ class Pfs0(BaseFs):
 			self.sectionStart = int.from_bytes(buffer[0x40:0x48], byteorder='little', signed=False)
 			#self.offset += sectionStart
 			#self.size -= sectionStart
+
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
+	def allign0x20(self, n):
+		return 0x20-n%0x20
+
+	def getPaddedHeaderSize(self):
+		return self._headerSize + self.allign0x20(self._headerSize);
 
 	def getHeaderSize(self):
 		return self._headerSize;
