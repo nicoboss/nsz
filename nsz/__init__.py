@@ -42,6 +42,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
 					remove(outFile)
+					raise
 		except KeyboardInterrupt:
 			Print.info('Keyboard exception')
 		except BaseException as e:
