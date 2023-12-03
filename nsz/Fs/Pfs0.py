@@ -132,12 +132,8 @@ class Pfs0VerifyStream():
 		self.files.append({'name': name, 'size': size, 'offset': self.pos})
 		return self
 
-	def resize(self, name, size):
-		for i in self.files:
-			if i['name'] == name:
-				i['size'] = size
-				return True
-		return False
+	def get(self, name):
+		return self
 
 	def close(self):
 		pass
