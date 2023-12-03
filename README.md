@@ -48,7 +48,7 @@ Use the following command to install the GUI versions requirements:\
 ```
 nsz.py --help
 usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K]
-              [-R] [-p] [-P] [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r]
+              [-F] [-p] [-P] [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w] [-r]
               [--rm-source] [-i] [--depth DEPTH] [-x]
               [--extractregex EXTRACTREGEX] [--titlekeys] [--undupe]
               [--undupe-dryrun] [--undupe-rename] [--undupe-hardlink]
@@ -87,18 +87,15 @@ options:
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter. Requires --keep-
                         delta when used during compression.
-  -Q, --quick-verify    Same as --verify but skips the expensive and mostly
-                        useless PFS0 hash verification and only verifies NCA
-                        hashes. Does not require --keep-delta when used during
-                        compression.
+  -Q, --quick-verify    Same as --verify but skips the NSP SHA256 hash
+                        verification and only verifies NCA hashes. Does not
+                        require --keep-delta when used during compression.
   -K, --keep-delta      Keep all useless delta fragments (NDV0) during
                         compression so the NSP (PFS0) can be recreated bit-
                         identical during decompression
-  -R, --remove-padding  Remove the padding between the PFS0 header and the
-                        first file so the NSP matches the nxdumptool/no-intro
-                        standard. This also removes padding added to the
-                        FileEntryTable as there should not be any padding
-                        there.
+  -F, --fix-padding     Fixes PFS0 padding to match the nxdumptool/no-intro
+                        standard. Incompatible with --verify so --quick-verify
+                        will be used instead.
   -p, --parseCnmt       Extract TitleId/Version from Cnmt if this information
                         cannot be obtained from the filename. Required for
                         skipping/overwriting existing files and --rm-old-

@@ -15,10 +15,10 @@
 	},
 	{
 		"type": "bool",
-		"title": "Remove Padding",
-		"desc": "Remove the padding between the PFS0 header and the first file so the NSP matches the nxdumptool/no-intro standard",
+		"title": "Fix Padding",
+		"desc": "Fixes PFS0 padding to match the nxdumptool/no-intro standard",
 		"section": "Advanced",
-		"key": "removePadding"
+		"key": "fixPadding"
 	},
 	{
 		"type": "bool",
