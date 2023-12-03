@@ -78,6 +78,9 @@ class Pfs0Stream(BaseFile):
 			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
 
+	def updateHashHeader(self):
+		pass
+
 	def getFirstFileOffset(self):
 		return self.files[0].offset
 
@@ -182,7 +185,6 @@ class Pfs0VerifyStream():
 		if len(self.files) > 0:
 			if self.files[0]['offset'] - headerSize > 0:
 				stringTable += '\x00' * (self.files[0]['offset'] - headerSize - 1)
-				print(self.files[0]['offset'] - headerSize)
 		h += stringTable.encode()
 		
 		headerHex = h.hex()
