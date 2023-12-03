@@ -88,8 +88,8 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
 		else:
 			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
-			#if raiseVerificationException:
-			#	raise VerificationException("Verification detected hash mismatch")
+			if raiseVerificationException:
+				raise VerificationException("Verification detected hash mismatch")
 
 
 def __getDecompressedNczSize(nspf):

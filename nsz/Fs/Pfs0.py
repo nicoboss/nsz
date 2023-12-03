@@ -179,15 +179,14 @@ class Pfs0VerifyStream():
 			h += b'\x00\x00\x00\x00'	
 			stringOffset += len(f['name']) + 1
 		
-		stringTable += '\x00' * 12
+		if len(self.files) > 0:
+			if self.files[0]['offset'] - headerSize > 0:
+				stringTable += '\x00' * (self.files[0]['offset'] - headerSize - 1)
+				print(self.files[0]['offset'] - headerSize)
 		h += stringTable.encode()
 		
 		headerHex = h.hex()
-		#print(headerHex)
-		#print(len(h), self.files[0]['offset']-headerSize)
 		self.binhash.update(h)
-		#print(self.binhash.hexdigest())
-		#exit()
 		
 
 
