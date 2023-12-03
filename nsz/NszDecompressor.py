@@ -49,20 +49,26 @@ def verify(filePath, removePadding, raiseVerificationException, raisePfs0Excepti
 
 
 def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint):
+	CHUNK_SZ = 0x100000
+	if write:
+		for nspf in readContainer:
+			if not nspf._path.endswith('.ncz'):
+				writeContainer.add(nspf._path, nspf.size, pleaseNoPrint)
+			else:
+				newFileName = Path(nspf._path).stem + '.nca'
+				nca_size = __getDecompressedNczSize(nspf)
+				writeContainer.add(newFileName, nca_size, pleaseNoPrint)
+		writeContainer.updateHashHeader()
 	for nspf in readContainer:
-		CHUNK_SZ = 0x100000
-		f = None
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
-			if write:
-				f = writeContainer.add(nspf._path, nspf.size, pleaseNoPrint)
 			hash = sha256()
 			nspf.seek(0)
 			while not nspf.eof():
 				inputChunk = nspf.read(CHUNK_SZ)
 				hash.update(inputChunk)
 				if write:
-					f.write(inputChunk)
+					writeContainer.get(nspf._path).write(inputChunk)
 			if verifyFile:
 				if hash.hexdigest() in fileHashes:
 					Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
@@ -75,16 +81,33 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
-			f = writeContainer.add(newFileName, nspf.size, pleaseNoPrint)
-		written, hexHash = __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint)
-		if write:
-			writeContainer.resize(newFileName, written)
+			written, hexHash = __decompressNcz(nspf, writeContainer.get(newFileName), statusReportInfo, pleaseNoPrint)
+		else:
+			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
 		if hexHash in fileHashes:
 			Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
 		else:
 			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
 			if raiseVerificationException:
 				raise VerificationException("Verification detected hash mismatch")
+
+
+def __getDecompressedNczSize(nspf):
+	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
+	nspf.seek(0)
+	header = nspf.read(UNCOMPRESSABLE_HEADER_SIZE)
+	magic = nspf.read(8)
+	if not magic == b'NCZSECTN':
+		raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
+	sectionCount = nspf.readInt64()
+	sections = [Header.Section(nspf) for _ in range(sectionCount)]
+	if sections[0].offset-UNCOMPRESSABLE_HEADER_SIZE > 0:
+		fakeSection = Header.FakeSection(UNCOMPRESSABLE_HEADER_SIZE, sections[0].offset-UNCOMPRESSABLE_HEADER_SIZE)
+		sections.insert(0, fakeSection)
+	nca_size = UNCOMPRESSABLE_HEADER_SIZE
+	for i in range(sectionCount):
+		nca_size += sections[i].size
+	return nca_size
 
 
 def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
@@ -95,7 +118,6 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	currentStep = 'Decompress' if f != None else 'Verifying'
 	if f != None:
 		start = f.tell()
-
 	magic = nspf.read(8)
 	if not magic == b'NCZSECTN':
 		raise ValueError("No NCZSECTN found! Is this really a .ncz file?")
@@ -202,27 +224,25 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 		else:
 			with Pfs0.Pfs0VerifyStream(container.getPaddedHeaderSize() if removePadding else container.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-				Print.info("[PFS0 HEAD]  " + nsp.getHeaderHash())
-				Print.info("[PFS0 DATA]  " + nsp.getHash())
+				Print.info("[NSP SHA256] " + nsp.getHash())
 				if originalFilePath != None: 
 					originalContainer = factory(originalFilePath)
-					originalContainer.open(str(originalFilePath), 'rb')
-					with Pfs0.Pfs0VerifyStream(originalContainer.getPaddedHeaderSize() if removePadding else originalContainer.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as originalNsp:
-						__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-						Print.info("[PFS0 HEAD]  " + originalNsp.getHeaderHash())
-						Print.info("[PFS0 DATA]  " + originalNsp.getHash())
-						if nsp.getHeaderHash() == originalNsp.getHeaderHash():
-							Print.info("[VERIFIED]   PFS0 Header")
-						else:
-							Print.info("[MISSMATCH]  PFS0 Header") 
-							if raisePfs0Exception:
-								raise VerificationException("Verification detected PFS0 hader hash mismatch!")
-						if nsp.getHash() == originalNsp.getHash():
-							Print.info("[VERIFIED]   PFS0 Data")
-						else:
-							Print.info("[MISSMATCH]  PFS0 Data")
-							if raisePfs0Exception:
-								raise VerificationException("Verification detected PFS0 data hash mismatch!")
+					CHUNK_SZ = 0x100000
+					originalHash = sha256()
+					with open(str(originalFilePath), 'rb') as f:
+						while True:
+							data = f.read(CHUNK_SZ)
+							if not data:
+								break
+							originalHash.update(data)
+					originalHashHex = originalHash.hexdigest()
+					Print.info("[NSP SHA256] " + originalHashHex)
+					if nsp.getHash() == originalHashHex:
+						Print.info("[VERIFIED]   NSP SHA256")
+					else:
+						Print.info("[MISSMATCH]  NSP SHA256")
+						if raisePfs0Exception:
+							raise VerificationException("Verification detected NSP SHA256 hash mismatch!")
 	except BaseException:
 		raise
 	finally:
@@ -247,4 +267,3 @@ def __decompressXcz(filePath, outputDir, removePadding, write, raiseVerification
 		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 
 	container.close()
-

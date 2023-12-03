@@ -42,6 +42,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
 					remove(outFile)
+					raise
 		except KeyboardInterrupt:
 			Print.info('Keyboard exception')
 		except BaseException as e:
@@ -56,7 +57,13 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 		outFile = blockCompress(filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
 		if args.verify:
 			Print.info("[VERIFY NSZ] {0}".format(outFile))
-			verify(outFile, args.remove_padding, True, args.keep_delta, None if args.quick_verify else filePath)
+			try:
+				verify(outFile, args.remove_padding, True, args.keep_delta, None if args.quick_verify else filePath)
+			except VerificationException:
+				Print.error("[BAD VERIFY] {0}".format(outFile))
+				Print.error("[DELETE NSZ] {0}".format(outFile))
+				remove(outFile)
+				raise
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
 		work.put([filePath, compressionLevel, args.keep_delta, args.remove_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
