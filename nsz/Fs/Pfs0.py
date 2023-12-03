@@ -156,7 +156,7 @@ class Pfs0VerifyStream():
 			self._stringTableSize = stringTableSizePadded
 		elif len(stringTableNonPadded) > self._stringTableSize:
 			self._stringTableSize = len(stringTableNonPadded)
-		return self._stringTableSize-1
+		return self._stringTableSize
 	
 	def getHash(self):
 		hexHash = self.binhash.hexdigest()
@@ -184,7 +184,7 @@ class Pfs0VerifyStream():
 		
 		if len(self.files) > 0:
 			if self.files[0]['offset'] - headerSize > 0:
-				stringTable += '\x00' * (self.files[0]['offset'] - headerSize - 1)
+				stringTable += '\x00' * (self.files[0]['offset'] - headerSize)
 		h += stringTable.encode()
 		
 		headerHex = h.hex()
