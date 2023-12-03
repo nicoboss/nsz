@@ -238,11 +238,11 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 					originalHashHex = originalHash.hexdigest()
 					Print.info("[NSP SHA256] " + originalHashHex)
 					if nsp.getHash() == originalHashHex:
-						Print.info("[VERIFIED]   PFS0 Data")
+						Print.info("[VERIFIED]   NSP SHA256")
 					else:
-						Print.info("[MISSMATCH]  PFS0 Data")
+						Print.info("[MISSMATCH]  NSP SHA256")
 						if raisePfs0Exception:
-							raise VerificationException("Verification detected PFS0 data hash mismatch!")
+							raise VerificationException("Verification detected NSP SHA256 hash mismatch!")
 	except BaseException:
 		raise
 	finally:
