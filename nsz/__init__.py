@@ -154,6 +154,9 @@ def main():
 			if args.verify and not args.quick_verify and not args.keep_delta:
 				Print.info("Warning: --verify requires --keep-delta when used during compression or it will detect removed NDV0 fragments as errors. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.3.0.")
 				args.quick_verify = True
+			if args.verify and not args.quick_verify and not args.keep_delta:
+				Print.info("Warning: --verify and --remove-padding are incompatible with each others. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.6.0.")
+				args.quick_verify = True
 			sourceFileToDelete = []
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
