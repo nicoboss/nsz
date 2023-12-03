@@ -224,19 +224,25 @@ def __decompressNsz(filePath, outputDir, removePadding, write, raiseVerification
 		else:
 			with Pfs0.Pfs0VerifyStream(container.getPaddedHeaderSize() if removePadding else container.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-				Print.info("[PFS0 DATA]  " + nsp.getHash())
+				Print.info("[NSP SHA256] " + nsp.getHash())
 				if originalFilePath != None: 
 					originalContainer = factory(originalFilePath)
-					originalContainer.open(str(originalFilePath), 'rb')
-					with Pfs0.Pfs0VerifyStream(originalContainer.getPaddedHeaderSize() if removePadding else originalContainer.getFirstFileOffset(), None if removePadding else container.getStringTableSize()) as originalNsp:
-						__decompressContainer(originalContainer, originalNsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-						Print.info("[PFS0 DATA]  " + originalNsp.getHash())
-						if nsp.getHash() == originalNsp.getHash():
-							Print.info("[VERIFIED]   PFS0 Data")
-						else:
-							Print.info("[MISSMATCH]  PFS0 Data")
-							if raisePfs0Exception:
-								raise VerificationException("Verification detected PFS0 data hash mismatch!")
+					CHUNK_SZ = 0x100000
+					originalHash = sha256()
+					with open(str(originalFilePath), 'rb') as f:
+						while True:
+							data = f.read(CHUNK_SZ)
+							if not data:
+								break
+							originalHash.update(data)
+					originalHashHex = originalHash.hexdigest()
+					Print.info("[NSP SHA256] " + originalHashHex)
+					if nsp.getHash() == originalHashHex:
+						Print.info("[VERIFIED]   PFS0 Data")
+					else:
+						Print.info("[MISSMATCH]  PFS0 Data")
+						if raisePfs0Exception:
+							raise VerificationException("Verification detected PFS0 data hash mismatch!")
 	except BaseException:
 		raise
 	finally:
