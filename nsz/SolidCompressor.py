@@ -150,12 +150,12 @@ def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			for name, partition in container.hfs0.items():
-				if keep == False and name != 'secure':
+			for partitionIn in container.hfs0:
+				if keep == False and partitionIn._path != 'secure':
 					continue
-				with Hfs0.Hfs0Stream(xci.hfs0.add(name, 0, pleaseNoPrint), xci.f.tell()) as partitionOut:
-					processContainer(partition, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
-					xci.hfs0.resize(name, partitionOut.actualSize)
+				with Hfs0.Hfs0Stream(xci.hfs0.add(partitionIn._path, 0, pleaseNoPrint), xci.f.tell()) as partitionOut:
+					processContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
+					xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())

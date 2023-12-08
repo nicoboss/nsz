@@ -37,6 +37,9 @@ class Hfs0Stream(BaseFile):
 		if self.tell() > self.actualSize:
 			self.actualSize = self.tell()
 
+	def tell(self):
+		return self.tell()
+
 	def add(self, name, size, pleaseNoPrint = None):
 		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
@@ -63,6 +66,9 @@ class Hfs0Stream(BaseFile):
 			self.seek(0)
 			self.write(self.getHeader())
 			super(Hfs0Stream, self).close()
+
+	def updateHashHeader(self):
+		pass
 
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
