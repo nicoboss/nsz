@@ -69,7 +69,7 @@ class Hfs0Stream(BaseFile):
 		pass
 
 	def getHeader(self):
-		stringTable = '\x00'.join(file['name'] for file in self.files)
+		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		
 		headerSize = 0x10 + len(self.files) * 0x40 + len(stringTable)
 	
@@ -82,7 +82,7 @@ class Hfs0Stream(BaseFile):
 		stringOffset = 0
 
 		for f in self.files:
-			sizeOfHashedRegion = 0x200 if 0x200 < f['size'] else f['size']
+			sizeOfHashedRegion = 0 #0x200 if 0x200 < f['size'] else f['size']
 
 			h += (f['offset'] - headerSize).to_bytes(8, byteorder='little')
 			h += f['size'].to_bytes(8, byteorder='little')
