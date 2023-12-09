@@ -36,9 +36,6 @@ class Hfs0Stream(BaseFile):
 		if self.tell() > self.actualSize:
 			self.actualSize = self.tell()
 
-	def tell(self):
-		return self.tell()
-
 	def add(self, name, size, pleaseNoPrint = None):
 		Print.info('[ADDING]     {0} {1} bytes to HFS0'.format(name, size), pleaseNoPrint)
 		print("Crash:")
