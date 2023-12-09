@@ -275,10 +275,14 @@ def __decompressXcz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			for partitionIn in container.hfs0:
 				with Hfs0.Hfs0Stream(xci.hfs0.add(partitionIn._path, 0, pleaseNoPrint), xci.f.tell()) as partitionOut:
-					__decompressContainer(partitionIn, partitionOut, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+					__decompressContainer(container.hfs0, partitionOut, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+					print("Resize:", partitionOut.actualSize)
 					xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
+				print("Hfs0 Closed")
+		print("XCI Closed")
 	else:
 		for partitionIn in container.hfs0:
-			__decompressContainer(partitionIn, partitionOut, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+			__decompressContainer(partitionIn, None, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 
 	container.close()
+	print("Done!")

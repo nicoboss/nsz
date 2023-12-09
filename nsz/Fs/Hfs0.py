@@ -21,10 +21,9 @@ class Hfs0Stream(BaseFile):
 		super(Hfs0Stream, self).__init__(f, mode)
 		self.headerSize = 0x8000
 		self.files = []
-
 		self.actualSize = 0
-
 		self.seek(self.headerSize)
+		self.addpos = self.headerSize
 
 	def __enter__(self):
 		return self
@@ -41,14 +40,22 @@ class Hfs0Stream(BaseFile):
 		return self.tell()
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
-		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
-		return self.partition(self.f.tell(), size, n = BaseFile())
+		Print.info('[ADDING]     {0} {1} bytes to HFS0'.format(name, size), pleaseNoPrint)
+		print("Crash:")
+		try:
+			print("Pos:", self.f.tell())
+		except:
+			print("Err")
+		print("After Crash")
+		partition = self.partition(self.f.tell(), size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
+		self.addpos += size
+		return partition
 
 	def get(self, name):
 		for i in self.files:
 			if i['name'] == name:
-				return i
+				return i['partition']
 		return None
 
 	def resize(self, name, size):
