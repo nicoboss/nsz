@@ -21,7 +21,7 @@ class Hfs0Stream(BaseFile):
 		super(Hfs0Stream, self).__init__(f, mode)
 		self.headerSize = 0x8000
 		self.files = []
-		self.actualSize = 0
+		self.actualSize = 0x200
 		self.seek(self.headerSize)
 		self.addpos = self.headerSize
 
