@@ -148,17 +148,17 @@ class BaseFs(File):
 	
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
-		Print.info(tabs + 'magic = ' + str(self.magic))
-		Print.info(tabs + 'fsType = ' + str(self.fsType))
-		Print.info(tabs + 'cryptoType = ' + str(self.cryptoType))
-		Print.info(tabs + 'size = ' + str(self.size))
-		Print.info(tabs + 'headerSize = %s' % (str(self._headerSize)))
-		Print.info(tabs + 'offset = %s - (%s)' % (str(self.offset), str(self.sectionStart)))
+		Print.info(f'{tabs}magic = {self.magic}')
+		Print.info(f'{tabs}fsType = {self.fsType}')
+		Print.info(f'{tabs}cryptoType = {self.cryptoType}')
+		Print.info(f'{tabs}size = {hex(self.size)}')
+		Print.info(f'{tabs}headerSize = {self._headerSize}')
+		Print.info(f'{tabs}offset = {hex(self.offset)} - ({hex(self.sectionStart)})')
 		if self.cryptoCounter:
-			Print.info(tabs + 'cryptoCounter = ' + str(hx(self.cryptoCounter)))
+			Print.info(f'{tabs}cryptoCounter = {hx(self.cryptoCounter)}')
 			
 		if self.cryptoKey:
-			Print.info(tabs + 'cryptoKey = ' + str(hx(self.cryptoKey)))
+			Print.info(f'{tabs}cryptoKey = {hx(self.cryptoKey)}')
 		
 		Print.info('\n%s\t%s\n' % (tabs, '*' * 64))
 		Print.info('\n%s\tFiles:\n' % (tabs))

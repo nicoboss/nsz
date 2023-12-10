@@ -39,9 +39,9 @@ class Pfs0Stream(BaseFile):
 			self.actualSize = self.tell()
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
-		partition = self.partition(self.addpos, size, n = BaseFile())
-		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
+		Print.info('[ADDING]     {0} {1} bytes to PFS0'.format(name, size), pleaseNoPrint)
+		partition = self.partition(self.f.tell(), size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
 		self.addpos += size
 		return partition
 
@@ -133,7 +133,7 @@ class Pfs0VerifyStream():
 		return self.pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
+		Print.info('[ADDING]     {0} {1} bytes to PFS0'.format(name, size), pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos})
 		self.addpos += size
 		return self

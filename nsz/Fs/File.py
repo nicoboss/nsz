@@ -277,9 +277,9 @@ class BaseFile:
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		if self._path:
-			Print.info('%sFile Path: %s' % (tabs, self._path))
-		Print.info('%sFile Size: %s' % (tabs, self.size))
-		Print.info('%sFile Offset: %s' % (tabs, self.offset))
+			Print.info(f'{tabs}File Path: {self._path}')
+		Print.info(f'{tabs}File Size: {hex(self.size)}')
+		Print.info(f'{tabs}File Offset: {hex(self.offset)}')
 
 	def sha256(self):
 		hash = hashlib.sha256()
