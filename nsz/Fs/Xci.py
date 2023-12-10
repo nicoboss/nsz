@@ -58,7 +58,7 @@ class XciStream(BaseFile):
 		self.close()
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to XCI'.format(name, size), pleaseNoPrint)
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to XCI at {hex(self.f.tell())}', pleaseNoPrint)
 		partition = self.partition(self.f.tell(), size, n = BaseFile())
 		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
 		self.addpos += size
