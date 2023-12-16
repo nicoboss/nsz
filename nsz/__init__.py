@@ -233,7 +233,10 @@ def main():
 			barManager.stop()
 
 			for filePath in sourceFileToDelete:
-				delete_source_file(filePath, outFolder)
+				if argOutFolder:
+					delete_source_file(filePath, outFolder)
+				else:
+					delete_source_file(filePath, filePath.parent.absolute())
 
 		if args.D:
 			for f_str in args.file:
