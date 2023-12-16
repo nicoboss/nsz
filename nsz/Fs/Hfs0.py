@@ -24,6 +24,7 @@ class Hfs0Stream(BaseFile):
 		self.actualSize = 0x200
 		self.seek(self.headerSize)
 		self.addpos = self.headerSize
+		self.written = False
 
 	def __enter__(self):
 		return self
@@ -33,13 +34,16 @@ class Hfs0Stream(BaseFile):
 
 	def write(self, value, size = None):
 		super(Hfs0Stream, self).write(value, len(value))
+		self.written = True
 		pos = self.tell()
-		self.addpos = pos
 		if pos > self.actualSize:
 			self.actualSize = pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to HFS0 at {hex(self.addpos)}', pleaseNoPrint)
+		if self.written:
+			self.addpos = self.tell()
+			self.written = False
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to HFS0 at {hex(self.addpos)} [{hex(self.tell())}]', pleaseNoPrint)
 		partition = self.partition(self.addpos, size, n = BaseFile())
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
 		self.addpos += size
