@@ -35,13 +35,15 @@ class Pfs0Stream(BaseFile):
 		
 	def write(self, value, size = None):
 		super(Pfs0Stream, self).write(value, len(value))
-		if self.tell() > self.actualSize:
-			self.actualSize = self.tell()
+		pos = self.tell()
+		self.addpos = pos
+		if pos > self.actualSize:
+			self.actualSize = pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to PFS0'.format(name, size), pleaseNoPrint)
-		partition = self.partition(self.f.tell(), size, n = BaseFile())
-		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
+		Print.info(f'[ADDING]     {name} {size} bytes to PFS0 at {hex(self.addpos)} [{hex(self.tell())}]', pleaseNoPrint)
+		partition = self.partition(self.addpos, size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
 		self.addpos += size
 		return partition
 
