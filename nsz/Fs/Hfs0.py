@@ -37,9 +37,9 @@ class Hfs0Stream(BaseFile):
 			self.actualSize = self.tell()
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to HFS0 at {hex(self.addpos)}', pleaseNoPrint)
-		partition = self.partition(self.addpos, size, n = BaseFile())
-		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to HFS0 at {hex(self.f.tell())} [{hex(self.addpos)}]', pleaseNoPrint)
+		partition = self.partition(self.f.tell(), size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
 		self.addpos += size
 		return partition
 
