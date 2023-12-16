@@ -234,9 +234,10 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 			for partitionIn in container.hfs0:
 				if keep == False and partitionIn._path != 'secure':
 					continue
-				with Hfs0.Hfs0Stream(xci.hfs0.add(partitionIn._path, 0), xci.f.tell()) as partitionOut:
+				hfsPartitionIn = xci.hfs0.add(partitionIn._path, 0x200)
+				with Hfs0.Hfs0Stream(hfsPartitionIn, xci.f.tell()) as partitionOut:
 					blockCompressContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
-					xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
+				xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())

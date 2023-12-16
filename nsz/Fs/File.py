@@ -322,7 +322,7 @@ class BufferedFile(BaseFile):
 			if pageReadSize > self.size - self._bufferOffset:
 				pageReadSize = self.size - self._bufferOffset
 
-			#Print.info('disk read %s\t\t: relativePos = %x, bufferOffset = %x, align = %x, size = %x, pageReadSize = %x, bufferSize = %x' % (self.__class__.__name__, self._relativePos, self._bufferOffset, self._bufferAlign, size, pageReadSize, self._bufferSize))
+			#Print.info('disk read %s\t\t: absolutePos %x, relativePos = %x, bufferOffset = %x, align = %x, size = %x, pageReadSize = %x, bufferSize = %x' % (self.__class__.__name__, self.tellAbsolute(), self._relativePos, self._bufferOffset, self._bufferAlign, size, pageReadSize, self._bufferSize))
 			super(BufferedFile, self).seek(self._bufferOffset)
 			self._buffer = super(BufferedFile, self).read(pageReadSize)
 			self.pageRefreshed()
