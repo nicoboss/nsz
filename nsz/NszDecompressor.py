@@ -60,6 +60,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 				writeContainer.add(newFileName, nca_size, pleaseNoPrint)
 		writeContainer.updateHashHeader()
 	for nspf in readContainer:
+		Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
 			hash = sha256()
@@ -136,7 +137,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	useBlockCompression = blockMagic == b'NCZBLOCK'
 	blockSize = -1
 	if useBlockCompression:
-		Print.info("[NCZBLOCK]   Using Block decompresion")
+		Print.info(f'[NCZBLOCK]   Using Block decompresion for {nspf._path}')
 		BlockHeader = Header.Block(nspf)
 		blockDecompressorReader = BlockDecompressorReader.BlockDecompressorReader(nspf, BlockHeader)
 	pos = nspf.tell()
