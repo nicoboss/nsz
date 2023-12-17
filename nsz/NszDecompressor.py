@@ -73,13 +73,13 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			if verifyFile:
 				hashHexdigest = hash.hexdigest()
 				if hashHexdigest in fileHashes:
+					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
 					Print.info(f'[VERIFIED]   {nspf._path} {hashHexdigest}', pleaseNoPrint)
 				else:
+					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
 					Print.info(f'[CORRUPTED]  {nspf._path} {hashHexdigest}', pleaseNoPrint)
 					if raiseVerificationException:
 						raise VerificationException("Verification detected hash mismatch!")
-			elif not write:
-				Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
@@ -87,9 +87,11 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		else:
 			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
 		if hexHash in fileHashes:
-			Print.info(f'[VERIFIED]   {nspf._path} {hexHash}', pleaseNoPrint)
+			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+			Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
 		else:
-			Print.info(f'[CORRUPTED]  {nspf._path} {hexHash}', pleaseNoPrint)
+			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+			Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
 			if raiseVerificationException:
 				raise VerificationException("Verification detected hash mismatch")
 

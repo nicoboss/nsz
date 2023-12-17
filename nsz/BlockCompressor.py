@@ -61,7 +61,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 				Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path))
 				continue
-		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > CHUNK_SZ:
+		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
 				
 				offsetFirstSection = sortedFs(nspf)[0].offset
@@ -132,18 +132,11 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 				bar.refresh()
 				while True:
 					buffer = partitions[partNr].read(blockSize)
-					if len(buffer) == 599552:
-						print("Start", blocksToCompress, len(buffer), '<', blockSize, partNr, '<', len(partitions)-1)
 					while (len(buffer) < blockSize and partNr < len(partitions)-1):
-						print("While:", partNr, "Size:", (blockSize - len(buffer)), chunkRelativeBlockID, len(buffer), blockSize)
 						partitions[partNr].close()
 						partitions[partNr] = None
 						partNr += 1
 						buffer += partitions[partNr].read(blockSize - len(buffer))
-					print("blocksToCompress:", blocksToCompress, "chunkRelativeBlockID:", chunkRelativeBlockID, len(buffer), blockSize)
-					if len(buffer) == 599552:
-						print("blocksToCompress:", blocksToCompress, "chunkRelativeBlockID:", chunkRelativeBlockID, len(buffer), blockSize)
-						#raise
 					if chunkRelativeBlockID >= TasksPerChunk or len(buffer) == 0:
 						while readyForWork.value() < threads:
 							sleep(0.02)
