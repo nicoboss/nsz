@@ -23,7 +23,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, keep, useL
 			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.DATA:
 				Print.info('[SKIPPED]    Delta fragment {0}'.format(nspf._path), pleaseNoPrint)
 				continue
-		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
+		if False and isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
 				
 				offsetFirstSection = sortedFs(nspf)[0].offset
@@ -139,7 +139,10 @@ def solidCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistan
 
 	container.close()
 	return nszPath
-	
+
+def allign0x200(n):
+	return 0x200-n%0x200	
+
 def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, outputDir, threads, statusReport, id, pleaseNoPrint):
 	filePath = filePath.resolve()
 	container = factory(filePath)
@@ -153,10 +156,15 @@ def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 			for partitionIn in container.hfs0:
 				if keep == False and partitionIn._path != 'secure':
 					continue
-				hfsPartitionIn = xci.hfs0.add(partitionIn._path, 0x200, pleaseNoPrint)
-				with Hfs0.Hfs0Stream(hfsPartitionIn, xci.f.tell()) as partitionOut:
+				print("Hi:", partitionIn._path)
+				xci.hfs0.written = False
+				hfsPartitionOut = xci.hfs0.add(partitionIn._path, 0, pleaseNoPrint)
+				with Hfs0.Hfs0Stream(hfsPartitionOut, xci.f) as partitionOut:
 					processContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
-				xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
+					print(f'Resized {partitionIn._path} to {hex(partitionOut.actualSize)}')
+					alignedSize = partitionOut.actualSize + allign0x200(partitionOut.actualSize)
+					xci.hfs0.resize(partitionIn._path, alignedSize)
+					xci.hfs0.addpos += alignedSize
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())

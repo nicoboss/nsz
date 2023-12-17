@@ -21,7 +21,7 @@ class Hfs0Stream(BaseFile):
 		super(Hfs0Stream, self).__init__(f, mode)
 		self.headerSize = 0x8000
 		self.files = []
-		self.actualSize = 0x200
+		self.actualSize = 0
 		self.seek(self.headerSize)
 		self.addpos = self.headerSize
 		self.written = False
@@ -105,9 +105,11 @@ class Hfs0Stream(BaseFile):
 
 class Hfs0(Pfs0):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
+		print(path)
 		super(Hfs0, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
 
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
+		print(path)
 		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
 		self.rewind()
 
@@ -135,6 +137,7 @@ class Hfs0(Pfs0):
 			size = self.readInt64()
 			nameOffset = self.readInt32() # just the offset
 			name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
+			print(name, offset, size)
 			stringEndOffset = nameOffset
 
 			self.readInt32() # junk data
