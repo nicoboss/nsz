@@ -45,7 +45,7 @@ class Pfs0Stream(BaseFile):
 		if self.written:
 			self.addpos = self.tell()
 			self.written = False
-		Print.info(f'[ADDING]     {name} {size} bytes to PFS0 at {hex(self.addpos)} [{hex(self.tell())}]', pleaseNoPrint)
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
 		partition = self.partition(self.addpos, size, n = BaseFile())
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
 		self.addpos += size
@@ -139,7 +139,7 @@ class Pfs0VerifyStream():
 		return self.pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to PFS0'.format(name, size), pleaseNoPrint)
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos})
 		self.addpos += size
 		return self
@@ -257,6 +257,7 @@ class Pfs0(BaseFs):
 			nameOffset = self.readInt32() # just the offset
 			name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
 			stringEndOffset = nameOffset
+			Print.info(f'[OPEN  ]     {name} {hex(size)} bytes at {hex(offset)}')
 
 			self.readInt32() # junk data
 

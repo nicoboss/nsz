@@ -156,14 +156,13 @@ def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 			for partitionIn in container.hfs0:
 				if keep == False and partitionIn._path != 'secure':
 					continue
-				print("Hi:", partitionIn._path)
 				xci.hfs0.written = False
 				hfsPartitionOut = xci.hfs0.add(partitionIn._path, 0, pleaseNoPrint)
 				with Hfs0.Hfs0Stream(hfsPartitionOut, xci.f) as partitionOut:
 					processContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
-					print(f'Resized {partitionIn._path} to {hex(partitionOut.actualSize)}')
 					alignedSize = partitionOut.actualSize + allign0x200(partitionOut.actualSize)
 					xci.hfs0.resize(partitionIn._path, alignedSize)
+					print(f'[RESIZE]     {partitionIn._path} to {hex(alignedSize)}')
 					xci.hfs0.addpos += alignedSize
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
