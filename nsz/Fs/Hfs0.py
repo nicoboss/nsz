@@ -21,10 +21,10 @@ class Hfs0Stream(BaseFile):
 		super(Hfs0Stream, self).__init__(f, mode)
 		self.headerSize = 0x8000
 		self.files = []
-
 		self.actualSize = 0
-
 		self.seek(self.headerSize)
+		self.addpos = self.headerSize
+		self.written = False
 
 	def __enter__(self):
 		return self
@@ -34,18 +34,25 @@ class Hfs0Stream(BaseFile):
 
 	def write(self, value, size = None):
 		super(Hfs0Stream, self).write(value, len(value))
-		if self.tell() > self.actualSize:
-			self.actualSize = self.tell()
+		self.written = True
+		pos = self.tell()
+		if pos > self.actualSize:
+			self.actualSize = pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
-		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
-		return self.partition(self.f.tell(), size, n = BaseFile())
+		if self.written:
+			self.addpos = self.tell()
+			self.written = False
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to HFS0 at {hex(self.addpos)}', pleaseNoPrint)
+		partition = self.partition(self.addpos, size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
+		self.addpos += size
+		return partition
 
 	def get(self, name):
 		for i in self.files:
 			if i['name'] == name:
-				return i
+				return i['partition']
 		return None
 
 	def resize(self, name, size):
@@ -64,6 +71,9 @@ class Hfs0Stream(BaseFile):
 			self.write(self.getHeader())
 			super(Hfs0Stream, self).close()
 
+	def updateHashHeader(self):
+		pass
+
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		
@@ -78,7 +88,7 @@ class Hfs0Stream(BaseFile):
 		stringOffset = 0
 
 		for f in self.files:
-			sizeOfHashedRegion = 0x200 if 0x200 < f['size'] else f['size']
+			sizeOfHashedRegion = 0 #0x200 if 0x200 < f['size'] else f['size']
 
 			h += (f['offset'] - headerSize).to_bytes(8, byteorder='little')
 			h += f['size'].to_bytes(8, byteorder='little')
@@ -126,6 +136,7 @@ class Hfs0(Pfs0):
 			nameOffset = self.readInt32() # just the offset
 			name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
 			stringEndOffset = nameOffset
+			Print.info(f'[OPEN  ]     {name} {hex(size)} bytes at {hex(offset)}')
 
 			self.readInt32() # junk data
 

@@ -60,6 +60,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 				writeContainer.add(newFileName, nca_size, pleaseNoPrint)
 		writeContainer.updateHashHeader()
 	for nspf in readContainer:
+		Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 		if not nspf._path.endswith('.ncz'):
 			verifyFile = nspf._path.endswith('.nca') and not nspf._path.endswith('.cnmt.nca')
 			hash = sha256()
@@ -70,14 +71,15 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 				if write:
 					writeContainer.get(nspf._path).write(inputChunk)
 			if verifyFile:
-				if hash.hexdigest() in fileHashes:
-					Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
+				hashHexdigest = hash.hexdigest()
+				if hashHexdigest in fileHashes:
+					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
+					Print.info(f'[VERIFIED]   {nspf._path} {hashHexdigest}', pleaseNoPrint)
 				else:
-					Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
+					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
+					Print.info(f'[CORRUPTED]  {nspf._path} {hashHexdigest}', pleaseNoPrint)
 					if raiseVerificationException:
 						raise VerificationException("Verification detected hash mismatch!")
-			elif not write:
-				Print.info('[EXISTS]     {0}'.format(nspf._path), pleaseNoPrint)
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
@@ -85,9 +87,11 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		else:
 			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
 		if hexHash in fileHashes:
-			Print.info('[VERIFIED]   {0}'.format(nspf._path), pleaseNoPrint)
+			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+			Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
 		else:
-			Print.info('[CORRUPTED]  {0}'.format(nspf._path), pleaseNoPrint)
+			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+			Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
 			if raiseVerificationException:
 				raise VerificationException("Verification detected hash mismatch")
 
@@ -135,7 +139,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	useBlockCompression = blockMagic == b'NCZBLOCK'
 	blockSize = -1
 	if useBlockCompression:
-		Print.info("[NCZBLOCK]   Using Block decompresion")
+		Print.info(f'[NCZBLOCK]   Using Block decompresion for {nspf._path}')
 		BlockHeader = Header.Block(nspf)
 		blockDecompressorReader = BlockDecompressorReader.BlockDecompressorReader(nspf, BlockHeader)
 	pos = nspf.tell()
@@ -210,9 +214,9 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 
 
 def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationException, raisePfs0Exception, originalFilePath, statusReportInfo, pleaseNoPrint):
-	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
+	fileHashes = FileExistingChecks.ExtractHashes(container)
 	
 	try:
 		if write:
@@ -264,20 +268,23 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 
 
 def __decompressXcz(filePath, outputDir, fixPadding, write, raiseVerificationException, raisePfs0Exception, originalFilePath, statusReportInfo, pleaseNoPrint):
-	fileHashes = FileExistingChecks.ExtractHashes(filePath)
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
-	secureIn = container.hfs0['secure']
 	
 	if write:
 		filePathXci = changeExtension(filePath, '.xci')
 		outPath = filePathXci if outputDir == None else str(Path(outputDir).joinpath(Path(filePathXci).name))
 		Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 		with Xci.XciStream(outPath, originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
-			with Hfs0.Hfs0Stream(xci.hfs0.add('secure', 0, pleaseNoPrint), xci.f.tell()) as secureOut:
-				__decompressContainer(secureIn, secureOut, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
-				xci.hfs0.resize('secure', secureOut.actualSize)
+			for partitionIn in container.hfs0:
+				fileHashes = FileExistingChecks.ExtractHashes(partitionIn)
+				hfsPartitionIn = xci.hfs0.add(partitionIn._path, 0x200, pleaseNoPrint)
+				with Hfs0.Hfs0Stream(hfsPartitionIn, xci.f.tell()) as partitionOut:
+					__decompressContainer(partitionIn, partitionOut, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+				xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
 	else:
-		__decompressContainer(secureIn, None, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+		for partitionIn in container.hfs0:
+			fileHashes = FileExistingChecks.ExtractHashes(partitionIn)
+			__decompressContainer(partitionIn, None, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 
 	container.close()

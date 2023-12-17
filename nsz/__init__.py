@@ -14,7 +14,6 @@ from nsz.SolidCompressor import solidCompress
 from traceback import print_exc, format_exc
 from nsz.NszDecompressor import verify as NszVerify, decompress as NszDecompress, VerificationException
 from multiprocessing import cpu_count, freeze_support, Process, Manager
-from nsz.ThreadSafeCounter import Counter
 from nsz.FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
 from nsz.ParseArguments import *
 from nsz.PathTools import *
@@ -23,6 +22,12 @@ from nsz.undupe import undupe
 import enlighten
 import time
 import sys
+
+if hasattr(sys, 'getandroidapilevel'):
+    from nsz.ThreadSafeCounterManager import Counter
+else:
+    from nsz.ThreadSafeCounterSharedMemory import Counter
+
 
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id):
 	while True:

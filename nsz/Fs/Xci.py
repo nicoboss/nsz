@@ -58,10 +58,11 @@ class XciStream(BaseFile):
 		self.close()
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info('[ADDING]     {0} {1} bytes to NSP'.format(name, size), pleaseNoPrint)
-		self.files.append({'name': name, 'size': size, 'offset': self.f.tell()})
-		t = {'name': name, 'size': size, 'offset': self.f.tell()}
-		return self.f
+		Print.info(f'[ADDING]     {name} {hex(size)} bytes to XCI at {hex(self.f.tell())}', pleaseNoPrint)
+		partition = self.partition(self.f.tell(), size, n = BaseFile())
+		self.files.append({'name': name, 'size': size, 'offset': self.f.tell(), 'partition': partition})
+		self.addpos += size
+		return partition
 		
 	def currentFileSize(self):
 		return self.f.tell() - self.files[-1]['offset']
@@ -69,7 +70,7 @@ class XciStream(BaseFile):
 	def get(self, name):
 		for i in self.files:
 			if i['name'] == name:
-				return i
+				return i['partition']
 		return None
 
 	def resize(self, name, size):

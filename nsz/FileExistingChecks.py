@@ -7,23 +7,15 @@ from nsz.nut import Print
 from nsz.PathTools import *
 import os
 
-def ExtractHashes(gamePath):
+def ExtractHashes(container):
 	fileHashes = set()
-	gamePath = gamePath.resolve()
-	container = factory(gamePath)
-	container.open(str(gamePath), 'rb')
-	if isXciXcz(gamePath):
-		container = container.hfs0['secure']
-	try:
-		for nspf in container:
-			if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.META:
-				for section in nspf:
-					if isinstance(section, Pfs0.Pfs0):
-						Cnmt = section.getCnmt()
-						for entry in Cnmt.contentEntries:
-							fileHashes.add(entry.hash.hex())
-	finally:
-		container.close()
+	for nspf in container:
+		if isinstance(nspf, Nca.Nca) and nspf.header.contentType == Type.Content.META:
+			for section in nspf:
+				if isinstance(section, Pfs0.Pfs0):
+					Cnmt = section.getCnmt()
+					for entry in Cnmt.contentEntries:
+						fileHashes.add(entry.hash.hex())
 	return fileHashes
 
 def ExtractTitleIDAndVersion(gamePath, args = None):
