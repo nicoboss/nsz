@@ -154,12 +154,11 @@ def solidCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			for partitionIn in container.hfs0:
-				if keep == False and partitionIn._path != 'secure':
-					continue
 				xci.hfs0.written = False
 				hfsPartitionOut = xci.hfs0.add(partitionIn._path, 0, pleaseNoPrint)
 				with Hfs0.Hfs0Stream(hfsPartitionOut, xci.f) as partitionOut:
-					processContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
+					if keep == True or partitionIn._path == 'secure':
+						processContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, threads, statusReport, id, pleaseNoPrint)
 					alignedSize = partitionOut.actualSize + allign0x200(partitionOut.actualSize)
 					xci.hfs0.resize(partitionIn._path, alignedSize)
 					print(f'[RESIZE]     {partitionIn._path} to {hex(alignedSize)}')
