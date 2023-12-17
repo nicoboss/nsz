@@ -4,13 +4,18 @@ from time import sleep
 from pathlib import Path
 from traceback import format_exc
 from zstandard import ZstdCompressionParameters, ZstdCompressor
-from nsz.ThreadSafeCounter import Counter
 from nsz.SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
 from nsz.Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
 from nsz.PathTools import *
 import enlighten
-#import sys
+import sys
+
+if hasattr(sys, 'getandroidapilevel'):
+    from nsz.ThreadSafeCounterManager import Counter
+else:
+    from nsz.ThreadSafeCounterSharedMemory import Counter
+
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, blockSize):
 	while True:
