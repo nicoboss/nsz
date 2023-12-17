@@ -220,7 +220,10 @@ def blockCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistan
 
 	container.close()
 	return nszPath
-	
+
+def allign0x200(n):
+	return 0x200-n%0x200
+
 def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistanceMode, blockSizeExponent, outputDir, threads):
 	filePath = filePath.resolve()
 	container = factory(filePath)
@@ -232,12 +235,15 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	try:
 		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
 			for partitionIn in container.hfs0:
-				if keep == False and partitionIn._path != 'secure':
-					continue
-				hfsPartitionIn = xci.hfs0.add(partitionIn._path, 0x200)
-				with Hfs0.Hfs0Stream(hfsPartitionIn, xci.f.tell()) as partitionOut:
-					blockCompressContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
-				xci.hfs0.resize(partitionIn._path, partitionOut.actualSize)
+				xci.hfs0.written = False
+				hfsPartitionOut = xci.hfs0.add(partitionIn._path, 0)
+				with Hfs0.Hfs0Stream(hfsPartitionOut, xci.f) as partitionOut:
+					if keep == True or partitionIn._path == 'secure':
+						blockCompressContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
+					alignedSize = partitionOut.actualSize + allign0x200(partitionOut.actualSize)
+					xci.hfs0.resize(partitionIn._path, alignedSize)
+					print(f'[RESIZE]     {partitionIn._path} to {hex(alignedSize)}')
+					xci.hfs0.addpos += alignedSize
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(format_exc())
