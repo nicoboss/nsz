@@ -89,6 +89,20 @@ def main():
 		if len(argv) > 1:
 			args = ParseArguments.parse()
 		else:
+			kivyConfigPathObj = Path.home().joinpath('.kivy').joinpath('config.ini')
+			if kivyConfigPathObj.exists():
+				kivyConfigPath = str(kivyConfigPathObj)
+				with open(kivyConfigPath, 'r', encoding='utf-8') as f:
+					lines = f.readlines()
+				brokenKivyConfig = False
+				for i, line in enumerate(lines):
+					if line.startswith('default_font') and 'MPLUS1p-Medium.ttf' in line:
+						brokenKivyConfig = True
+						lines[i] = "default_font = ['Roboto', 'data/fonts/Roboto-Regular.ttf', 'data/fonts/Roboto-Italic.ttf', 'data/fonts/Roboto-Bold.ttf', 'data/fonts/Roboto-BoldItalic.ttf']\n"
+				if brokenKivyConfig:
+					Print.info(f'[INFO   ] Fixing {kivyConfigPath}')
+					with open(kivyConfigPath, 'w', encoding='utf-8') as f:
+						f.writelines(lines)
 			try:
 				from nsz.gui.NSZ_GUI import GUI
 			except ImportError:
