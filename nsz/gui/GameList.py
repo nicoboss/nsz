@@ -125,7 +125,11 @@ class GameList(StackLayout):
 					if isGame(filepath) or isCompressedGameFile(filepath):
 						filepathStr = str(filepath.resolve())
 						if isGame(filepath):
-							(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(filepathStr)
+							extractedIdVersion = FileExistingChecks.ExtractTitleIDAndVersion(filepathStr)
+							if extractedIdVersion is None:
+								print(f'Failed to extract TitleID/Version from filename "{Path(filepathStr).name}"')
+								extractedIdVersion = ("None", 0)
+							(titleIDExtracted, versionExtracted) = extractedIdVersion
 						else:
 							(titleIDExtracted, versionExtracted) = ("None", 0)
 						if not filepathStr in self.filelist:
@@ -136,7 +140,11 @@ class GameList(StackLayout):
 			elif path.is_file():
 				if isGame(path) or isCompressedGameFile(path):
 					if isGame(path):
-						(titleIDExtracted, versionExtracted) = FileExistingChecks.ExtractTitleIDAndVersion(fullPath)
+						extractedIdVersion = FileExistingChecks.ExtractTitleIDAndVersion(fullPath)
+						if extractedIdVersion is None:
+							print(f'Failed to extract TitleID/Version from filename "{Path(fullPath).name}"')
+							extractedIdVersion = ("None", 0)
+						(titleIDExtracted, versionExtracted) = extractedIdVersion
 					else:
 						(titleIDExtracted, versionExtracted) = ("None", 0)
 					if not fullPath in self.filelist:
