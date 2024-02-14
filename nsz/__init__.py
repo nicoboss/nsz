@@ -23,13 +23,18 @@ import enlighten
 import time
 import sys
 
+class VerificationFailed:
+    def __init__(self, exception, in_file):
+        self.exception=exception
+        self.in_file=in_file
+
 if hasattr(sys, 'getandroidapilevel'):
     from nsz.ThreadSafeCounterManager import Counter
 else:
     from nsz.ThreadSafeCounterSharedMemory import Counter
 
 
-def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id):
+def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id, problemQueue):
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
@@ -43,11 +48,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 				Print.info("[VERIFY NSZ] {0}".format(outFile))
 				try:
 					verify(outFile, fixPadding, True, keep, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
-				except VerificationException:
+				except VerificationException as e:
 					Print.error("[BAD VERIFY] {0}".format(outFile))
 					Print.error("[DELETE NSZ] {0}".format(outFile))
 					remove(outFile)
-					raise
+					problemQueue.put(VerificationFailed(exception=e, in_file=filePath))
+					continue
 		except KeyboardInterrupt:
 			Print.info('Keyboard exception')
 		except BaseException as e:
@@ -144,6 +150,7 @@ def main():
 		pleaseKillYourself = Counter(poolManager, 0)
 		pool = []
 		work = poolManager.Queue()
+		problems = poolManager.Queue()
 		amountOfTastkQueued = Counter(poolManager, 0)
 		targetDictNsz = dict()
 		targetDictXcz = dict()
@@ -218,7 +225,7 @@ def main():
 				parallelTasks = 4
 			for i in range(parallelTasks):
 				statusReport.append([0, 0, 100, 'Compressing'])
-				p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i))
+				p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i, problems))
 				p.start()
 				pool.append(p)
 			for i in range(parallelTasks):
@@ -230,6 +237,8 @@ def main():
 				sleep(0.2)
 				if pleaseNoPrint.value() > 0:
 					continue
+				if not problems.empty():
+					err.append(problems.get())
 				pleaseNoPrint.increment()
 				for i in range(parallelTasks):
 					compressedRead, compressedWritten, total, currentStep = statusReport[i]
@@ -325,8 +334,11 @@ def main():
 		Print.info('\n\033[93m\033[1mSummary of errors which occurred while processing files:')
 		
 		for e in err:
-			Print.info('\033[0mError while processing {0}'.format(e["filename"]))
-			Print.info(e["error"])
+			if isinstance(e, VerificationFailed):
+				Print.info('\033[0mError while processing {0}: {1}'.format(e.in_file,e.exception))
+			else:
+				Print.info('\033[0mError while processing {0}'.format(e["filename"]))
+				Print.info(e["error"])
 
 		Print.info('\nDone!\n')
 		print()
