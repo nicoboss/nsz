@@ -1,19 +1,17 @@
 # NSZ
-A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch ROMs loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
+A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch dumps loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
 
 ## Legal
 - This project does NOT incorporate any copyrighted material such as cryptographic keys. All keys must be provided by the user.
-- This project does NOT circumvent any technological protection measures. The NSZ file format purposely keeps all technological protection measures in place by not decrypting the most crucial parts.
+- This project does NOT circumvent any technological protection measures. The NSZ file format purposely keeps all technological protection measures in place.
 - This project shall only be used for legally purchased games.
 - This project is MIT licensed. Check [LICENSE](https://github.com/nicoboss/nsz/blob/master/LICENSE) for more information.
 
 ## Installation:
-There are several ways the install the script. You can find details on installation for all of them below.\
+There are several ways the install this tool. You can find details on installation for all of them below.\
 \
-**You need to have a hactool compatible keys file in a suitable directory to use the script**.\
-The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory.\
-\
-It can be dumped using Lockpick_RCM.
+**You need to have a hactool compatible keys file in a suitable directory to use this tool**.\
+The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory. You must legally obtain your keys!
 
 ### Windows Builds
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
@@ -129,20 +127,7 @@ options:
   --titlekeys           Extracts titlekeys from your NSP/NSZ files and adds
                         missing keys to ./titlekeys.txt and JSON files inside
                         ./titledb/ (obtainable from
-                        https://github.com/blawar/titledb). Titlekeys can be
-                        used to unlock updates using NUT OG (OG fork
-                        obtainable from https://github.com/plato79/nut). There
-                        is currently no publicly known way of optioning NSX
-                        files. To MitM: Apply disable_ca_verification &
-                        disable_browser_ca_verification patches, use your
-                        device's nx_tls_client_cert.pfx (Password: switch,
-                        Install to OS and import for Fiddler or import into
-                        Charles/OWASP ZAP). Use it for aauth-
-                        lp1.ndas.srv.nintendo.net:443, dauth-
-                        lp1.ndas.srv.nintendo.net:443 and
-                        app-b01-lp1.npns.srv.nintendo.net:443. Try with your
-                        WiiU first as there you won't get banned if you mess
-                        up.
+                        https://github.com/blawar/titledb).
   --undupe              Deleted all duplicates (games with same ID and
                         Version). The Files folder will get parsed in order so
                         the later in the argument list the more likely the
@@ -172,11 +157,11 @@ options:
 ```
 
 ## Few Usage Examples
-* To compress all files in a folder: `nsz -C /path/to/folder/with/roms/`
-* To compress all files in a folder and verifying integrity of compressed files: `nsz --verify -C /path/to/folder/with/roms/`
-* To compress all files in a folder with 8 threads and outputting resulting files to a new directory: `nsz --threads 8 --output /path/to/out/dir/ -C /path/to/folder/with/roms/`
-* To compress all files in a folder with level 22 compression level: `nsz --level 22 -C /path/to/folder/with/roms/`
-* To decompress all files in a folder: `nsz -D /path/to/folder/with/roms/`
+* To compress all files in a folder: `nsz -C /path/to/folder/with/dumps/`
+* To compress all files in a folder and verifying integrity of compressed files: `nsz --verify -C /path/to/folder/with/dumps/`
+* To compress all files in a folder with 8 threads and outputting resulting files to a new directory: `nsz --threads 8 --output /path/to/out/dir/ -C /path/to/folder/with/dumps/`
+* To compress all files in a folder with level 22 compression level: `nsz --level 22 -C /path/to/folder/with/dumps/`
+* To decompress all files in a folder: `nsz -D /path/to/folder/with/dumps/`
 
 To view all the possible flags and a description on what each flag, check the [Usage](https://github.com/nicoboss/nsz#usage) section.
 
