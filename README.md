@@ -1,6 +1,10 @@
 # NSZ
 A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch dumps loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
 
+## Mirror
+A Swiss mirror of this repository is maintained under https://gitlab.nicobosshard.ch/nicoboss/nsz \
+This will be the new home in case GitHub ever takes down nsz. Please bookmark it.
+
 ## Legal
 - This project does NOT incorporate any copyrighted material such as cryptographic keys. All keys must be provided by the user.
 - This project does NOT circumvent any technological protection measures. The NSZ file format purposely keeps all technological protection measures in place.
