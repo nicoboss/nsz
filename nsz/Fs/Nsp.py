@@ -92,7 +92,7 @@ class Nsp(Pfs0):
 		Titles.data()[self.titleId] = t
 		return t
 
-	def unpack(self, path, extractregex="*"):
+	def unpack(self, path, extractregex=r"*"):
 		os.makedirs(str(path), exist_ok=True)
 
 		for nspf in self:
@@ -143,7 +143,7 @@ class Nsp(Pfs0):
 		return (1 if self.hasValidTicket and self.hasValidTicket == True else 0)
 
 	def setId(self, id):
-		if re.match('[A-F0-9]{16}', id, re.I):
+		if re.match(r'[A-F0-9]{16}', id, re.I):
 			self.titleId = id
 
 	def getId(self):
@@ -169,14 +169,14 @@ class Nsp(Pfs0):
 		self.path = path
 		self.version = '0'
 		
-		z = re.match('.*\[([a-zA-Z0-9]{16})\].*', path, re.I)
+		z = re.match(r'.*\[([a-zA-Z0-9]{16})\].*', path, re.I)
 		if z:
 			self.titleId = z.groups()[0].upper()
 		else:
 			Print.info('could not get title id from filename, name needs to contain [titleId] : ' + path)
 			self.titleId = None
 
-		z = re.match('.*\[v([0-9]+)\].*', path, re.I)
+		z = re.match(r'.*\[v([0-9]+)\].*', path, re.I)
 		
 		if z:
 			self.version = z.groups()[0]
@@ -202,8 +202,8 @@ class Nsp(Pfs0):
 	def cleanFilename(self, s):
 		if s is None:
 			return ''
-		#s = re.sub('\s+\Demo\s*', ' ', s, re.I)
-		s = re.sub('\s*\[DLC\]\s*', '', s, re.I)
+		#s = re.sub(r'\s+\Demo\s*', ' ', s, re.I)
+		s = re.sub(r'\s*\[DLC\]\s*', '', s, re.I)
 		s = re.sub(r'[\/\\\:\*\?\"\<\>\|\.\s™©®()\~]+', ' ', s)
 		return s.strip()
 

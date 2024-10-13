@@ -130,7 +130,7 @@ def load(fileName):
 		
 		with open(fileName, encoding="utf8") as f:
 			for line in f.readlines():
-				r = re.match('\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
+				r = re.match(r'\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
 				if r:
 					keys[r.group(1)] = r.group(2)
 		
