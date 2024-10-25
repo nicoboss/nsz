@@ -149,7 +149,7 @@ class Hfs0(Pfs0):
 
 		self.files.reverse()
 
-	def unpack(self, path, extractregex="*"):
+	def unpack(self, path, extractregex=r"*"):
 		os.makedirs(str(path), exist_ok=True)
 	
 		for hfsf in self:
