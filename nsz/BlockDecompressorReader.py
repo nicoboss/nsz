@@ -31,7 +31,7 @@ class BlockDecompressorReader:
 			decompressedBlockSize = self.BlockHeader.decompressedSize % self.BlockSize
 		self.nspf.seek(self.CompressedBlockOffsetList[blockID])
 		if self.CompressedBlockSizeList[blockID] < decompressedBlockSize:
-			self.CurrentBlock = ZstdDecompressor().decompress(self.nspf.read(decompressedBlockSize))
+			self.CurrentBlock = ZstdDecompressor().decompress(self.nspf.read(self.CompressedBlockSizeList[blockID]))
 		else:
 			self.CurrentBlock = self.nspf.read(decompressedBlockSize)
 		self.CurrentBlockId = blockID
