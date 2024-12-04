@@ -174,6 +174,7 @@ elif dumpedKeys.is_file():
 else:
 	errorMsg = "{0} or {1} not found!\nPlease dump your keys using https://github.com/shchmue/Lockpick_RCM/releases".format(str(keypath), str(dumpedKeys))
 	Print.error(errorMsg)
-	input("Press Enter to exit...")
+	if sys.stdin.isatty() and sys.stdout.isatty():
+	    input("Press Enter to exit...")
 	sys.exit(1)
 
