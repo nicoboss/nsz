@@ -213,6 +213,7 @@ class Nsp(Pfs0):
 	def ticket(self):
 		for f in (f for f in self if type(f) == Ticket):
 			return f
+		Fs.Ticket.isTicketless = True
 		# Exception suppressed to allow compress/decompress of ticketless -single base game or multicontent- dump files.
 		#raise IOError('no ticket in NSP')
 		
