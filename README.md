@@ -169,6 +169,8 @@ options:
 
 To view all the possible flags and a description on what each flag, check the [Usage](https://github.com/nicoboss/nsz#usage) section.
 
+To automate bulk file operations you might want to check out [automation script files](https://github.com/nicoboss/nsz/tree/master/Automation%20Script).
+
 ## File Format Details
 
 ### NSZ
