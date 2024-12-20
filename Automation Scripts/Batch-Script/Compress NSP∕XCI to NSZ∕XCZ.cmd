@@ -54,7 +54,7 @@ CLS
 
 :PRIMARY_CHECKS
 REM Ensure nsz.exe file exists.
-IF NOT EXIST " %nszFilePath%" (
+IF NOT EXIST "%nszFilePath%" (
 	CALL :PRINT_ERROR_AND_EXIT nsz.exe file does not exists: "%nszFilePath%"
 )
 REM Ensure the source directory exists.
@@ -80,7 +80,7 @@ FOR %Params% DO (
 	ECHO:Compressing "%%~f#"...
 	ECHO+
 	("%nszFilePath%" -C "%%~f#" --output "%DstDirectoryPath%" --level %CompressionLevel% %AdditionalParameters%) || (
-		CALL :PRINT_ERROR_AND_EXIT "NSZ failed to compress file: "%%~f#""
+		CALL :PRINT_ERROR_AND_EXIT nsz failed to compress file: "%%~f#"
 	)
 )
 
