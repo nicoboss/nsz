@@ -89,11 +89,11 @@ options:
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter. Requires --keep
                         when used during compression.
-                        NOTE: Some checks will be skipped when processing a ticketless dump file.
+                        NOTE: Some hash checks will be skipped when processing a ticketless dump file.
   -Q, --quick-verify    Same as --verify but skips the NSP SHA256 hash
                         verification and only verifies NCA hashes. Does not
                         require --keep when used during compression.
-                        NOTE: Some checks will be skipped when processing a ticketless dump file.
+                        NOTE: Some hash checks will be skipped when processing a ticketless dump file.
   -K, --keep            Keep all useless files and partitions during
                         compression to allow bit-identical recreation
   -F, --fix-padding     Fixes PFS0 padding to match the nxdumptool/no-intro
