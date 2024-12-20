@@ -19,14 +19,19 @@ def extractTitlekeys(argsFile):
 			f = factory(filePath)
 			f.open(str(filePath), 'rb')
 			ticket = f.ticket()
-			rightsId = format(ticket.getRightsId(), 'x').zfill(32)
-			titleId = rightsId[0:16]
-			if not titleId in titlekeysDict:
-				titleKey = format(ticket.getTitleKeyBlock(), 'x').zfill(32)
-				titlekeysDict[titleId] = (rightsId, titleKey, filePath.stem)
-				Print.info("Found: {0}|{1}|{2}".format(rightsId, titleKey, filePath.stem))
+			if ticket is None:
+				# This ticket conditional was added to prevent the following exception from occurring when parsing a ticketless dump file:
+				# nut exception: 'NoneType' object has no attribute 'getRightsId'
+				Print.info("Skipped ticketless {0}".format(filePath.stem))
 			else:
-				Print.info("Skipped already existing {0}".format(rightsId))
+				rightsId = format(ticket.getRightsId(), 'x').zfill(32)
+				titleId = rightsId[0:16]
+				if not titleId in titlekeysDict:
+					titleKey = format(ticket.getTitleKeyBlock(), 'x').zfill(32)
+					titlekeysDict[titleId] = (rightsId, titleKey, filePath.stem)
+					Print.info("Found: {0}|{1}|{2}".format(rightsId, titleKey, filePath.stem))
+				else:
+					Print.info("Skipped already existing {0}".format(rightsId))
 			f.close()
 	Print.info("\ntitlekeys.txt:")
 	with open('titlekeys.txt', 'w', encoding="utf-8") as titlekeysFile:
