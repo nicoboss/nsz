@@ -89,7 +89,7 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 		if Ticket.isTicketless is True:
 			# This ticket conditional was added to prevent the following exception from occurring when processing a ticketless dump file:
 			# nut exception: Verification detected hash mismatch
-			Print.info(f'[SKIPPED]   ticketless', pleaseNoPrint)
+			Print.info(f'[SKIPPED]    ticketless', pleaseNoPrint)
 		else:
 			if hexHash in fileHashes:
 				Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
