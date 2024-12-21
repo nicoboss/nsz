@@ -19,6 +19,7 @@ from nsz.ParseArguments import *
 from nsz.PathTools import *
 from nsz.ExtractTitlekeys import *
 from nsz.undupe import undupe
+from nsz.Fs import Ticket
 import enlighten
 import time
 import sys
@@ -49,11 +50,12 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 				try:
 					verify(outFile, fixPadding, True, keep, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException as e:
-					Print.error("[BAD VERIFY] {0}".format(outFile))
-					Print.error("[DELETE NSZ] {0}".format(outFile))
-					remove(outFile)
-					problemQueue.put(VerificationFailed(exception=e, in_file=filePath))
-					continue
+					if Ticket.isTicketless is not True:
+						Print.error("[BAD VERIFY] {0}".format(outFile))
+						Print.error("[DELETE NSZ] {0}".format(outFile))
+						remove(outFile)
+						problemQueue.put(VerificationFailed(exception=e, in_file=filePath))
+						continue
 		except KeyboardInterrupt:
 			Print.info('Keyboard exception')
 		except BaseException as e:
@@ -71,10 +73,11 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 			try:
 				verify(outFile, args.fix_padding, True, args.keep, None if args.quick_verify else filePath)
 			except VerificationException:
-				Print.error("[BAD VERIFY] {0}".format(outFile))
-				Print.error("[DELETE NSZ] {0}".format(outFile))
-				remove(outFile)
-				raise
+				if Ticket.isTicketless is not True:
+					Print.error("[BAD VERIFY] {0}".format(outFile))
+					Print.error("[DELETE NSZ] {0}".format(outFile))
+					remove(outFile)
+					raise
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
 		work.put([filePath, compressionLevel, args.keep, args.fix_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
