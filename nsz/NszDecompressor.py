@@ -3,7 +3,7 @@ from traceback import format_exc
 from hashlib import sha256
 from nsz.nut import Print, aes128
 from zstandard import ZstdDecompressor
-from nsz.Fs import factory, Type, Pfs0, Hfs0, Nca, Xci
+from nsz.Fs import factory, Type, Pfs0, Hfs0, Nca, Xci, Ticket
 from nsz.PathTools import *
 from nsz import Header, BlockDecompressorReader, FileExistingChecks
 import os, enlighten
@@ -86,14 +86,19 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			written, hexHash = __decompressNcz(nspf, writeContainer.get(newFileName), statusReportInfo, pleaseNoPrint)
 		else:
 			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
-		if hexHash in fileHashes:
-			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
-			Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
+		if Ticket.isTicketless is True:
+			# This ticket conditional was added to prevent the following exception from occurring when processing a ticketless dump file:
+			# nut exception: Verification detected hash mismatch
+			Print.info(f'[SKIPPED]    ticketless', pleaseNoPrint)
 		else:
-			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
-			Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
-			if raiseVerificationException:
-				raise VerificationException("Verification detected hash mismatch")
+			if hexHash in fileHashes:
+				Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+				Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
+			else:
+				Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+				Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
+				if raiseVerificationException:
+					raise VerificationException("Verification detected hash mismatch")
 
 
 def __getDecompressedNczSize(nspf):

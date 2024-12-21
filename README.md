@@ -89,9 +89,11 @@ options:
                         exception on hash mismatch and verify existing NSP and
                         NSZ files when given as parameter. Requires --keep
                         when used during compression.
+                        NOTE: Some hash checks will be skipped when processing a ticketless dump file.
   -Q, --quick-verify    Same as --verify but skips the NSP SHA256 hash
                         verification and only verifies NCA hashes. Does not
                         require --keep when used during compression.
+                        NOTE: Some hash checks will be skipped when processing a ticketless dump file.
   -K, --keep            Keep all useless files and partitions during
                         compression to allow bit-identical recreation
   -F, --fix-padding     Fixes PFS0 padding to match the nxdumptool/no-intro
@@ -132,6 +134,7 @@ options:
                         missing keys to ./titlekeys.txt and JSON files inside
                         ./titledb/ (obtainable from
                         https://github.com/blawar/titledb).
+                        NOTE: This parameter has no effect when processing a ticketless dump file.
   --undupe              Deleted all duplicates (games with same ID and
                         Version). The Files folder will get parsed in order so
                         the later in the argument list the more likely the
@@ -168,6 +171,8 @@ options:
 * To decompress all files in a folder: `nsz -D /path/to/folder/with/dumps/`
 
 To view all the possible flags and a description on what each flag, check the [Usage](https://github.com/nicoboss/nsz#usage) section.
+
+To automate bulk file operations you might want to check out [automation script files](https://github.com/nicoboss/nsz/tree/master/Automation%20Scripts).
 
 ## File Format Details
 
