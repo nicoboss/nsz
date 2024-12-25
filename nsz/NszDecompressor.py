@@ -72,28 +72,38 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 					writeContainer.get(nspf._path).write(inputChunk)
 			if verifyFile:
 				hashHexdigest = hash.hexdigest()
-				if hashHexdigest in fileHashes:
-					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
-					Print.info(f'[VERIFIED]   {nspf._path} {hashHexdigest}', pleaseNoPrint)
+				if hasattr(nspf.f, 'ticketless'):
+					# This ticket conditional was added to prevent the following exception from occurring when processing a ticketless dump file:
+					# nut exception: Verification detected hash mismatch
+					Print.info('[TICKETLESS] {0}'.format(nspf._path), pleaseNoPrint)
 				else:
-					Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
-					Print.info(f'[CORRUPTED]  {nspf._path} {hashHexdigest}', pleaseNoPrint)
-					if raiseVerificationException:
-						raise VerificationException("Verification detected hash mismatch!")
+					if hashHexdigest in fileHashes:
+						Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
+						Print.info(f'[VERIFIED]   {nspf._path} {hashHexdigest}', pleaseNoPrint)
+					else:
+						Print.info(f'[NCA HASH]   {hashHexdigest}', pleaseNoPrint)
+						Print.info(f'[CORRUPTED]  {nspf._path} {hashHexdigest}', pleaseNoPrint)
+						if raiseVerificationException:
+							raise VerificationException("Verification detected hash mismatch!")
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
 			written, hexHash = __decompressNcz(nspf, writeContainer.get(newFileName), statusReportInfo, pleaseNoPrint)
 		else:
 			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
-		if hexHash in fileHashes:
-			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
-			Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
+		if hasattr(nspf.f, 'ticketless'):
+			# This ticket conditional was added to prevent the following exception from occurring when processing a ticketless dump file:
+			# nut exception: Verification detected hash mismatch
+			Print.info('[TICKETLESS] {0}'.format(nspf._path), pleaseNoPrint)
 		else:
-			Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
-			Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
-			if raiseVerificationException:
-				raise VerificationException("Verification detected hash mismatch")
+			if hexHash in fileHashes:
+				Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+				Print.info(f'[VERIFIED]   {nspf._path}', pleaseNoPrint)
+			else:
+				Print.info(f'[NCA HASH]   {hexHash}', pleaseNoPrint)
+				Print.info(f'[CORRUPTED]  {nspf._path}', pleaseNoPrint)
+				if raiseVerificationException:
+					raise VerificationException("Verification detected hash mismatch")
 
 
 def __getDecompressedNczSize(nspf):

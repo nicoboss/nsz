@@ -4,7 +4,6 @@ from binascii import hexlify as hx, unhexlify as uhx
 from nsz.nut import Print
 from nsz.nut import Keys
 
-
 class Ticket(File):
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Ticket, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter)
