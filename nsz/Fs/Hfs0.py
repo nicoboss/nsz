@@ -4,6 +4,7 @@ from binascii import hexlify as hx, unhexlify as uhx
 from struct import pack as pk, unpack as upk
 from nsz.Fs.File import BaseFile
 from nsz.Fs.File import File
+from nsz.Fs.Ticket import Ticket
 from hashlib import sha256
 from nsz.Fs.Pfs0 import Pfs0
 from nsz.Fs.BaseFs import BaseFs
@@ -12,6 +13,7 @@ import re
 from pathlib import Path
 from nsz.nut import Keys
 from nsz.nut import Print
+from nsz.nut import Titles
 from nsz import Fs
 
 MEDIA_SIZE = 0x200
@@ -145,7 +147,15 @@ class Hfs0(Pfs0):
 			f._path = name
 			f.offset = offset
 			f.size = size
-			self.files.append(self.partition(offset + headerSize, f.size, f))
+			file = self.partition(offset + headerSize, f.size, f)
+			self.files.append(file)
+
+			# add title keys to nut.Titles if we happen to see a ticket
+			if type(file) == Ticket:
+				ticket = file
+				ticket.open(None, None)
+				if ticket.titleKey() != ('0' * 32):
+					Titles.get(ticket.titleId()).key = ticket.titleKey()
 
 		self.files.reverse()
 
