@@ -213,7 +213,9 @@ class Pfs0(BaseFs):
 		return 0x20-n%0x20
 
 	def getPaddedHeaderSize(self):
-		return self._headerSize + self.allign0x20(self._headerSize);
+		stringTableNonPadded = '\x00'.join(file._path for file in self.files)+'\x00'
+		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
+		return headerSizeNonPadded + self.allign0x20(headerSizeNonPadded);
 
 	def getHeaderSize(self):
 		return self._headerSize;
