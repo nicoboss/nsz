@@ -70,9 +70,9 @@ class Pfs0Stream(BaseFile):
 			self.write(self.getHeader())
 			super(Pfs0Stream, self).close()
 	
-	#0xff => 0x1, 0x100 => 0x0, 0x1ff => 0x1, 0x120 => 0x0, 0x20 => 0x0
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
 	def allign0x20(self, n):
-		return (0x20-n%0x20)%0x20
+		return 0x20-n%0x20
 	
 	def getStringTableSize(self):
 		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
@@ -150,9 +150,9 @@ class Pfs0VerifyStream():
 	def close(self):
 		pass
 	
-	#0xff => 0x1, 0x100 => 0x0, 0x1ff => 0x1, 0x120 => 0x0, 0x20 => 0x0
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
 	def allign0x20(self, n):
-		return (0x20-n%0x20)%0x20
+		return 0x20-n%0x20
 
 	def getStringTableSize(self):
 		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
@@ -208,12 +208,14 @@ class Pfs0(BaseFs):
 			#self.offset += sectionStart
 			#self.size -= sectionStart
 
-	#0xff => 0x1, 0x100 => 0x0, 0x1ff => 0x1, 0x120 => 0x0, 0x20 => 0x0
+	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
 	def allign0x20(self, n):
-		return (0x20-n%0x20)%0x20
+		return 0x20-n%0x20
 
 	def getPaddedHeaderSize(self):
-		return self._headerSize + self.allign0x20(self._headerSize);
+		stringTableNonPadded = '\x00'.join(file._path for file in self.files)+'\x00'
+		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
+		return headerSizeNonPadded + self.allign0x20(headerSizeNonPadded);
 
 	def getHeaderSize(self):
 		return self._headerSize;
