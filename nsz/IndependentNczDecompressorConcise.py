@@ -7,6 +7,7 @@ from hashlib import sha256
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from zstandard import ZstdDecompressor
+from nsz.nut import Print
 
 
 def readInt8(f, byteorder="little", signed=False):
@@ -123,12 +124,12 @@ def __decompressNcz(nspf, f):
 
 if __name__ == "__main__":
 	if len(argv) < 3:
-		print("usage: decompress.py input.ncz output.nca")
+		Print.info("usage: decompress.py input.ncz output.nca")
 		exit(1)
 	hexHash = __decompressNcz(open(argv[1], "rb"), open(argv[2], "wb"))
 	fileNameHash = Path(argv[1]).stem.lower()
 	if hexHash[:32] == fileNameHash:
-		print('[VERIFIED]   {0}'.format(Path(argv[2]).name))
+		Print.info('[VERIFIED]   {0}'.format(Path(argv[2]).name))
 	else:
-		print('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]))
-	print("Done!")
+		Print.error('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]))
+	Print.info("Done!")

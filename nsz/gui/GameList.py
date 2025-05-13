@@ -17,17 +17,17 @@ from functools import partial
 from nsz.gui.DraggableScrollbar import *
 from nsz.gui.GuiPath import *
 from nsz.PathTools import *
+from nsz.nut import Print
 from nsz import FileExistingChecks
-from traceback import print_exc
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
-	
+
 	touchedIndex = -1
-	
+
 	def __init__(self, **kwargs):
 		super(SelectableRecycleBoxLayout, self).__init__(**kwargs)
 		self.unfocus_on_touch = False
-	
+
 	def keyboard_on_key_down(self, window, keycode, text, modifiers):
 		keycodeId, keycodeName = keycode
 		if keycodeName == 'delete' or keycodeName == 'backspace' and len(self.selected_nodes) > 0:
@@ -64,7 +64,7 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
 		if self.collide_point(*touch.pos) and self.selectable:
 			self.parent.touchedIndex = self.index
 			return self.parent.select_with_touch(self.index, touch)
-	
+
 	def on_touch_move(self, touch):
 		if super(SelectableLabel, self).on_touch_move(touch):
 			return True
@@ -80,13 +80,13 @@ class RV(RecycleView):
 	def __init__(self, items, **kwargs):
 		super(RV, self).__init__(**kwargs)
 		self.refresh(items)
-		
+
 	def refresh(self, items):
 		self.data.clear()
 		for path in items:
 			self.data.append({'0': path, '1': items[path][0], '2': 'v' + str(items[path][1]), '3': self.sizeof_fmt(items[path][2])})
 		self.refresh_from_data()
-			
+
 	def sizeof_fmt(self, num, suffix='B'):
 		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
 			if abs(num) < 1024.0:
@@ -114,7 +114,7 @@ class GameList(StackLayout):
 	def handledrops(self, widget, rawPath):
 		path = Path(rawPath.decode('utf-8')).absolute()
 		self.addFiles(path)
-		
+
 	def addFiles(self, path):
 		fullPath = str(path.resolve())
 		try:
@@ -127,7 +127,7 @@ class GameList(StackLayout):
 						if isGame(filepath):
 							extractedIdVersion = FileExistingChecks.ExtractTitleIDAndVersion(filepathStr)
 							if extractedIdVersion is None:
-								print(f'Failed to extract TitleID/Version from filename "{Path(filepathStr).name}"')
+								Print.error(f'Failed to extract TitleID/Version from filename "{Path(filepathStr).name}"')
 								extractedIdVersion = ("None", 0)
 							(titleIDExtracted, versionExtracted) = extractedIdVersion
 						else:
@@ -142,7 +142,7 @@ class GameList(StackLayout):
 					if isGame(path):
 						extractedIdVersion = FileExistingChecks.ExtractTitleIDAndVersion(fullPath)
 						if extractedIdVersion is None:
-							print(f'Failed to extract TitleID/Version from filename "{Path(fullPath).name}"')
+							Print.error(f'Failed to extract TitleID/Version from filename "{Path(fullPath).name}"')
 							extractedIdVersion = ("None", 0)
 						(titleIDExtracted, versionExtracted) = extractedIdVersion
 					else:
@@ -151,10 +151,10 @@ class GameList(StackLayout):
 						self.filelist[fullPath] = (titleIDExtracted, versionExtracted, path.stat().st_size)
 						self.refresh()
 			else:
-				print("Warning: {0} isn't a file or folder!".format(fullPath))
+				Print.warning("Warning: {0} isn't a file or folder!".format(fullPath))
 		except BaseException as e:
-			print('Error while adding {0} to gamelist: {1}'.format(fullPath, str(e)))
-			print_exc()
+			Print.error('Error while adding {0} to gamelist: {1}'.format(fullPath, str(e)))
+			Print.exception()
 
 	def refresh(self):
 		if self.ids.DragAndDropFloatLayout:

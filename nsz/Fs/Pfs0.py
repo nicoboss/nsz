@@ -13,6 +13,7 @@ from nsz.nut import Keys
 from nsz.nut import Print
 from nsz.Fs.BaseFs import BaseFs
 from nsz.nut import Titles
+from nsz.nut import Print
 
 MEDIA_SIZE = 0x200
 
@@ -30,12 +31,13 @@ class Pfs0Stream(BaseFile):
 
 	def __enter__(self):
 		return self
-		
+
 	def __exit__(self, type, value, traceback):
 		self.close()
-		
+
 	def write(self, value, size = None):
 		super(Pfs0Stream, self).write(value, len(value))
+		Print.progress('BufferCompression', {"processed": self.tell()})
 		self.written = True
 		pos = self.tell()
 		if pos > self.actualSize:
@@ -45,7 +47,7 @@ class Pfs0Stream(BaseFile):
 		if self.written:
 			self.addpos = self.tell()
 			self.written = False
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
+		Print.info(f'[ADDING]	 {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
 		partition = self.partition(self.addpos, size, n = BaseFile())
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos, 'partition': partition})
 		self.addpos += size
@@ -69,11 +71,11 @@ class Pfs0Stream(BaseFile):
 			self.seek(0)
 			self.write(self.getHeader())
 			super(Pfs0Stream, self).close()
-	
+
 	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
 	def allign0x20(self, n):
 		return 0x20-n%0x20
-	
+
 	def getStringTableSize(self):
 		stringTableNonPadded = '\x00'.join(file['name'] for file in self.files)+'\x00'
 		headerSizeNonPadded = 0x10 + len(self.files) * 0x18 + len(stringTableNonPadded)
@@ -95,13 +97,13 @@ class Pfs0Stream(BaseFile):
 		stringTableSizePadded = self.getStringTableSize()
 		stringTable = stringTableNonPadded + ('\x00'*(stringTableSizePadded-len(stringTableNonPadded)))
 		headerSize = 0x10 + len(self.files) * 0x18 + stringTableSizePadded
-	
+
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
 		h += (stringTableSizePadded).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
-		
+
 		stringOffset = 0
 
 		for f in self.files:
@@ -109,11 +111,11 @@ class Pfs0Stream(BaseFile):
 			h += f['size'].to_bytes(8, byteorder='little')
 			h += stringOffset.to_bytes(4, byteorder='little')
 			h += b'\x00\x00\x00\x00'
-			
+
 			stringOffset += len(f['name']) + 1
-			
+
 		h += stringTable.encode()
-		
+
 		return h
 
 
@@ -127,10 +129,10 @@ class Pfs0VerifyStream():
 
 	def __enter__(self):
 		return self
-		
+
 	def __exit__(self, type, value, traceback):
 		pass
-		
+
 	def write(self, value, size = None):
 		self.binhash.update(value)
 		self.pos += len(value)
@@ -139,7 +141,7 @@ class Pfs0VerifyStream():
 		return self.pos
 
 	def add(self, name, size, pleaseNoPrint = None):
-		Print.info(f'[ADDING]     {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
+		Print.info(f'[ADDING]	 {name} {hex(size)} bytes to PFS0 at {hex(self.addpos)}', pleaseNoPrint)
 		self.files.append({'name': name, 'size': size, 'offset': self.addpos})
 		self.addpos += size
 		return self
@@ -149,7 +151,7 @@ class Pfs0VerifyStream():
 
 	def close(self):
 		pass
-	
+
 	#0xff => 0x1, 0x100 => 0x20, 0x1ff => 0x1, 0x120 => 0x20
 	def allign0x20(self, n):
 		return 0x20-n%0x20
@@ -163,7 +165,7 @@ class Pfs0VerifyStream():
 		elif len(stringTableNonPadded) > self._stringTableSize:
 			self._stringTableSize = len(stringTableNonPadded)
 		return self._stringTableSize
-	
+
 	def getHash(self):
 		hexHash = self.binhash.hexdigest()
 		return hexHash
@@ -173,35 +175,35 @@ class Pfs0VerifyStream():
 		stringTableSizePadded = self.getStringTableSize()
 		stringTable = stringTableNonPadded + ('\x00'*(stringTableSizePadded-len(stringTableNonPadded)))
 		headerSize = 0x10 + len(self.files) * 0x18 + stringTableSizePadded
-	
+
 		h = b''
 		h += b'PFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
 		h += (stringTableSizePadded).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
-		
+
 		stringOffset = 0
 		for f in self.files:
 			h += (f['offset'] - headerSize).to_bytes(8, byteorder='little')
 			h += f['size'].to_bytes(8, byteorder='little')
 			h += stringOffset.to_bytes(4, byteorder='little')
-			h += b'\x00\x00\x00\x00'	
+			h += b'\x00\x00\x00\x00'
 			stringOffset += len(f['name']) + 1
-		
+
 		if len(self.files) > 0:
 			if self.files[0]['offset'] - headerSize > 0:
 				stringTable += '\x00' * (self.files[0]['offset'] - headerSize)
 		h += stringTable.encode()
-		
+
 		headerHex = h.hex()
 		self.binhash.update(h)
-		
+
 
 
 class Pfs0(BaseFs):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Pfs0, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
-		
+
 		if buffer:
 			self.size = int.from_bytes(buffer[0x48:0x50], byteorder='little', signed=False)
 			self.sectionStart = int.from_bytes(buffer[0x40:0x48], byteorder='little', signed=False)
@@ -219,7 +221,7 @@ class Pfs0(BaseFs):
 
 	def getHeaderSize(self):
 		return self._headerSize;
-	
+
 	def getStringTableSize(self):
 		return self._stringTableSize;
 
@@ -237,7 +239,7 @@ class Pfs0(BaseFs):
 		self.magic = self.read(4)
 		if self.magic != b'PFS0':
 			raise IOError('Not a valid PFS0 partition ' + str(self.magic))
-			
+
 
 		fileCount = self.readInt32()
 		self._stringTableSize = self.readInt32()
@@ -246,7 +248,7 @@ class Pfs0(BaseFs):
 		self.seek(0x10 + fileCount * 0x18)
 		stringTable = self.read(self._stringTableSize)
 		stringEndOffset = self._stringTableSize
-		
+
 		self._headerSize = 0x10 + 0x18 * fileCount + self._stringTableSize
 		self.files = []
 
@@ -259,7 +261,7 @@ class Pfs0(BaseFs):
 			nameOffset = self.readInt32() # just the offset
 			name = stringTable[nameOffset:stringEndOffset].decode('utf-8').rstrip(' \t\r\n\0')
 			stringEndOffset = nameOffset
-			Print.info(f'[OPEN  ]     {name} {hex(size)} bytes at {hex(offset)}')
+			Print.info(f'[OPEN  ]	 {name} {hex(size)} bytes at {hex(offset)}')
 
 			self.readInt32() # junk data
 
@@ -268,7 +270,7 @@ class Pfs0(BaseFs):
 			f._path = name
 			f.offset = offset
 			f.size = size
-			
+
 			self.files.append(self.partition(offset + self._headerSize, f.size, f, autoOpen = False))
 
 		ticket = None
@@ -278,7 +280,7 @@ class Pfs0(BaseFs):
 			ticket = self.ticket()
 			ticket.open(None, None)
 			#key = format(ticket.getTitleKeyBlock(), 'X').zfill(32)
-			
+
 			if ticket.titleKey() != ('0' * 32):
 				Titles.get(ticket.titleId()).key = ticket.titleKey()
 		except:
@@ -292,11 +294,11 @@ class Pfs0(BaseFs):
 					pass
 
 		self.files.reverse()
-				
-	
+
+
 	def getCnmt(self):
 		return super(Pfs0, self).getCnmt()
-	
+
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		Print.info('\n%sPFS0\n' % (tabs))

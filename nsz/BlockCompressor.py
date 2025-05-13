@@ -8,6 +8,7 @@ from nsz.SectionFs import isNcaPacked, sortedFs
 from multiprocessing import Process, Manager
 from nsz.Fs import Pfs0, Hfs0, Nca, Type, Ticket, Xci, factory
 from nsz.PathTools import *
+from nsz.ParseArguments import *
 import enlighten
 import sys
 
@@ -43,6 +44,15 @@ def blockCompress(filePath, compressionLevel, keep, fixPadding, useLongDistanceM
 def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads):
 	CHUNK_SZ = 0x100000
 	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
+
+	machineReadableOutput = False
+
+	args = ParseArguments.parse()
+
+	# Does the user want machine readable output?
+	if (args.machine_readable):
+		machineReadableOutput = True
+
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
 		raise ValueError("Block size must be between 14 and 32")
 	blockSize = 2**blockSizeExponent
@@ -55,7 +65,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 		results.append(b"")
 	pool = []
 	work = manager.Queue(threads)
-	
+
 	for i in range(threads):
 		p = Process(target=compressBlockTask, args=(work, results, readyForWork, pleaseKillYourself, blockSize))
 		p.start()
@@ -68,7 +78,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 				continue
 		if isinstance(nspf, Nca.Nca) and (nspf.header.contentType == Type.Content.PROGRAM or nspf.header.contentType == Type.Content.PUBLICDATA) and nspf.size > UNCOMPRESSABLE_HEADER_SIZE:
 			if isNcaPacked(nspf):
-				
+
 				offsetFirstSection = sortedFs(nspf)[0].offset
 				newFileName = nspf._path[0:-1] + 'z'
 				f = writeContainer.add(newFileName, nspf.size)
@@ -117,10 +127,12 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 				f.write(header)
 				decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 				compressedBytes = f.tell()
-				BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
-				bar = enlighten.Counter(total=nspf.size//1048576, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
-				subBars = bar.add_subcounter('green', all_fields=True)
-				
+
+				if machineReadableOutput == False:
+					BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+					bar = enlighten.Counter(total=nspf.size//1048576, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
+					subBars = bar.add_subcounter('green', all_fields=True)
+
 				partitions = []
 				if offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE > 0:
 					partitions.append(nspf.partition(offset = UNCOMPRESSABLE_HEADER_SIZE, size = offsetFirstSection-UNCOMPRESSABLE_HEADER_SIZE, cryptoType = Type.Crypto.CTR.NONE, autoOpen = True))
@@ -129,12 +141,15 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 					partitions.append(nspf.partition(offset = section.offset, size = section.size, cryptoType = section.cryptoType, cryptoKey = section.cryptoKey, cryptoCounter = bytearray(section.cryptoCounter), autoOpen = True))
 				if UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection > 0:
 						partitions[0].seek(UNCOMPRESSABLE_HEADER_SIZE-offsetFirstSection)
-				
+
 				partNr = 0
 				decompressedBytesOld = nspf.tell()//1048576
-				bar.count = nspf.tell()//1048576
-				subBars.count = f.tell()//1048576
-				bar.refresh()
+
+				if machineReadableOutput == False:
+					bar.count = nspf.tell()//1048576
+					subBars.count = f.tell()//1048576
+					bar.refresh()
+
 				while True:
 					buffer = partitions[partNr].read(blockSize)
 					while (len(buffer) < blockSize and partNr < len(partitions)-1):
@@ -164,15 +179,22 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 					decompressedBytes += len(buffer)
 					if decompressedBytes - decompressedBytesOld > 10485760: #Refresh every 10 MB
 						decompressedBytesOld = decompressedBytes
-						bar.count = decompressedBytes//1048576
-						subBars.count = compressedBytes//1048576
-						bar.refresh()
+
+						if machineReadableOutput == False:
+							bar.count = decompressedBytes//1048576
+							subBars.count = compressedBytes//1048576
+							bar.refresh()
+
+					Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell()})
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
-				bar.count = decompressedBytes//1048576
-				subBars.count = compressedBytes//1048576
-				bar.close()
+
+				if machineReadableOutput == False:
+					bar.count = decompressedBytes//1048576
+					subBars.count = compressedBytes//1048576
+					bar.close()
+
 				written = endPos - startPos
 				f.seek(blocksHeaderFilePos+24)
 				header = b""
@@ -213,13 +235,15 @@ def blockCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	nszPath = outputDir.joinpath(filePath.stem + '.nsz')
 
 	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {nszPath}')
-	
+
 	try:
 		with Pfs0.Pfs0Stream(container.getPaddedHeaderSize() if fixPadding else container.getFirstFileOffset(), None if fixPadding else container.getStringTableSize(), str(nszPath)) as nsp:
 			blockCompressContainer(container, nsp, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
+
+		Print.progress('Complete', {"filePath": str(nszPath)})
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
-			Print.error(format_exc())
+			Print.error(200, format_exc())
 		if nszPath.is_file():
 			nszPath.unlink()
 
@@ -236,9 +260,10 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 	xczPath = outputDir.joinpath(filePath.stem + '.xcz')
 
 	Print.info(f'Block compressing (level {compressionLevel}{" ldm" if useLongDistanceMode else ""}) {filePath} -> {xczPath}')
-	
+
 	try:
-		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci: # need filepath to copy XCI container settings
+		# need filepath to copy XCI container settings
+		with Xci.XciStream(str(xczPath), originalXciPath = filePath) as xci:
 			for partitionIn in container.hfs0:
 				xci.hfs0.written = False
 				hfsPartitionOut = xci.hfs0.add(partitionIn._path, 0)
@@ -247,11 +272,13 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 						blockCompressContainer(partitionIn, partitionOut, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
 					alignedSize = partitionOut.actualSize + allign0x200(partitionOut.actualSize)
 					xci.hfs0.resize(partitionIn._path, alignedSize)
-					print(f'[RESIZE]     {partitionIn._path} to {hex(alignedSize)}')
+					Print.info(f'[RESIZE]     {partitionIn._path} to {hex(alignedSize)}')
 					xci.hfs0.addpos += alignedSize
+
+		Print.progress('Complete', {"filePath": str(xczPath)})
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
-			Print.error(format_exc())
+			Print.error(201, format_exc())
 		if xczPath.is_file():
 			xczPath.unlink()
 
