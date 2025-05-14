@@ -103,8 +103,7 @@ def AllowedToWriteOutfile(filePath, targetFileExtension, targetDict, args):
 				if args.overwrite:
 					DuplicateEntriesToDelete.append(versionEntry)
 				else:
-					Print.warning('{0} with the same ID and version already exists in the output directory.\n'\
-					'If you want to overwrite it use the -w parameter!'.format(titleIDEntry[versionEntry]))
+					Print.warning('A file with the same output name already exists.')
 					return False
 			elif versionEntry < versionExtracted:
 				if args.rm_old_version:
@@ -140,8 +139,7 @@ def fileNameCheck(filePath, targetFileExtension, filesAtTarget, removeOld, overw
 	if overwrite:
 		remove(filePath)
 		return True
-	Print.info('{0} with the same file name already exists in the output directory.\n'\
-	'If you want to overwrite it use the -w parameter!'.format(Path(filePath).name))
+	Print.warning('A file with the same output name already exists.')
 	return False
 
 def delete_source_file(source_file_path, outFolder):

@@ -304,8 +304,7 @@ def main():
 						elif filePath.suffix == '.ncz':
 							outFile = Path(changeExtension(outFolder.joinpath(filePath.name), ".nca"))
 							if not args.overwrite and outFile.is_file():
-								Print.info('{0} with the same file name already exists in the output directory.\n'\
-								'If you want to overwrite it use the -w parameter!'.format(outFile.name))
+								Print.warning('A file with the same output name already exists.')
 								continue
 						decompress(filePath, outFolder, args.fix_padding)
 						if args.rm_source:
