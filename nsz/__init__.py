@@ -91,6 +91,7 @@ machineReadableOutput = False
 
 def main():
 	global err
+	global machineReadableOutput
 
 	try:
 		if len(argv) > 1:
@@ -370,7 +371,6 @@ def main():
 		input("Press Enter to exit...")
 	sys.exit(0)
 	#breakpoint()
-
 
 if __name__ == '__main__':
 	freeze_support()
