@@ -1,3 +1,4 @@
+import sys
 from nsz.nut import aes128
 from nsz.nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
@@ -38,6 +39,7 @@ class Pfs0Stream(BaseFile):
 	def write(self, value, size = None):
 		super(Pfs0Stream, self).write(value, len(value))
 		Print.progress('BufferCompression', {"processed": self.tell()})
+		sys.stdout.flush()
 		self.written = True
 		pos = self.tell()
 		if pos > self.actualSize:

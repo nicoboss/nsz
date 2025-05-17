@@ -1,3 +1,4 @@
+import sys
 from os import remove
 from nsz.nut import Print
 from time import sleep
@@ -186,6 +187,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 							bar.refresh()
 
 					Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell()})
+					sys.stdout.flush()
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
@@ -241,6 +243,7 @@ def blockCompressNsp(filePath, compressionLevel, keep, fixPadding, useLongDistan
 			blockCompressContainer(container, nsp, compressionLevel, keep, useLongDistanceMode, blockSizeExponent, threads)
 
 		Print.progress('Complete', {"filePath": str(nszPath)})
+		sys.stdout.flush()
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(200, format_exc())
@@ -276,6 +279,7 @@ def blockCompressXci(filePath, compressionLevel, keep, fixPadding, useLongDistan
 					xci.hfs0.addpos += alignedSize
 
 		Print.progress('Complete', {"filePath": str(xczPath)})
+		sys.stdout.flush()
 	except BaseException as ex:
 		if not ex is KeyboardInterrupt:
 			Print.error(201, format_exc())
