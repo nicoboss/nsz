@@ -33,12 +33,12 @@ class Nsp(Pfs0):
 		self.extractedNcaMeta = False
 
 		super(Nsp, self).__init__(None, path, mode)
-		
+
 		if path:
 			self.setPath(path)
 			#if files:
 			#	self.pack(files)
-				
+
 		if self.titleId and self.isUnlockable():
 			Print.info('unlockable title found ' + self.path)
 		#	self.unlock()
@@ -59,7 +59,7 @@ class Nsp(Pfs0):
 			if i >= len(map):
 				Print.info('invalid map index: ' + str(i) + ', ' + str(len(map)))
 				continue
-			
+
 			i = str(map[i])
 			methodName = 'set' + i[0].capitalize() + i[1:]
 			method = getattr(self, methodName, lambda x: None)
@@ -68,7 +68,7 @@ class Nsp(Pfs0):
 	def serialize(self, map = ['id', 'path', 'version', 'timestamp', 'hasValidTicket', 'extractedNcaMeta']):
 		r = []
 		for i in map:
-				
+
 			methodName = 'get' + i[0].capitalize() + i[1:]
 			method = getattr(self, methodName, lambda: methodName)
 			r.append(str(method()))
@@ -76,17 +76,17 @@ class Nsp(Pfs0):
 
 	def __lt__(self, other):
 		return str(self.path) < str(other.path)
-				
+
 	def __iter__(self):
 		return self.files.__iter__()
-		
+
 	def title(self):
 		if not self.titleId:
 			raise IOError('NSP no titleId set')
-			
+
 		if self.titleId in Titles.keys():
 			return Titles.get(self.titleId)
-			
+
 		t = Title.Title()
 		t.setId(self.titleId)
 		Titles.data()[self.titleId] = t
@@ -164,11 +164,11 @@ class Nsp(Pfs0):
 
 	def getVersion(self):
 		return self.version or ''
-			
-	def setPath(self, path):			
+
+	def setPath(self, path):
 		self.path = path
 		self.version = '0'
-		
+
 		z = re.match(r'.*\[([a-zA-Z0-9]{16})\].*', path, re.I)
 		if z:
 			self.titleId = z.groups()[0].upper()
@@ -177,7 +177,7 @@ class Nsp(Pfs0):
 			self.titleId = None
 
 		z = re.match(r'.*\[v([0-9]+)\].*', path, re.I)
-		
+
 		if z:
 			self.version = z.groups()[0]
 
@@ -188,15 +188,15 @@ class Nsp(Pfs0):
 			if self.hasValidTicket is None:
 				self.setHasValidTicket(False)
 		else:
-			print('unknown extension ' + str(path))
+			Print.info('unknown extension ' + str(path))
 			return
 
 	def getPath(self):
 		return self.path or ''
-			
+
 	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Nsp, self).open(path or self.path, mode, cryptoType, cryptoKey, cryptoCounter)
-					
+
 		return True
 
 	def cleanFilename(self, s):
@@ -216,7 +216,7 @@ class Nsp(Pfs0):
 		self.ticketless = True
 		# Exception suppressed to allow compress/decompress of ticketless -single base game or multicontent- dump files.
 		#raise IOError('no ticket in NSP')
-		
+
 	def cnmt(self):
 		for f in (f for f in self if f._path.endswith('.cnmt.nca')):
 			return f
@@ -229,15 +229,15 @@ class Nsp(Pfs0):
 
 	def hasDeltas(self):
 		return b'DeltaFragment' in self.xml().read()
-		
+
 	def application(self):
 		for f in (f for f in self if f._path.endswith('.nca') and not f._path.endswith('.cnmt.nca')):
 			return f
 		raise IOError('no application in NSP')
-		
+
 	def isUnlockable(self):
 		return (not self.hasValidTicket) and self.titleId and Titles.contains(self.titleId) and Titles.get(self.titleId).key
-		
+
 	def unlock(self):
 		#if not self.isOpen():
 		#	self.open('r+b')
@@ -367,28 +367,28 @@ class Nsp(Pfs0):
 
 				Print.info('writing isGameCard for %s, %d' % (str(nca._path),  targetValue))
 				nca.header.setIsGameCard(targetValue)
-			
-		
+
+
 	def pack(self, files):
 		if not self.path:
 			return False
-			
+
 		Print.info('\tRepacking to NSP...')
-		
+
 		hd = self.generateHeader(files)
-		
+
 		totalSize = len(hd) + sum(os.path.getsize(file) for file in files)
 		if os.path.exists(self.path) and os.path.getsize(self.path) == totalSize:
 			Print.info('\t\tRepack %s is already complete!' % self.path)
 			return
-			
+
 		t = enlighten.Counter(total=totalSize, unit='B', desc=os.path.basename(self.path), leave=False)
-		
+
 		Print.info('\t\tWriting header...')
 		outf = open(self.path, 'wb')
 		outf.write(hd)
 		t.update(len(hd))
-		
+
 		done = 0
 		for f_str in files:
 			for filePath in expandFiles(Path(f_str)):
@@ -401,7 +401,7 @@ class Nsp(Pfs0):
 						outf.write(buf)
 						t.update(len(buf))
 		t.close()
-		
+
 		Print.info('\t\tRepacked to %s!' % outf.name)
 		outf.close()
 
@@ -409,13 +409,13 @@ class Nsp(Pfs0):
 		filesNb = len(files)
 		stringTable = '\x00'.join(os.path.basename(file) for file in files)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
-		
+
 		fileSizes = [os.path.getsize(file) for file in files]
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
-		
+
 		fileNamesLengths = [len(os.path.basename(file))+1 for file in files] # +1 for the \x00
 		stringTableOffsets = [sum(fileNamesLengths[:n]) for n in range(filesNb)]
-		
+
 		header =  b''
 		header += b'PFS0'
 		header += pk('<I', filesNb)
@@ -427,7 +427,7 @@ class Nsp(Pfs0):
 			header += pk('<I', stringTableOffsets[n])
 			header += b'\x00\x00\x00\x00'
 		header += stringTable.encode()
-		
+
 		return header
 
 	def verifyKey(self, key):
@@ -443,7 +443,7 @@ class Nsp(Pfs0):
 			hash = str(f.sha256())
 
 			if hash[0:16] != str(f._path)[0:16]:
-				Print.error('BAD HASH %s = %s' % (str(f._path), str(f.sha256())))
+				Print.error(600, 'BAD HASH %s = %s' % (str(f._path), str(f.sha256())))
 				success = False
 
 		return success

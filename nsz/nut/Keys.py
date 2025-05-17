@@ -59,22 +59,22 @@ def keyAreaKey(cryptoType, i):
 
 def get(key):
 	return keys[key]
-	
+
 def getTitleKek(i):
 	return titleKeks[i]
-	
+
 def decryptTitleKey(key, i):
 	kek = getTitleKek(i)
-	
+
 	crypto = aes128.AESECB(uhx(kek))
 	return crypto.decrypt(key)
-	
+
 def encryptTitleKey(key, i):
 	kek = getTitleKek(i)
-	
+
 	crypto = aes128.AESECB(uhx(kek))
 	return crypto.encrypt(key)
-	
+
 def changeTitleKeyMasterKey(key, currentMasterKeyIndex, newMasterKeyIndex):
 	return encryptTitleKey(decryptTitleKey(key, currentMasterKeyIndex), newMasterKeyIndex)
 
@@ -105,13 +105,13 @@ def unwrapAesWrappedTitlekey(wrappedKey, keyGeneration):
 
 def getKey(key):
 	if key not in keys:
-		Print.error('{0} missing from {1}! This will lead to corrupted output.'.format(key, loadedKeysFile))
+		Print.error(700,'{0} missing from {1}! This will lead to corrupted output.'.format(key, loadedKeysFile))
 		raise IOError('{0} missing from {1}! This will lead to corrupted output.'.format(key, loadedKeysFile))
 	foundKey = uhx(keys[key])
 	foundKeyChecksum = crc32(foundKey)
 	if key in crc32_checksum:
 		if crc32_checksum[key] != foundKeyChecksum:
-			Print.error('{0} from {1} is invalid (crc32 missmatch)! This will lead to corrupted output.'.format(key, loadedKeysFile))
+			Print.error(701, '{0} from {1} is invalid (crc32 missmatch)! This will lead to corrupted output.'.format(key, loadedKeysFile))
 			raise IOError('{0} from {1} is invalid (crc32 missmatch)! This will lead to corrupted output.'.format(key, loadedKeysFile))
 	elif current_process().name == 'MainProcess':
 		Print.info('Unconfirmed: crc32({0}) = {1}'.format(key, foundKeyChecksum))
@@ -119,7 +119,7 @@ def getKey(key):
 
 def getMasterKey(masterKeyIndex):
 	return getKey('master_key_{0:02x}'.format(masterKeyIndex))
-	
+
 def existsMasterKey(masterKeyIndex):
 	return 'master_key_{0:02x}'.format(masterKeyIndex) in keys
 
@@ -129,24 +129,24 @@ def load(fileName):
 		global titleKeks
 		global loadedKeysFile
 		loadedKeysFile = fileName
-		
+
 		with open(fileName, encoding="utf8") as f:
 			for line in f.readlines():
 				r = re.match(r'\s*([a-z0-9_]+)\s*=\s*([A-F0-9]+)\s*', line, re.I)
 				if r:
 					keys[r.group(1)] = r.group(2)
-		
+
 		aes_kek_generation_source = getKey('aes_kek_generation_source')
 		aes_key_generation_source = getKey('aes_key_generation_source')
 		titlekek_source = getKey('titlekek_source')
 		key_area_key_application_source = getKey('key_area_key_application_source')
 		key_area_key_ocean_source = getKey('key_area_key_ocean_source')
 		key_area_key_system_source = getKey('key_area_key_system_source')
-		
+
 		keyAreaKeys = []
 		for i in range(32):
 			keyAreaKeys.append([None, None, None])
-		
+
 		for i in range(32):
 			if not existsMasterKey(i):
 				continue
@@ -157,8 +157,8 @@ def load(fileName):
 			keyAreaKeys[i][1] = generateKek(key_area_key_ocean_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
 			keyAreaKeys[i][2] = generateKek(key_area_key_system_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
 	except BaseException as e:
-		Print.error(format_exc())
-		Print.error(str(e))
+		Print.error(702, format_exc())
+		Print.error(702, str(e))
 
 
 
@@ -174,7 +174,7 @@ elif dumpedKeys.is_file():
 	load(str(dumpedKeys))
 else:
 	errorMsg = "{0} or {1} not found!\nPlease dump your keys using https://github.com/shchmue/Lockpick_RCM/releases".format(str(keypath), str(dumpedKeys))
-	Print.error(errorMsg)
+	Print.error(703, errorMsg)
 	if sys.stdin.isatty() and sys.stdout.isatty():
 	    input("Press Enter to exit...")
 	sys.exit(1)

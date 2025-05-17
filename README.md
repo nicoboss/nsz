@@ -1,28 +1,40 @@
 # NSZ
+
 A compression/decompresson script (with optional GUI) that allows user to compress/decompress Nintendo Switch dumps loselessly, thanks to [zstd](https://github.com/facebook/zstd) compression algorithm. The compressed file can be installed directly with supported NSW Homebrew Title Installers.
 
 ## Mirror
-A Swiss mirror of this repository is maintained under https://gitlab.nicobosshard.ch/nicoboss/nsz \
+
+A Swiss mirror of this repository is maintained under <https://gitlab.nicobosshard.ch/nicoboss/nsz> \
 This will be the new home in case GitHub ever takes down nsz. Please bookmark it.
 
 ## Legal
+
 - This project does NOT incorporate any copyrighted material such as cryptographic keys. All keys must be provided by the user.
 - This project does NOT circumvent any technological protection measures. The NSZ file format purposely keeps all technological protection measures in place.
 - This project shall only be used for legally purchased games.
 - This project is MIT licensed. Check [LICENSE](https://github.com/nicoboss/nsz/blob/master/LICENSE) for more information.
 
-## Installation:
+## Installation
+
 There are several ways the install this tool. You can find details on installation for all of them below.\
 \
 **You need to have a hactool compatible keys file in a suitable directory to use this tool**.\
-The keys file must be located as `prod.keys` file in `%USERPROFILE%/.switch/`(Windows)/`$HOME/.switch/`(UNIX) or `keys.txt` in the working directory. You must legally obtain your keys!
+The keys file must be located available as `prod.keys`. You must legally obtain your keys!
+
+| OS      | Location                 |
+| ------- | ------------------------ |
+| Linux   | `$HOME/.switch/`         |
+| macOS   | `$HOME/.switch/`         |
+| windows | `%USERPROFILE%/.switch/` |
 
 ### Windows Builds
+
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.
 
 **Methods listed below requires you to have Python 3.6+ and pip3 installed.**
 
 ### PIP Package
+
 Use the following command to install the console-only version:\
 `pip3 install --upgrade nsz`
 
@@ -30,6 +42,7 @@ Use the following command to install the GUI version:\
 `pip3 install --upgrade nsz[gui]`
 
 ### Android
+
 1. Install "Pydroid 3" and the "Pydroid repository plugin" from the Play Store
 2. Open "Pydroid 3" and navigate to "Pip"
 3. Enter "nsz" and unselect "use prebuild" then press install
@@ -38,6 +51,7 @@ Use the following command to install the GUI version:\
 6. Use any command line arguments you want like "nsz -D file.nsz" to decompress your game
 
 ### Running from source
+
 The tool can also be run by cloning the repository, installing the requirements and then executing nsz using `python3 nsz.py`
 
 Use the following command to install the console-only versions requirements:\
@@ -47,6 +61,7 @@ Use the following command to install the GUI versions requirements:\
 `pip3 install -r requirements-gui.txt`
 
 ## Usage
+
 ```
 nsz.py --help
 usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K]
@@ -161,14 +176,17 @@ options:
   -c CREATE, --create CREATE
                         Inverse of --extract. Repacks files/folders to an NSP.
                         Example: --create out.nsp .\in
+  --machine-readable    Restricts terminal output and reports in a way that
+                        is easier for a machine to read.
 ```
 
 ## Few Usage Examples
-* To compress all files in a folder: `nsz -C /path/to/folder/with/dumps/`
-* To compress all files in a folder and verifying integrity of compressed files: `nsz --verify -C /path/to/folder/with/dumps/`
-* To compress all files in a folder with 8 threads and outputting resulting files to a new directory: `nsz --threads 8 --output /path/to/out/dir/ -C /path/to/folder/with/dumps/`
-* To compress all files in a folder with level 22 compression level: `nsz --level 22 -C /path/to/folder/with/dumps/`
-* To decompress all files in a folder: `nsz -D /path/to/folder/with/dumps/`
+
+- To compress all files in a folder: `nsz -C /path/to/folder/with/dumps/`
+- To compress all files in a folder and verifying integrity of compressed files: `nsz --verify -C /path/to/folder/with/dumps/`
+- To compress all files in a folder with 8 threads and outputting resulting files to a new directory: `nsz --threads 8 --output /path/to/out/dir/ -C /path/to/folder/with/dumps/`
+- To compress all files in a folder with level 22 compression level: `nsz --level 22 -C /path/to/folder/with/dumps/`
+- To decompress all files in a folder: `nsz -D /path/to/folder/with/dumps/`
 
 To view all the possible flags and a description on what each flag, check the [Usage](https://github.com/nicoboss/nsz#usage) section.
 
@@ -177,14 +195,17 @@ To automate bulk file operations you might want to check out [automation script 
 ## File Format Details
 
 ### NSZ
+
 NSZ files are functionally identical to NSP files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
-As an alternative to this tool NSC_Builder also supports compressing NSP to NSZ, and decompressing NSZ to NSP. NSC_Builder can be downloaded at https://github.com/julesontheroad/NSC_BUILDER
+As an alternative to this tool NSC_Builder also supports compressing NSP to NSZ, and decompressing NSZ to NSP. NSC_Builder can be downloaded at <https://github.com/julesontheroad/NSC_BUILDER>
 
 ### XCZ
+
 XCZ files are functionally identical to XCI files. Their sole purpose to alert the user that it contains compressed NCZ files. NCZ files can be mixed with NCA files in the same container.
 
 ### NCZ
+
 These are compressed NCA files. The NCA's are decrypted, and then compressed using zStandard.
 
 The first 0x4000 bytes of an NCZ file is exactly the same as the original NCA (and still encrypted). This applies even if the first section doesn't start at 0x4000.
@@ -193,46 +214,49 @@ At 0x4000, there is the variable sized NCZ Header. It contains a list of section
 
 All of the information in the header can be derived from the original NCA + Ticket, however it is provided pre-parsed to make decompression as easy as possible for third parties.
 
-Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splitted into independent blocks and can be decompressed as shown in https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py. CompressedBlockSizeList[blockID] must not exceed decompressedBlockSize. If smaller the block must be decompressed. If equal the block is stored in plain text.
+Directly after the NCZ header, the zStandard stream begins and ends at EOF. The stream is decompressed to offset 0x4000. If block compression is used the stream is splitted into independent blocks and can be decompressed as shown in <https://github.com/nicoboss/nsz/blob/master/nsz/BlockDecompressorReader.py>. CompressedBlockSizeList[blockID] must not exceed decompressedBlockSize. If smaller the block must be decompressed. If equal the block is stored in plain text.
 
 ```python
 class Section:
-	def __init__(self, f):
-		self.magic = f.read(8) # b'NCZSECTN'
-		self.offset = f.readInt64()
-		self.size = f.readInt64()
-		self.cryptoType = f.readInt64()
-		f.readInt64() # padding
-		self.cryptoKey = f.read(16)
-		self.cryptoCounter = f.read(16)
+ def __init__(self, f):
+  self.magic = f.read(8) # b'NCZSECTN'
+  self.offset = f.readInt64()
+  self.size = f.readInt64()
+  self.cryptoType = f.readInt64()
+  f.readInt64() # padding
+  self.cryptoKey = f.read(16)
+  self.cryptoCounter = f.read(16)
 
 class Block:
-	def __init__(self, f):
-		self.magic = f.read(8) # b'NCZBLOCK'
-		self.version = f.readInt8()
-		self.type = f.readInt8()
-		self.unused = f.readInt8()
-		self.blockSizeExponent = f.readInt8()
-		self.numberOfBlocks = f.readInt32()
-		self.decompressedSize = f.readInt64()
-		self.compressedBlockSizeList = []
-		for i in range(self.numberOfBlocks):
-			self.compressedBlockSizeList.append(f.readInt32())
+ def __init__(self, f):
+  self.magic = f.read(8) # b'NCZBLOCK'
+  self.version = f.readInt8()
+  self.type = f.readInt8()
+  self.unused = f.readInt8()
+  self.blockSizeExponent = f.readInt8()
+  self.numberOfBlocks = f.readInt32()
+  self.decompressedSize = f.readInt64()
+  self.compressedBlockSizeList = []
+  for i in range(self.numberOfBlocks):
+   self.compressedBlockSizeList.append(f.readInt32())
 
 nspf.seek(0x4000)
 sectionCount = nspf.readInt64()
 for i in range(sectionCount):
-	sections.append(Section(nspf))
+ sections.append(Section(nspf))
 
 if blockCompression:
-	BlockHeader = Block(nspf)
+ BlockHeader = Block(nspf)
 ```
 
 ## References
-NSZ pip package: https://pypi.org/project/nsz/  
-Forum thread: https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compressor-decompressor.550556/
+
+NSZ pip package: <https://pypi.org/project/nsz/>
+
+Forum thread: <https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compressor-decompressor.550556/>
 
 ## Credits
+
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
 
-Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni, anthonyu, teknoraver, KWottrich, gabest11, siddhartha77, alucryd, seiya-git, drizzt, 16BitWonder, 2weak2live, thatch, maki-chan, pR0Ps
+Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni, anthonyu, teknoraver, KWottrich, gabest11, siddhartha77, alucryd, seiya-git, drizzt, 16BitWonder, 2weak2live, thatch, maki-chan, pR0Ps, and clearmist.

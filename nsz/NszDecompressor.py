@@ -32,7 +32,7 @@ def decompress(filePath, outputDir, fixPadding, statusReportInfo, pleaseNoPrint 
 					Print.info('[MISMATCH]   Filename startes with {0} but {1} was expected - hash verified failed!'.format(fileNameHash, hexHash[:32]), pleaseNoPrint)
 		except BaseException as ex:
 			if not ex is KeyboardInterrupt:
-				Print.error(format_exc())
+				Print.error(400, format_exc())
 			if Path(outPath).is_file():
 				Path(outPath).unlink()
 		finally:
@@ -156,7 +156,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	if not useBlockCompression:
 		decompressor = ZstdDecompressor().stream_reader(nspf)
 	hash = sha256()
-	
+
 	if statusReportInfo == None:
 		BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 		bar = enlighten.Counter(total=nca_size//1048576, desc='Decompress', unit="MiB", color='red', bar_format=BAR_FMT)
@@ -214,7 +214,7 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		bar.close()
 		#Line break after closing the process bar is required to prevent
 		#the next output from being on the same line as the process bar
-		print()
+		Print.info("\n")
 	hexHash = hash.hexdigest()
 	if f != None:
 		end = f.tell()
@@ -227,7 +227,7 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
 	fileHashes = FileExistingChecks.ExtractHashes(container)
-	
+
 	try:
 		if write:
 			filePathNsp = changeExtension(filePath, '.nsp')
@@ -239,7 +239,7 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 			with Pfs0.Pfs0VerifyStream(container.getPaddedHeaderSize() if fixPadding else container.getFirstFileOffset(), None if fixPadding else container.getStringTableSize()) as nsp:
 				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
 				Print.info("[NSP SHA256] " + nsp.getHash())
-				if originalFilePath != None: 
+				if originalFilePath != None:
 					originalContainer = factory(originalFilePath)
 					CHUNK_SZ = 0x100000
 					originalHash = sha256()
@@ -280,7 +280,7 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 def __decompressXcz(filePath, outputDir, fixPadding, write, raiseVerificationException, raisePfs0Exception, originalFilePath, statusReportInfo, pleaseNoPrint):
 	container = factory(filePath)
 	container.open(str(filePath), 'rb')
-	
+
 	if write:
 		filePathXci = changeExtension(filePath, '.xci')
 		outPath = filePathXci if outputDir == None else str(Path(outputDir).joinpath(Path(filePathXci).name))
