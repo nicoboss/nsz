@@ -25,10 +25,10 @@ class BaseFile:
 		self._bufferSize = 0x1000
 		self._bufferAlign = 0x1000
 		self._bufferDirty = False
-		
+
 		if path and mode != None:
 			self.open(path, mode, cryptoType, cryptoKey, cryptoCounter)
-		
+
 		self.setupCrypto(cryptoType, cryptoKey, cryptoCounter)
 
 	def __enter__(self):
@@ -39,33 +39,33 @@ class BaseFile:
 
 	def __del__(self):
 		self.close()
-			
+
 	def enableBufferedIO(self, size, align = 0):
 		self._bufferSize = size
 		self._bufferAlign = align
 		self._bufferOffset = None
 		self._relativePos = 0x0
-			
+
 	def partition(self, offset = 0x0, size = None, n = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, autoOpen = True):
 		if not n:
 			n = File()
 		#Print.info('partition: ' + str(self) + ', ' + str(n))
-			
+
 		n.offset = offset
-		
+
 		if not size:
 			size = self.size - n.offset - self.offset
-			
+
 		n.size = size
 		n.f = self
 		n.isPartition = True
 
 		self._children.append(n)
-		
+
 		#Print.info('created partition for %s %x, size = %d' % (n.__class__.__name__, offset, size))
 		if autoOpen == True:
 			n.open(None, None, cryptoType, cryptoKey, cryptoCounter)
-		
+
 		return n
 
 	def removeChild(self, child):
@@ -76,25 +76,25 @@ class BaseFile:
 				a.append(i)
 
 		self._children = a
-		
+
 	def read(self, size = None, direct = False):
 		if not size:
 			size = self.size
 
 		return self.f.read(size)
-		
+
 	def readInt8(self, byteorder='little', signed = False):
 		return self.read(1)[0]
-		
+
 	def readInt16(self, byteorder='little', signed = False):
 		return int.from_bytes(self.read(2), byteorder=byteorder, signed=signed)
-		
+
 	def readInt32(self, byteorder='little', signed = False):
 		return int.from_bytes(self.read(4), byteorder=byteorder, signed=signed)
 
 	def readInt48(self, byteorder='little', signed = False):
 		return int.from_bytes(self.read(6), byteorder=byteorder, signed=signed)
-		
+
 	def readInt64(self, byteorder='little', signed = False):
 		return int.from_bytes(self.read(8), byteorder=byteorder, signed=signed)
 
@@ -103,7 +103,7 @@ class BaseFile:
 
 	def readInt(self, size, byteorder='little', signed = False):
 		return int.from_bytes(self.read(size), byteorder=byteorder, signed=signed)
-		
+
 	def write(self, value, size = None):
 		if size != None:
 			value = value + b'\0x00' * (size - len(value))
@@ -113,13 +113,13 @@ class BaseFile:
 
 	def writeInt8(self, value, byteorder='little', signed = False):
 		return self.write(value.to_bytes(1, byteorder))
-		
+
 	def writeInt16(self, value, byteorder='little', signed = False):
 		return self.write(value.to_bytes(2, byteorder))
-		
+
 	def writeInt32(self, value, byteorder='little', signed = False):
 		return self.write(value.to_bytes(4, byteorder))
-		
+
 	def writeInt64(self, value, byteorder='little', signed = False):
 		return self.write(value.to_bytes(8, byteorder))
 
@@ -128,13 +128,13 @@ class BaseFile:
 
 	def writeInt(self, value, size, byteorder='little', signed = False):
 		return self.write(value.to_bytes(size, byteorder))
-	
+
 	def seek(self, offset, from_what = 0):
 		if not self.isOpen():
 			raise IOError('Trying to seek on closed file')
 
 		if from_what == 0:
-			# seek from begining				
+			# seek from begining
 			self.f.seek(self.offset + offset)
 			#if self.cryptoType == Fs.Type.Crypto.CTR:
 			#	self.crypto.set_ctr(self.setCounter(self.offset + self.tell()))
@@ -156,40 +156,40 @@ class BaseFile:
 			#if self.cryptoType == Fs.Type.Crypto.CTR:
 			#	self.crypto.set_ctr(self.setCounter(self.offset + self.tell()))
 			return
-			
+
 		raise Exception('Invalid seek type')
-		
+
 	def rewind(self, offset = None):
 		if offset:
 			self.seek(-offset, 1)
 		else:
 			self.seek(0)
-			
+
 	def setupCrypto(self, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		if cryptoType != -1:
 			self.cryptoType = cryptoType
-			
+
 		if cryptoKey != -1:
 			self.cryptoKey = cryptoKey
-			
+
 		if cryptoCounter != -1:
 			self.cryptoCounter = cryptoCounter
-			
+
 		if self.cryptoType == nsz.Fs.Type.Crypto.CTR or self.cryptoType == nsz.Fs.Type.Crypto.BKTR:
 			if self.cryptoKey:
 				self.crypto = aes128.AESCTR(self.cryptoKey, nonce = self.cryptoCounter.copy())
 				self.cryptoType = nsz.Fs.Type.Crypto.CTR
-			
+
 				self.enableBufferedIO(0x10, 0x10)
 
 		elif self.cryptoType == nsz.Fs.Type.Crypto.XTS:
 			if self.cryptoKey:
 				self.crypto = aes128.AESXTS(self.cryptoKey)
 				self.cryptoType = nsz.Fs.Type.Crypto.XTS
-			
+
 				if self.size < 1 or self.size > 0xFFFFFF:
 					raise IOError('AESXTS Block too large or small')
-			
+
 				self.rewind()
 				self.enableBufferedIO(self.size, 0x10)
 
@@ -205,11 +205,11 @@ class BaseFile:
 		if path != None:
 			if self.isOpen():
 				self.close()
-				
+
 			if isinstance(path, str):
 				self.f = open(path, mode)
 				self._path = path
-				
+
 				self.f.seek(0,2)
 				self.size = self.f.tell()
 				self.f.seek(0,0)
@@ -219,9 +219,9 @@ class BaseFile:
 			else:
 				raise IOError('Invalid file parameter')
 
-		
+
 		self.setupCrypto(cryptoType, cryptoKey, cryptoCounter)
-		
+
 	def close(self):
 		if self.f:
 			self.flush()
@@ -238,7 +238,7 @@ class BaseFile:
 	def flush(self):
 		if self.f:
 			self.f.flush()
-		
+
 	def tell(self):
 		return self.f.tell() - self.offset
 
@@ -249,10 +249,10 @@ class BaseFile:
 
 	def eof(self):
 		return self.tell() >= self.size
-		
+
 	def isOpen(self):
 		return self.f != None
-		
+
 	def setCounter(self, ofs):
 		ctr = self.cryptoCounter.copy()
 		ofs >>= 4
@@ -260,20 +260,20 @@ class BaseFile:
 			ctr[0x10-j-1] = ofs & 0xFF
 			ofs >>= 8
 		return bytes(ctr)
-		
+
 	def setBktrCounter(self, ctr_val, ofs):
 		ctr = self.cryptoCounter.copy()
 		ofs >>= 4
 		for j in range(8):
 			ctr[0x10-j-1] = ofs & 0xFF
 			ofs >>= 8
-			
+
 		for j in range(4):
 			ctr[0x8-j-1] = ctr_val & 0xFF
 			ctr_val >>= 8
-			
+
 		return bytes(ctr)
-		
+
 	def printInfo(self, maxDepth = 3, indent = 0):
 		tabs = '\t' * indent
 		if self._path:
@@ -283,7 +283,7 @@ class BaseFile:
 
 	def sha256(self):
 		hash = hashlib.sha256()
-	
+
 		self.rewind()
 
 		if self.size >= 10000:
@@ -318,7 +318,7 @@ class BufferedFile(BaseFile):
 			offsetModSize = (dataOffset + size) % self._bufferSize
 			garbageAtEnd = 0 if offsetModSize == 0 else self._bufferSize - offsetModSize
 			pageReadSize = dataOffset + size + garbageAtEnd
-			
+
 			if pageReadSize > self.size - self._bufferOffset:
 				pageReadSize = self.size - self._bufferOffset
 
@@ -328,7 +328,7 @@ class BufferedFile(BaseFile):
 			self.pageRefreshed()
 			if len(self._buffer) == 0:
 				raise IOError('read returned empty ' + hex(self.tellAbsolute()))
-				
+
 		offset = self._relativePos - self._bufferOffset
 		r = self._buffer[offset:offset+size]
 		self._relativePos += size
@@ -347,12 +347,12 @@ class BufferedFile(BaseFile):
 			pos = self.tell()
 			self.read(size)
 			self.seek(pos)
-				
+
 		offset = self._relativePos - self._bufferOffset
 		self._buffer = self._buffer[:offset] + (value) + self._buffer[offset+size:]
 		self._relativePos += size
 		self._bufferDirty = True
-		
+
 		return
 
 	def flushBuffer(self):
@@ -394,7 +394,7 @@ class BufferedFile(BaseFile):
 			raise IOError('Trying to seek on closed file')
 
 		f = self.f
-		
+
 
 		if from_what == 0:
 			# seek from begining
@@ -406,7 +406,7 @@ class BufferedFile(BaseFile):
 			if self._buffer:
 				self._relativePos += offset
 				return
-			
+
 			r = f.seek(self.offset + offset)
 			return r
 
@@ -416,7 +416,7 @@ class BufferedFile(BaseFile):
 				raise Exception('Invalid seek offset')
 			self._relativePos = self.size + offset
 			return
-			
+
 		raise Exception('Invalid seek type')
 
 class File(BufferedFile):
@@ -458,7 +458,7 @@ class MemoryFile(File):
 		return
 
 	def seek(self, offset, from_what = 0):
-		if from_what == 0:			
+		if from_what == 0:
 			self._relativePos = offset
 			return
 		elif from_what == 1:
@@ -473,7 +473,7 @@ class MemoryFile(File):
 
 	def open(self, path, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		return
-		
+
 class CryptoFile(BufferedFile):
 	def __init__(self, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(CryptoFile, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter)

@@ -7,6 +7,7 @@ from nsz.gui.FileDialogs import *
 from nsz.gui.AboutDialog import *
 from nsz.gui.GuiPath import *
 from nsz.PathTools import *
+from nsz.nut import Print
 from nsz import FileExistingChecks
 
 class RootWidget(FloatLayout):
@@ -14,7 +15,7 @@ class RootWidget(FloatLayout):
 	savefile = ObjectProperty(None)
 	text_input = ObjectProperty(None)
 	gameList = None
-	
+
 	hardExit = True
 	C = False
 	D = False
@@ -24,38 +25,38 @@ class RootWidget(FloatLayout):
 	titlekeys = False
 	extract = False
 	create = False
-	
+
 	def __init__(self, gameList, **kwargs):
 		Builder.load_file(getGuiPath('layout/RootWidget.kv'))
 		super(RootWidget, self).__init__(**kwargs)
 		self.ids.inFilesLayout.add_widget(gameList)
 		self.gameList = gameList
-		
+
 	def Compress(self):
 		self.C = True
 		self.hardExit = False
 		App.get_running_app().stop()
-		
+
 	def Decompress(self):
 		self.D = True
 		self.hardExit = False
 		App.get_running_app().stop()
-		
+
 	def Verify(self):
 		self.verify = True
 		self.hardExit = False
 		App.get_running_app().stop()
-		
+
 	def Info(self):
 		self.info = True
 		self.hardExit = False
 		App.get_running_app().stop()
-		
+
 	def Titlekeys(self):
 		self.titlekeys = True
 		self.hardExit = False
 		App.get_running_app().stop()
-		
+
 	def Extract(self):
 		self.extract = True
 		self.hardExit = False
@@ -74,7 +75,7 @@ class RootWidget(FloatLayout):
 		content = OpenFileDialog(load=self.setOutputFileFolder, cancel=self.dismissPopup, filters=[self.showNoFiles])
 		self._popup = Popup(title="Output File/Folder", content=content, size_hint=(0.9, 0.9))
 		self._popup.open()
-		
+
 	def showNoFiles(self, foldername, filename):
 		return False
 
@@ -92,9 +93,9 @@ class RootWidget(FloatLayout):
 
 	def setOutputFileFolder(self, path, filename):
 		self.output = path
-		print("Set --output to {0}".format(self.output))
+		Print.info("Set --output to {0}".format(self.output))
 		self.dismissPopup()
-		
+
 	def showAboutDialog(self):
 		content = AboutDialog(cancel=self.dismissPopup)
 		self._popup = Popup(title="About", content=content, auto_dismiss=False, size_hint=(0.9, 0.9))

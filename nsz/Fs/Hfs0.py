@@ -1,3 +1,4 @@
+import sys
 from nsz.nut import aes128
 from nsz.nut import Hex
 from binascii import hexlify as hx, unhexlify as uhx
@@ -30,12 +31,14 @@ class Hfs0Stream(BaseFile):
 
 	def __enter__(self):
 		return self
-		
+
 	def __exit__(self, type, value, traceback):
 		self.close()
 
 	def write(self, value, size = None):
 		super(Hfs0Stream, self).write(value, len(value))
+		Print.progress('BufferCompression', {"processed": self.tell()})
+		sys.stdout.flush()
 		self.written = True
 		pos = self.tell()
 		if pos > self.actualSize:
@@ -63,7 +66,7 @@ class Hfs0Stream(BaseFile):
 				i['size'] = size
 				return True
 		return False
-		
+
 	def currentFileSize(self):
 		return self.f.tell() - self.files[-1]['offset']
 
@@ -78,15 +81,15 @@ class Hfs0Stream(BaseFile):
 
 	def getHeader(self):
 		stringTable = '\x00'.join(file['name'] for file in self.files)+'\x00'
-		
+
 		headerSize = 0x10 + len(self.files) * 0x40 + len(stringTable)
-	
+
 		h = b''
 		h += b'HFS0'
 		h += len(self.files).to_bytes(4, byteorder='little')
 		h += (len(stringTable)).to_bytes(4, byteorder='little')
 		h += b'\x00\x00\x00\x00'
-		
+
 		stringOffset = 0
 
 		for f in self.files:
@@ -98,11 +101,11 @@ class Hfs0Stream(BaseFile):
 			h += sizeOfHashedRegion.to_bytes(4, byteorder='little')
 			h += b'\x00' * 8
 			h += b'\x00' * 0x20 # sha256 hash of region
-			
+
 			stringOffset += len(f['name']) + 1
-			
+
 		h += stringTable.encode()
-		
+
 		return h
 
 class Hfs0(Pfs0):
@@ -116,7 +119,7 @@ class Hfs0(Pfs0):
 		self.magic = self.read(0x4);
 		if self.magic != b'HFS0':
 			raise IOError('Not a valid HFS0 partition %s @ %x' % (str(self.magic), self.tellAbsolute() - 4))
-			
+
 
 		fileCount = self.readInt32()
 		stringTableSize = self.readInt32()
@@ -125,7 +128,7 @@ class Hfs0(Pfs0):
 		self.seek(0x10 + fileCount * 0x40)
 		stringTable = self.read(stringTableSize)
 		stringEndOffset = stringTableSize
-		
+
 		headerSize = 0x10 + 0x40 * fileCount + stringTableSize
 		self.files = []
 
@@ -161,7 +164,7 @@ class Hfs0(Pfs0):
 
 	def unpack(self, path, extractregex=r"*"):
 		os.makedirs(str(path), exist_ok=True)
-	
+
 		for hfsf in self:
 			filePath_str = str(path.joinpath(hfsf._path))
 			if not re.match(extractregex, filePath_str):
@@ -169,9 +172,9 @@ class Hfs0(Pfs0):
 			f = open(filePath_str, 'wb')
 			hfsf.rewind()
 			i = 0
-	
+
 			pageSize = 0x100000
-	
+
 			while True:
 				buf = hfsf.read(pageSize)
 				if len(buf) == 0:

@@ -11,7 +11,7 @@ from time import sleep
 from nsz.Fs import Nsp, Hfs0, factory
 from nsz.BlockCompressor import blockCompress
 from nsz.SolidCompressor import solidCompress
-from traceback import print_exc, format_exc
+from traceback import format_exc
 from nsz.NszDecompressor import verify as NszVerify, decompress as NszDecompress, VerificationException
 from multiprocessing import cpu_count, freeze_support, Process, Manager
 from nsz.FileExistingChecks import CreateTargetDict, AllowedToWriteOutfile, delete_source_file
@@ -33,7 +33,6 @@ if hasattr(sys, 'getandroidapilevel'):
 else:
     from nsz.ThreadSafeCounterSharedMemory import Counter
 
-
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id, problemQueue):
 	while True:
 		readyForWork.increment()
@@ -49,8 +48,8 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 				try:
 					verify(outFile, fixPadding, True, keep, None if quickVerify else filePath, [statusReport, id], pleaseNoPrint)
 				except VerificationException as e:
-					Print.error("[BAD VERIFY] {0}".format(outFile))
-					Print.error("[DELETE NSZ] {0}".format(outFile))
+					Print.error(100, "[BAD VERIFY] {0}".format(outFile))
+					Print.error(101, "[DELETE NSZ] {0}".format(outFile))
 					remove(outFile)
 					problemQueue.put(VerificationFailed(exception=e, in_file=filePath))
 					continue
@@ -62,7 +61,7 @@ def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleas
 
 def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 	compressionLevel = 18 if args.level is None else args.level
-	
+
 	if filePath.suffix == ".xci" and not args.solid or args.block:
 		threadsToUseForBlockCompression = args.threads if args.threads > 0 else cpu_count()
 		outFile = blockCompress(filePath, compressionLevel, args.keep, args.fix_padding, args.long, args.bs, outputDir, threadsToUseForBlockCompression)
@@ -71,15 +70,14 @@ def compress(filePath, outputDir, args, work, amountOfTastkQueued):
 			try:
 				verify(outFile, args.fix_padding, True, args.keep, None if args.quick_verify else filePath)
 			except VerificationException:
-				Print.error("[BAD VERIFY] {0}".format(outFile))
-				Print.error("[DELETE NSZ] {0}".format(outFile))
+				Print.error(100, "[BAD VERIFY] {0}".format(outFile))
+				Print.error(101, "[DELETE NSZ] {0}".format(outFile))
 				remove(outFile)
 				raise
 	else:
 		threadsToUseForSolidCompression = args.threads if args.threads > 0 else 3
 		work.put([filePath, compressionLevel, args.keep, args.fix_padding, args.long, outputDir, threadsToUseForSolidCompression, args.verify, args.quick_verify])
 		amountOfTastkQueued.increment()
-
 
 def decompress(filePath, outputDir, fixPadding, statusReportInfo = None):
 	NszDecompress(filePath, outputDir, fixPadding, statusReportInfo)
@@ -89,12 +87,22 @@ def verify(filePath, fixPadding, raiseVerificationException, raisePfs0Exception,
 
 err = []
 
+machineReadableOutput = False
+
 def main():
 	global err
+	global machineReadableOutput
+
 	try:
 		if len(argv) > 1:
+			# There are command line arguments so assume that the user wants to interact through the command line.
 			args = ParseArguments.parse()
+
+			# Does the user want machine readable output?
+			if (args.machine_readable):
+				machineReadableOutput = True
 		else:
+			# There are no command line arguments so assume that the user wants to open the GUI.
 			kivyConfigPathObj = Path.home().joinpath('.kivy').joinpath('config.ini')
 			if kivyConfigPathObj.exists():
 				kivyConfigPath = str(kivyConfigPathObj)
@@ -112,7 +120,7 @@ def main():
 			try:
 				from nsz.gui.NSZ_GUI import GUI
 			except ImportError:
-				Print.error("Failed to import the GUI - is it installed?")
+				Print.error(102, "Failed to import the GUI - is it installed?")
 				return
 			args = GUI().run()
 			if args == None:
@@ -121,16 +129,16 @@ def main():
 
 		if args.quick_verify:
 			args.verify = True
-		
+
 		if args.output:
 			argOutFolderToPharse = args.output
 			if not argOutFolderToPharse.endswith('/') and not argOutFolderToPharse.endswith('\\'):
 				argOutFolderToPharse += "/"
 			if not Path(argOutFolderToPharse).is_dir():
-				Print.error('Error: Output directory "{0}" does not exist!'.format(args.output))
+				Print.error(103, 'Error: Output directory "{0}" does not exist!'.format(args.output))
 				return
 		argOutFolder = Path(argOutFolderToPharse).resolve() if args.output else None
-		
+
 		Print.info('')
 		Print.info('             NSZ v4.6   ,;:;;,')
 		Print.info('                       ;;;;;')
@@ -141,7 +149,7 @@ def main():
 		Print.info('               `"_(  _/="`')
 		Print.info('                `"\'')
 		Print.info('')
-		
+
 		barManager = enlighten.get_manager()
 		poolManager = Manager()
 		statusReport = poolManager.list()
@@ -154,10 +162,10 @@ def main():
 		amountOfTastkQueued = Counter(poolManager, 0)
 		targetDictNsz = dict()
 		targetDictXcz = dict()
-		
+
 		if args.titlekeys:
 			extractTitlekeys(args.file)
-		
+
 		if args.extract:
 			for f_str in args.file:
 				for filePath in expandFiles(Path(f_str)):
@@ -175,7 +183,7 @@ def main():
 					container.close()
 
 		if args.undupe or args.undupe_dryrun:
-			undupe(args, argOutFolder);
+			undupe(args, argOutFolder)
 
 		if args.create:
 			Print.info('Creating "{0}"'.format(args.create))
@@ -213,25 +221,31 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error while compressing file: %s' % filePath)
+						Print.error(104, 'Error while compressing file: %s' % filePath)
 						err.append({"filename":filePath,"error":format_exc() })
-						print_exc()
-			
+						Print.exception()
+
 			bars = []
 			compressedSubBars = []
 			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 			parallelTasks = min(args.multi, amountOfTastkQueued.value())
 			if parallelTasks < 0:
 				parallelTasks = 4
+
+			# Start the compression tasks in parallel.
 			for i in range(parallelTasks):
 				statusReport.append([0, 0, 100, 'Compressing'])
 				p = Process(target=solidCompressTask, args=(work, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, i, problems))
 				p.start()
 				pool.append(p)
-			for i in range(parallelTasks):
-				bar = barManager.counter(total=100, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
-				compressedSubBars.append(bar.add_subcounter('green'))
-				bars.append(bar)
+
+			if machineReadableOutput == False:
+				# Create the progress bar(s).
+				for i in range(parallelTasks):
+					bar = barManager.counter(total=100, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
+					compressedSubBars.append(bar.add_subcounter('green'))
+					bars.append(bar)
+
 			#Ensures that all threads are started and compleaded before being requested to quit
 			while readyForWork.value() < parallelTasks:
 				sleep(0.2)
@@ -240,25 +254,30 @@ def main():
 				if not problems.empty():
 					err.append(problems.get())
 				pleaseNoPrint.increment()
-				for i in range(parallelTasks):
-					compressedRead, compressedWritten, total, currentStep = statusReport[i]
-					if bars[i].total != total:
-						bars[i].total = total//1048576
-					bars[i].count = compressedRead//1048576
-					compressedSubBars[i].count = compressedWritten//1048576
-					bars[i].desc = currentStep
-					bars[i].refresh()
+
+				# Show the progress bar only if the output is human readable.
+				if machineReadableOutput == False:
+					for i in range(parallelTasks):
+						compressedRead, compressedWritten, total, currentStep = statusReport[i]
+						if bars[i].total != total:
+							bars[i].total = total//1048576
+						bars[i].count = compressedRead//1048576
+						compressedSubBars[i].count = compressedWritten//1048576
+						bars[i].desc = currentStep
+						bars[i].refresh()
+
 				pleaseNoPrint.decrement()
 			pleaseKillYourself.increment()
 			for i in range(readyForWork.value()):
 				work.put(None)
-			
+
 			while readyForWork.value() > 0:
 				sleep(0.02)
-			
-			for i in range(parallelTasks):
-				bars[i].close(clear=True)
-			barManager.stop()
+
+			if machineReadableOutput == False:
+				for i in range(parallelTasks):
+					bars[i].close(clear=True)
+				barManager.stop()
 
 			for filePath in sourceFileToDelete:
 				if argOutFolder:
@@ -286,8 +305,7 @@ def main():
 						elif filePath.suffix == '.ncz':
 							outFile = Path(changeExtension(outFolder.joinpath(filePath.name), ".nca"))
 							if not args.overwrite and outFile.is_file():
-								Print.info('{0} with the same file name already exists in the output directory.\n'\
-								'If you want to overwrite it use the -w parameter!'.format(outFile.name))
+								Print.warning('A file with the same output name already exists.')
 								continue
 						decompress(filePath, outFolder, args.fix_padding)
 						if args.rm_source:
@@ -295,9 +313,9 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error while decompressing file: {0}'.format(filePath))
+						Print.error(105, 'Error while decompressing file: {0}'.format(filePath))
 						err.append({"filename":filePath, "error":format_exc()})
-						print_exc()
+						Print.exception()
 
 		if args.info:
 			for f_str in args.file:
@@ -319,20 +337,21 @@ def main():
 					except KeyboardInterrupt:
 						raise
 					except BaseException as e:
-						Print.error('Error while verifying file: {0}'.format(filePath))
+						Print.error(106, 'Error while verifying file: {0}'.format(filePath))
 						err.append({"filename":filePath,"error":format_exc()})
-						print_exc()
+						Print.exception()
 
 		if len(argv) == 1:
 			pass
 	except KeyboardInterrupt:
 		Print.info('Keyboard exception')
 	except BaseException as e:
+		Print.info('enableInfo: {0}'.format(str(Print.enableInfo)))
 		Print.info('nut exception: {0}'.format(str(e)))
 		raise
 	if err:
 		Print.info('\n\033[93m\033[1mSummary of errors which occurred while processing files:')
-		
+
 		for e in err:
 			if isinstance(e, VerificationFailed):
 				Print.info('\033[0mError while processing {0}: {1}'.format(e.in_file,e.exception))
@@ -341,18 +360,17 @@ def main():
 				Print.info(e["error"])
 
 		Print.info('\nDone!\n')
-		print()
-		print()
+		Print.info(' ')
+
 		if len(argv) <= 1:
-			input("Press Enter to exit...")	
+			input("Press Enter to exit...")
 		sys.exit(1)
-	
+
 	Print.info('\nDone!\n')
 	if len(argv) <= 1:
 		input("Press Enter to exit...")
 	sys.exit(0)
 	#breakpoint()
-
 
 if __name__ == '__main__':
 	freeze_support()
