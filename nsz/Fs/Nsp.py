@@ -369,13 +369,13 @@ class Nsp(Pfs0):
 				nca.header.setIsGameCard(targetValue)
 
 
-	def pack(self, files):
+	def pack(self, files, fix_padding):
 		if not self.path:
 			return False
 
 		Print.info('\tRepacking to NSP...')
 
-		hd = self.generateHeader(files)
+		hd = self.generateHeader(files, fix_padding)
 
 		totalSize = len(hd) + sum(os.path.getsize(file) for file in files)
 		if os.path.exists(self.path) and os.path.getsize(self.path) == totalSize:
@@ -405,10 +405,14 @@ class Nsp(Pfs0):
 		Print.info('\t\tRepacked to %s!' % outf.name)
 		outf.close()
 
-	def generateHeader(self, files):
+	def generateHeader(self, files, fix_padding):
 		filesNb = len(files)
 		stringTable = '\x00'.join(os.path.basename(file) for file in files)
 		headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
+		if fix_padding:
+			paddingSize = (16 - headerSize % 16) % 16
+			stringTable += '\x00' * paddingSize
+			headerSize = 0x10 + (filesNb)*0x18 + len(stringTable)
 
 		fileSizes = [os.path.getsize(file) for file in files]
 		fileOffsets = [sum(fileSizes[:n]) for n in range(filesNb)]
