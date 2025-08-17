@@ -189,7 +189,7 @@ def main():
 			Print.info('Creating "{0}"'.format(args.create))
 			nsp = Nsp.Nsp(None, None)
 			nsp.path = args.create
-			nsp.pack(args.file)
+			nsp.pack(args.file, args.fix_padding)
 
 		if args.C:
 			if args.verify and not args.quick_verify and not args.keep:
