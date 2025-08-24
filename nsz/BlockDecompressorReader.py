@@ -28,7 +28,10 @@ class BlockDecompressorReader:
 		if blockID >= len(self.CompressedBlockOffsetList) - 1:
 			if blockID >= len(self.CompressedBlockOffsetList):
 				raise EOFError("BlockID exceeds the amounts of compressed blocks in that file!")
-			decompressedBlockSize = self.BlockHeader.decompressedSize % self.BlockSize
+			remainder = self.BlockHeader.decompressedSize % self.BlockSize
+			# https://github.com/nicoboss/nsz/issues/210
+			if remainder > 0:
+				decompressedBlockSize = remainder
 		self.nspf.seek(self.CompressedBlockOffsetList[blockID])
 		if self.CompressedBlockSizeList[blockID] < decompressedBlockSize:
 			self.CurrentBlock = ZstdDecompressor().decompress(self.nspf.read(self.CompressedBlockSizeList[blockID]))
