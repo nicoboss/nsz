@@ -30,8 +30,8 @@ class Ivfc(File):
 		self.hash = None
 		super(Ivfc, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter)
 
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Ivfc, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only = False):
+		super(Ivfc, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 		self.magic = self.read(0x4)
 		self.magicNumber = self.readInt32()

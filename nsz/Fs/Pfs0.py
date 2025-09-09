@@ -230,8 +230,8 @@ class Pfs0(BaseFs):
 	def getFirstFileOffset(self):
 		return self.files[0].offset
 
-	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		r = super(Pfs0, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		r = super(Pfs0, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 		#self.setupCrypto()
 		#Print.info('cryptoType = ' + hex(self.cryptoType))
@@ -267,6 +267,9 @@ class Pfs0(BaseFs):
 
 			self.readInt32() # junk data
 
+			if meta_only and not 'cnmt' in name:
+				continue
+
 			f = Fs.factory(Path(name))
 
 			f._path = name
@@ -288,10 +291,10 @@ class Pfs0(BaseFs):
 		except:
 			pass
 
-		for i in range(fileCount):
-			if self.files[i] != ticket:
+		for file in self.files:
+			if file != ticket:
 				try:
-					self.files[i].open(None, None)
+					file.open(None, None)
 				except:
 					pass
 
