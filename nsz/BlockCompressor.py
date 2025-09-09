@@ -1,6 +1,6 @@
 import sys
 from os import remove
-from nsz.nut import Print
+from nsz.nut import Keys, Print
 from time import sleep
 from pathlib import Path
 from traceback import format_exc
@@ -20,6 +20,8 @@ else:
 
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, blockSize):
+	if not Keys.keys_loaded:
+		Keys.load_default()
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()

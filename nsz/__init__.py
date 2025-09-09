@@ -34,6 +34,8 @@ else:
     from nsz.ThreadSafeCounterSharedMemory import Counter
 
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id, problemQueue):
+	if not Keys.keys_loaded:
+		Keys.load_default()
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
