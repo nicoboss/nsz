@@ -11,8 +11,9 @@ keys = {}
 titleKeks = []
 keyAreaKeys = []
 loadedKeysFile = "non-existing prod.keys/keys.txt"
-keys_loaded = False
+keys_loaded = None
 loaded_keys_revisions = []
+incorrect_keys_revisions = []
 
 #This are NOT the keys but only a 4 bytes long checksum!
 #See https://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -126,12 +127,8 @@ def existsMasterKey(masterKeyIndex):
 	return 'master_key_{0:02x}'.format(masterKeyIndex) in keys
 
 def getMissingMasterKeys():
-	missing = []
-	existing_keys = [k for k in crc32_checksum.keys() if k.startswith('master_key')]
-	for k in existing_keys:
-		if k not in loaded_keys_revisions:
-			missing.append(k)
-	return missing
+	existing_keys = [k for k in crc32_checksum if k.startswith('master_key')]
+	return [k for k in existing_keys if k not in loaded_keys_revisions and k not in incorrect_keys_revisions]
 
 def load(fileName):
 	try:
@@ -139,7 +136,11 @@ def load(fileName):
 		global titleKeks
 		global loadedKeysFile
 		global keys_loaded
+		global loaded_keys_revisions
+		global incorrect_keys_revisions
 		loadedKeysFile = fileName
+		loaded_keys_revisions = []
+		incorrect_keys_revisions = []
 
 		with open(fileName, encoding="utf8") as f:
 			for line in f.readlines():
@@ -161,16 +162,24 @@ def load(fileName):
 		for i in range(32):
 			if not existsMasterKey(i):
 				continue
-			masterKey = getMasterKey(i)
-			crypto = aes128.AESECB(masterKey)
-			titleKeks.append(crypto.decrypt(titlekek_source).hex())
-			keyAreaKeys[i][0] = generateKek(key_area_key_application_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][1] = generateKek(key_area_key_ocean_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][2] = generateKek(key_area_key_system_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
-			loaded_keys_revisions.append('master_key_{0:02x}'.format(i))
+			try:
+				masterKey = getMasterKey(i)
+				crypto = aes128.AESECB(masterKey)
+				titleKeks.append(crypto.decrypt(titlekek_source).hex())
+				keyAreaKeys[i][0] = generateKek(key_area_key_application_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][1] = generateKek(key_area_key_ocean_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][2] = generateKek(key_area_key_system_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				loaded_keys_revisions.append('master_key_{0:02x}'.format(i))
+			except Exception as e:
+				Print.error(703, str(e))
+				incorrect_keys_revisions.append('master_key_{0:02x}'.format(i))
 
-		keys_loaded = True
+		if incorrect_keys_revisions:
+			keys_loaded = False
+		else:
+			keys_loaded = True
 		return keys_loaded
+
 	except BaseException as e:
 		Print.error(702, format_exc())
 		Print.error(702, str(e))
