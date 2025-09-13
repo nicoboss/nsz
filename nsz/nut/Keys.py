@@ -4,6 +4,7 @@ from nsz.nut import aes128
 from binascii import crc32, hexlify as hx, unhexlify as uhx
 from nsz.nut import Print
 from pathlib import Path
+import hashlib
 # from multiprocessing import *
 from multiprocessing.process import current_process
 
@@ -14,6 +15,7 @@ loadedKeysFile = "non-existing prod.keys/keys.txt"
 keys_loaded = None
 loaded_keys_revisions = []
 incorrect_keys_revisions = []
+loaded_keys_checksum = None
 
 #This are NOT the keys but only a 4 bytes long checksum!
 #See https://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -126,8 +128,11 @@ def getMasterKey(masterKeyIndex):
 def existsMasterKey(masterKeyIndex):
 	return 'master_key_{0:02x}'.format(masterKeyIndex) in keys
 
+def getExistingMasterKeys():
+	return [k for k in crc32_checksum if k.startswith('master_key')]
+
 def getMissingMasterKeys():
-	existing_keys = [k for k in crc32_checksum if k.startswith('master_key')]
+	existing_keys = getExistingMasterKeys()
 	return [k for k in existing_keys if k not in loaded_keys_revisions and k not in incorrect_keys_revisions]
 
 def load(fileName):
@@ -178,6 +183,9 @@ def load(fileName):
 			keys_loaded = False
 		else:
 			keys_loaded = True
+			global loaded_keys_checksum
+			with open(fileName, 'rb') as f:
+				loaded_keys_checksum = hashlib.sha256(f.read()).hexdigest()
 		return keys_loaded
 
 	except BaseException as e:
@@ -186,6 +194,15 @@ def load(fileName):
 
 		keys_loaded = False
 		return keys_loaded
+
+def getLoadedKeysChecksum():
+	return loaded_keys_checksum
+
+def getLoadedKeysRevisions():
+	return loaded_keys_revisions
+
+def getIncorrectKeysRevisions():
+	return incorrect_keys_revisions
 
 def load_default():
 	keyScriptPath = Path(sys.argv[0])
