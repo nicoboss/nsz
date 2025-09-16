@@ -143,6 +143,7 @@ def load(fileName):
 		global keys_loaded
 		global loaded_keys_revisions
 		global incorrect_keys_revisions
+		global loaded_keys_checksum
 		loadedKeysFile = fileName
 		loaded_keys_revisions = []
 		incorrect_keys_revisions = []
@@ -183,9 +184,9 @@ def load(fileName):
 			keys_loaded = False
 		else:
 			keys_loaded = True
-			global loaded_keys_checksum
-			with open(fileName, 'rb') as f:
-				loaded_keys_checksum = hashlib.sha256(f.read()).hexdigest()
+
+		with open(fileName, 'rb') as f:
+			loaded_keys_checksum = hashlib.sha256(f.read()).hexdigest()
 		return keys_loaded
 
 	except BaseException as e:
