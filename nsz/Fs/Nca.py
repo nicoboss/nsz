@@ -64,8 +64,8 @@ class NcaHeader(File):
 		
 		super(NcaHeader, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter)
 		
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(NcaHeader, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		super(NcaHeader, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 		self.signature1 = self.read(0x100)
 		self.signature2 = self.read(0x100)
@@ -208,8 +208,8 @@ class Nca(File):
 	def __getitem__(self, key):
 		return self.sectionFilesystems[key]
 
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		super(Nca, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 
 		self.header = NcaHeader()
 		self.partition(0x0, 0xC00, self.header, Fs.Type.Crypto.XTS, uhx(Keys.get('header_key')))

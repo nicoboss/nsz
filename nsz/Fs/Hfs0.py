@@ -112,8 +112,8 @@ class Hfs0(Pfs0):
 	def __init__(self, buffer, path = None, mode = None, cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
 		super(Hfs0, self).__init__(buffer, path, mode, cryptoType, cryptoKey, cryptoCounter)
 
-	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only = False):
+		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 
 		self.magic = self.read(0x4);
@@ -145,12 +145,14 @@ class Hfs0(Pfs0):
 
 			self.readInt32() # junk data
 
+			if meta_only and (name != 'secure' and not 'cnmt' in name):
+				continue
 			f = Fs.factory(Path(name))
 
 			f._path = name
 			f.offset = offset
 			f.size = size
-			file = self.partition(offset + headerSize, f.size, f)
+			file = self.partition(offset + headerSize, f.size, f, meta_only=meta_only)
 			self.files.append(file)
 
 			# add title keys to nut.Titles if we happen to see a ticket

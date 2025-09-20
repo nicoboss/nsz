@@ -25,8 +25,8 @@ class Rom(BaseFs):
 		else:
 			self.ivfc = None
 
-	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		r = super(Rom, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		r = super(Rom, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 
 
 	def printInfo(self, maxDepth = 3, indent = 0):

@@ -36,8 +36,8 @@ class Cnmt(File):
 		self.metaEntries = []
 
 
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Cnmt, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only = False):
+		super(Cnmt, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 
 		self.titleId = hx(self.read(8)[::-1]).decode()

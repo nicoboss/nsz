@@ -9,6 +9,7 @@ enableInfo = True
 enableError = True
 enableWarning = True
 enableDebug = False
+silent = False
 # Turning on machine output will convert all levels to JSON.
 machineReadableOutput = False
 lastProgress = ''
@@ -23,6 +24,9 @@ if len(argv) > 1:
 		machineReadableOutput = True
 
 def info(s, pleaseNoPrint = None):
+	if silent or not enableInfo:
+		return
+	
 	if pleaseNoPrint == None:
 		if machineReadableOutput == False:
 			sys.stdout.write(s + "\n")
@@ -36,18 +40,24 @@ def info(s, pleaseNoPrint = None):
 			pleaseNoPrint.decrement()
 
 def error(errorCode, s):
+	if silent or not enableError:
+		return
 	if machineReadableOutput:
 		s = json.dumps({"error": s, "errorCode": errorCode, "warning": False})
 
 	sys.stdout.write(s + "\n")
 
 def warning(s):
+	if silent or not enableWarning:
+		return
 	if machineReadableOutput:
 		s = json.dumps({"error": False, "warning": s})
 
 	sys.stdout.write(s + "\n")
 
 def debug(s):
+	if silent or not enableDebug:
+		return
 	if machineReadableOutput == False:
 		sys.stdout.write(s + "\n")
 

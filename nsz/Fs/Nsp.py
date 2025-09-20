@@ -194,8 +194,8 @@ class Nsp(Pfs0):
 	def getPath(self):
 		return self.path or ''
 
-	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Nsp, self).open(path or self.path, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		super(Nsp, self).open(path or self.path, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 
 		return True
 

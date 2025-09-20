@@ -4,6 +4,7 @@ from nsz.nut import aes128
 from binascii import crc32, hexlify as hx, unhexlify as uhx
 from nsz.nut import Print
 from pathlib import Path
+import hashlib
 # from multiprocessing import *
 from multiprocessing.process import current_process
 
@@ -11,6 +12,10 @@ keys = {}
 titleKeks = []
 keyAreaKeys = []
 loadedKeysFile = "non-existing prod.keys/keys.txt"
+keys_loaded = None
+loaded_keys_revisions = []
+incorrect_keys_revisions = []
+loaded_keys_checksum = None
 
 #This are NOT the keys but only a 4 bytes long checksum!
 #See https://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -123,12 +128,25 @@ def getMasterKey(masterKeyIndex):
 def existsMasterKey(masterKeyIndex):
 	return 'master_key_{0:02x}'.format(masterKeyIndex) in keys
 
+def getExistingMasterKeys():
+	return [k for k in crc32_checksum if k.startswith('master_key')]
+
+def getMissingMasterKeys():
+	existing_keys = getExistingMasterKeys()
+	return [k for k in existing_keys if k not in loaded_keys_revisions and k not in incorrect_keys_revisions]
+
 def load(fileName):
 	try:
 		global keyAreaKeys
 		global titleKeks
 		global loadedKeysFile
+		global keys_loaded
+		global loaded_keys_revisions
+		global incorrect_keys_revisions
+		global loaded_keys_checksum
 		loadedKeysFile = fileName
+		loaded_keys_revisions = []
+		incorrect_keys_revisions = []
 
 		with open(fileName, encoding="utf8") as f:
 			for line in f.readlines():
@@ -150,32 +168,69 @@ def load(fileName):
 		for i in range(32):
 			if not existsMasterKey(i):
 				continue
-			masterKey = getMasterKey(i)
-			crypto = aes128.AESECB(masterKey)
-			titleKeks.append(crypto.decrypt(titlekek_source).hex())
-			keyAreaKeys[i][0] = generateKek(key_area_key_application_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][1] = generateKek(key_area_key_ocean_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
-			keyAreaKeys[i][2] = generateKek(key_area_key_system_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+			try:
+				masterKey = getMasterKey(i)
+				crypto = aes128.AESECB(masterKey)
+				titleKeks.append(crypto.decrypt(titlekek_source).hex())
+				keyAreaKeys[i][0] = generateKek(key_area_key_application_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][1] = generateKek(key_area_key_ocean_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				keyAreaKeys[i][2] = generateKek(key_area_key_system_source, masterKey, aes_kek_generation_source, aes_key_generation_source)
+				loaded_keys_revisions.append('master_key_{0:02x}'.format(i))
+			except Exception as e:
+				Print.error(703, str(e))
+				incorrect_keys_revisions.append('master_key_{0:02x}'.format(i))
+
+		if incorrect_keys_revisions:
+			keys_loaded = False
+		else:
+			keys_loaded = True
+
+		with open(fileName, 'rb') as f:
+			loaded_keys_checksum = hashlib.sha256(f.read()).hexdigest()
+		return keys_loaded
+
 	except BaseException as e:
 		Print.error(702, format_exc())
 		Print.error(702, str(e))
 
+		keys_loaded = False
+		return keys_loaded
 
+def getLoadedKeysChecksum():
+	return loaded_keys_checksum
 
-keyScriptPath = Path(sys.argv[0])
-#While loop to get rid of things like C:\\Python37\\Scripts\\nsz.exe\\__main__.py
-while not keyScriptPath.is_dir():
-	keyScriptPath = keyScriptPath.parents[0]
-keypath = keyScriptPath.joinpath('keys.txt')
-dumpedKeys = Path.home().joinpath(".switch", "prod.keys")
-if keypath.is_file():
-	load(str(keypath))
-elif dumpedKeys.is_file():
-	load(str(dumpedKeys))
-else:
-	errorMsg = "{0} or {1} not found!\nPlease dump your keys using https://github.com/shchmue/Lockpick_RCM/releases".format(str(keypath), str(dumpedKeys))
-	Print.error(703, errorMsg)
-	if sys.stdin.isatty() and sys.stdout.isatty():
-	    input("Press Enter to exit...")
-	sys.exit(1)
+def getLoadedKeysRevisions():
+	return loaded_keys_revisions
 
+def getIncorrectKeysRevisions():
+	return incorrect_keys_revisions
+
+def load_default():
+	keyScriptPath = Path(sys.argv[0])
+	#While loop to get rid of things like C:\\Python37\\Scripts\\nsz.exe\\__main__.py
+	while not keyScriptPath.is_dir():
+		keyScriptPath = keyScriptPath.parents[0]
+	keyfiles = [
+		keyScriptPath.joinpath('prod.keys'),
+		keyScriptPath.joinpath('keys.txt'),
+		Path.home().joinpath(".switch", "prod.keys"),
+		Path.home().joinpath(".switch", "keys.txt"),
+	]
+
+	keys_loaded = False
+	for kf in keyfiles:
+		if kf.is_file():
+			keys_loaded = load(str(kf))
+			if keys_loaded == True:
+				break
+
+	if not keys_loaded:
+		errorMsg = ""
+		for kf in keyfiles:
+			if errorMsg:
+				errorMsg += "\nor "
+			errorMsg += f"{str(kf)}"
+		errorMsg += " not found\n\nPlease dump your keys using https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
+		errorMsg = "Failed to load default keys files:\n" + errorMsg
+		Print.error(703, errorMsg)
+	return keys_loaded

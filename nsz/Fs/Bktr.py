@@ -27,8 +27,8 @@ class Header(File):
 		self.buffer = None
 		super(Header, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter)
 
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Header, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only = False):
+		super(Header, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 
 		self.bktr_offset = self.readInt64()
@@ -125,8 +125,8 @@ class Bktr(Header):
 		super(Bktr, self).__init__(path, mode, cryptoType, cryptoKey, cryptoCounter, nca)
 		
 		
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Bktr, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only = False):
+		super(Bktr, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		
 		if self.bktr_size:
 			self.nca.seek(self.bktr_offset)

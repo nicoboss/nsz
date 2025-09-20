@@ -19,7 +19,8 @@ This will be the new home in case GitHub ever takes down nsz. Please bookmark it
 There are several ways the install this tool. You can find details on installation for all of them below.\
 \
 **You need to have a hactool compatible keys file in a suitable directory to use this tool**.\
-The keys file must be located available as `prod.keys`. You must legally obtain your keys!
+You must legally obtain your keys!  
+The keys file must be named `prod.keys` or `keys.txt`, and located in the `nsz` folder or in:
 
 | OS      | Location                 |
 | ------- | ------------------------ |

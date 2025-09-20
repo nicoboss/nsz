@@ -5,7 +5,7 @@ from sys import path
 from pathlib import Path
 
 from sys import argv
-from nsz.nut import Print
+from nsz.nut import Keys, Print
 from os import listdir, _exit, remove
 from time import sleep
 from nsz.Fs import Nsp, Hfs0, factory
@@ -34,6 +34,8 @@ else:
     from nsz.ThreadSafeCounterSharedMemory import Counter
 
 def solidCompressTask(in_queue, statusReport, readyForWork, pleaseNoPrint, pleaseKillYourself, id, problemQueue):
+	if not Keys.keys_loaded:
+		Keys.load_default()
 	while True:
 		readyForWork.increment()
 		item = in_queue.get()
@@ -162,6 +164,11 @@ def main():
 		amountOfTastkQueued = Counter(poolManager, 0)
 		targetDictNsz = dict()
 		targetDictXcz = dict()
+
+		# Verify correct keys can be used
+		keys_loaded = Keys.load_default()
+		if not keys_loaded:
+			raise Exception('Could not load keys file.')
 
 		if args.titlekeys:
 			extractTitlekeys(args.file)

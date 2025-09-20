@@ -28,8 +28,8 @@ class Ticket(File):
 		self.signatureSizes[Fs.Type.TicketSignature.RSA_2048_SHA256] = 0x100
 		self.signatureSizes[Fs.Type.TicketSignature.ECDSA_SHA256] = 0x3C
 
-	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		super(Ticket, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, file = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		super(Ticket, self).open(file, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 		self.rewind()
 		self.signatureType = self.readInt32()
 		try:

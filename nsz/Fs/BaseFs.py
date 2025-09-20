@@ -93,8 +93,8 @@ class BaseFs(File):
 		return (False if self.bktrSubsection is None else True) and self.bktrSubsection.isValid()
 
 
-	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1):
-		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter)
+	def open(self, path = None, mode = 'rb', cryptoType = -1, cryptoKey = -1, cryptoCounter = -1, meta_only=False):
+		r = super(BaseFs, self).open(path, mode, cryptoType, cryptoKey, cryptoCounter, meta_only)
 
 		if self.bktr1Buffer:
 			try:
