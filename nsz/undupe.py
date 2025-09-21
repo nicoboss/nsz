@@ -47,7 +47,7 @@ def undupe(args, argOutFolder):
 
 			if not args.undupe_prioritylist == "":
 				for file in list(version_value.reverse()):
-					if len(version_value) > 1 and not isOnWhitelisth(args, file) and re.match(args.undupe_prioritylist, file):
+					if len(version_value) > 1 and not isOnWhitelist(args, file) and re.match(args.undupe_prioritylist, file):
 						version_value.remove(file)
 						if args.undupe_dryrun:
 							Print.info("[DRYRUN] [DELETE] [PRIORITYLIST]: " + file)
