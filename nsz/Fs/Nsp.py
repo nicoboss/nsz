@@ -87,7 +87,7 @@ class Nsp(Pfs0):
 		if self.titleId in Titles.keys():
 			return Titles.get(self.titleId)
 
-		t = Title.Title()
+		t = Title()
 		t.setId(self.titleId)
 		Titles.data()[self.titleId] = t
 		return t
