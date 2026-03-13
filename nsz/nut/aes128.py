@@ -426,3 +426,27 @@ class AESECB:
 		num_pad = self.block_size - len(block)
 		right = (chr(num_pad) * num_pad).encode()
 		return block + right
+
+import platform as _platform
+
+if _platform.system() == 'Darwin':
+	try:
+		from nsz.nut import mac_crypto as _mac_crypto
+	except Exception:
+		_mac_crypto = None
+	else:
+		_PureAESCBC = AESCBC
+		_PureAESCTR = AESCTR
+		_PureAESXTS = AESXTS
+		_PureAESXTSN = AESXTSN
+		_PureAESECB = AESECB
+
+		AESCBC, AESCTR, AESXTS, AESXTSN, AESECB = _mac_crypto.build_darwin_overrides(
+			_PureAESCBC,
+			_PureAESCTR,
+			_PureAESXTS,
+			_PureAESXTSN,
+			_PureAESECB,
+			Counter.new,
+			uhx,
+		)
