@@ -243,7 +243,7 @@ def load_default():
 
     return keys_loaded
 
-def config_dirs() -> list[Path]:
+def config_dirs():
     dirs = [
         # legacy location first
         Path.home() / ".switch",
