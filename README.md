@@ -22,11 +22,11 @@ There are several ways the install this tool. You can find details on installati
 You must legally obtain your keys!  
 The keys file must be named `prod.keys` or `keys.txt`, and located in the `nsz` folder or in:
 
-| OS      | Location                 |
-| ------- | ------------------------ |
-| Linux   | `$HOME/.switch/`         |
-| macOS   | `$HOME/.switch/`         |
-| windows | `%USERPROFILE%/.switch/` |
+| OS      | Location                                                        |
+| ------- | --------------------------------------------------------------- |
+| Linux   | `$HOME/.switch/`, `$XDG_CONFIG_HOME/nsz/`, `$HOME/.config/nsz/` |
+| macOS   | `$HOME/.switch/`                                                |
+| windows | `%USERPROFILE%/.switch/`                                        |
 
 ### Windows Builds
 
