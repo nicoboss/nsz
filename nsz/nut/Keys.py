@@ -207,7 +207,6 @@ def getIncorrectKeysRevisions():
 	return incorrect_keys_revisions
 
 def load_default(customKeysPath = None):
-	keyScriptPath = Path(sys.argv[0]).resolve().parent
 	if customKeysPath:
 		customPath = Path(customKeysPath).expanduser()
 		if customPath.is_dir():
@@ -217,27 +216,12 @@ def load_default(customKeysPath = None):
 			]
 		else:
 			keyfiles = [customPath]
-	else:
-		keyfiles = [
-			keyScriptPath.joinpath('prod.keys'),
-			keyScriptPath.joinpath('keys.txt'),
-			Path.home().joinpath(".switch", "prod.keys"),
-			Path.home().joinpath(".switch", "keys.txt"),
-		]
 
-	if not keys_loaded:
-		errorMsg = ""
-		for kf in keyfiles:
-			if errorMsg:
-				errorMsg += "\nor "
-			errorMsg += f"{str(kf)}"
-		errorMsg += " not found\n\nPlease dump your keys using https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
-		if customKeysPath:
-			errorMsg = "Failed to load keys file(s) from --keys:\n" + errorMsg
-		else:
-			errorMsg = "Failed to load default keys files:\n" + errorMsg
-		Print.error(703, errorMsg)
-	return keys_loaded
+    keyScriptPath = Path(sys.argv[0]).resolve().parent
+    keyfiles = [
+        keyScriptPath / "prod.keys",
+        keyScriptPath / "keys.txt",
+    ]
 
     for d in config_dirs():
         keyfiles.extend([
@@ -254,17 +238,20 @@ def load_default(customKeysPath = None):
                 break
 
     if not keys_loaded:
-        errorMsg = "Failed to load default keys files:\n"
-
-        for i, kf in enumerate(keyfiles):
-            if i:
-                errorMsg += "\nor "
-            errorMsg += str(kf)
-
-        errorMsg += (
-            "\n\nPlease dump your keys using "
-            "https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
-        )
+		if customKeysPath:
+			errorMsg = "Failed to load keys file(s) from --keys:\n" + errorMsg
+		else:
+            errorMsg = "Failed to load default keys files:\n"
+    
+            for i, kf in enumerate(keyfiles):
+                if i:
+                    errorMsg += "\nor "
+                errorMsg += str(kf)
+    
+            errorMsg += (
+                "\n\nPlease dump your keys using "
+                "https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
+            )
         Print.error(703, errorMsg)
 
     return keys_loaded
