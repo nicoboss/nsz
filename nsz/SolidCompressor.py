@@ -102,7 +102,7 @@ def processContainer(readContainer, writeContainer, compressionLevel, keep, useL
 						decompressedBytes += len(buffer)
 						statusReport[id] = [nspf.tell(), f.tell(), nspf.size, 'Compressing']
 
-						Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell()})
+						Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell(), "step": "Compressing"})
 						sys.stdout.flush()
 					partitions[partNr].close()
 					partitions[partNr] = None

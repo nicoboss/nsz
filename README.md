@@ -28,6 +28,9 @@ The keys file must be named `prod.keys` or `keys.txt`, and located in the `nsz` 
 | macOS   | `$HOME/.switch/`                                                |
 | windows | `%USERPROFILE%/.switch/`                                        |
 
+You can also provide a custom keys path at runtime with `--keys /path/to/prod.keys` (or a directory containing `prod.keys` / `keys.txt`).
+For a compact terminal progress style, use `--minimal-output` to print only `<percentage>% <current step>`.
+
 ### Windows Builds
 
 You can also use the Windows binaries. They do not require any external libraries to be installed and can be run without installing anything. You can find the binaries in the [release](https://github.com/nicoboss/nsz/releases/) page.

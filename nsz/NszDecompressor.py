@@ -48,7 +48,7 @@ def verify(filePath, fixPadding, raiseVerificationException, raisePfs0Exception,
 		__decompressXcz(filePath, None, fixPadding, False, raiseVerificationException, raisePfs0Exception, originalFilePath, statusReportInfo, pleaseNoPrint)
 
 
-def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint):
+def __decompressContainer(readContainer, writeContainer, fileHashes, write, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint, nczStepLabel = None):
 	CHUNK_SZ = 0x100000
 	if write:
 		for nspf in readContainer:
@@ -88,9 +88,9 @@ def __decompressContainer(readContainer, writeContainer, fileHashes, write, rais
 			continue
 		newFileName = Path(nspf._path).stem + '.nca'
 		if write:
-			written, hexHash = __decompressNcz(nspf, writeContainer.get(newFileName), statusReportInfo, pleaseNoPrint)
+			written, hexHash = __decompressNcz(nspf, writeContainer.get(newFileName), statusReportInfo, pleaseNoPrint, nczStepLabel)
 		else:
-			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint)
+			written, hexHash = __decompressNcz(nspf, None, statusReportInfo, pleaseNoPrint, nczStepLabel)
 		if hasattr(nspf.f, 'ticketless'):
 			# This ticket conditional was added to prevent the following exception from occurring when processing a ticketless dump file:
 			# nut exception: Verification detected hash mismatch
@@ -124,12 +124,15 @@ def __getDecompressedNczSize(nspf):
 	return nca_size
 
 
-def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
+def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint, stepLabel = None):
 	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 	blockID = 0
 	nspf.seek(0)
 	header = nspf.read(UNCOMPRESSABLE_HEADER_SIZE)
-	currentStep = 'Decompress' if f != None else 'Verifying'
+	if stepLabel != None:
+		currentStep = stepLabel
+	else:
+		currentStep = 'Decompress' if f != None else 'Verifying'
 	if f != None:
 		start = f.tell()
 	magic = nspf.read(8)
@@ -158,8 +161,11 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 	hash = sha256()
 
 	if statusReportInfo == None:
-		BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
-		bar = enlighten.Counter(total=nca_size//1048576, desc='Decompress', unit="MiB", color='red', bar_format=BAR_FMT)
+		if not Print.isMinimalOutput():
+			BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
+			bar = enlighten.Counter(total=nca_size//1048576, desc='Decompress', unit="MiB", color='red', bar_format=BAR_FMT)
+		else:
+			Print.progress('Progress', {"sourceSize": nca_size, "processed": 0, "step": currentStep})
 	decompressedBytes = len(header)
 	decompressedBytesOld = decompressedBytes
 	if f != None:
@@ -168,8 +174,11 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 		statusReport, id = statusReportInfo
 		statusReport[id] = [len(header), 0, nca_size, currentStep]
 	else:
-		bar.count = decompressedBytes//1048576
-		bar.refresh()
+		if Print.isMinimalOutput():
+			Print.progress('Progress', {"sourceSize": nca_size, "processed": decompressedBytes, "step": currentStep})
+		else:
+			bar.count = decompressedBytes//1048576
+			bar.refresh()
 	hash.update(header)
 
 	firstSection = True
@@ -206,15 +215,22 @@ def __decompressNcz(nspf, f, statusReportInfo, pleaseNoPrint):
 				statusReport[id] = [statusReport[id][0]+chunkSz, statusReport[id][1], nca_size, currentStep]
 			elif decompressedBytes - decompressedBytesOld > 52428800: #Refresh every 50 MB
 				decompressedBytesOld = decompressedBytes
-				bar.count = decompressedBytes//1048576
-				bar.refresh()
+				if Print.isMinimalOutput():
+					Print.progress('Progress', {"sourceSize": nca_size, "processed": decompressedBytes, "step": currentStep})
+				else:
+					bar.count = decompressedBytes//1048576
+					bar.refresh()
 
 	if statusReportInfo == None:
-		bar.count = decompressedBytes//1048576
-		bar.close()
-		#Line break after closing the process bar is required to prevent
-		#the next output from being on the same line as the process bar
-		Print.info("\n")
+		if Print.isMinimalOutput():
+			Print.progress('Progress', {"sourceSize": nca_size, "processed": decompressedBytes, "step": currentStep})
+			Print.progress('Complete', {"filePath": str(nspf._path)})
+		else:
+			bar.count = decompressedBytes//1048576
+			bar.close()
+			#Line break after closing the process bar is required to prevent
+			#the next output from being on the same line as the process bar
+			Print.info("\n")
 	hexHash = hash.hexdigest()
 	if f != None:
 		end = f.tell()
@@ -234,19 +250,21 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 			outPath = filePathNsp if outputDir == None else str(Path(outputDir).joinpath(Path(filePathNsp).name))
 			Print.info('Decompressing %s -> %s' % (filePath, outPath), pleaseNoPrint)
 			with Pfs0.Pfs0Stream(container.getPaddedHeaderSize() if fixPadding else container.getFirstFileOffset(), None if fixPadding else container.getStringTableSize(), outPath) as nsp:
-				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint, 'Decompress')
 		else:
 			with Pfs0.Pfs0VerifyStream(container.getPaddedHeaderSize() if fixPadding else container.getFirstFileOffset(), None if fixPadding else container.getStringTableSize()) as nsp:
-				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint)
+				__decompressContainer(container, nsp, fileHashes, True, raiseVerificationException, raisePfs0Exception, statusReportInfo, pleaseNoPrint, 'Verifying')
 				Print.info("[NSP SHA256] " + nsp.getHash())
 				if originalFilePath != None:
 					originalContainer = factory(originalFilePath)
 					CHUNK_SZ = 0x100000
 					originalHash = sha256()
 					filesize = os.path.getsize(str(originalFilePath))
-					if statusReportInfo == None:
+					if statusReportInfo == None and not Print.isMinimalOutput():
 						BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 						bar = enlighten.Counter(total=filesize//CHUNK_SZ, desc='Verifying', unit="MiB", color='yellow', bar_format=BAR_FMT)
+					elif statusReportInfo == None and Print.isMinimalOutput():
+						Print.progress('Progress', {"sourceSize": filesize, "processed": 0, "step": "Verifying"})
 					blockCount = 0
 					with open(str(originalFilePath), 'rb') as f:
 						while True:
@@ -256,14 +274,19 @@ def __decompressNsz(filePath, outputDir, fixPadding, write, raiseVerificationExc
 								statusReport, id = statusReportInfo
 								statusReport[id] = [blockCount, 0, filesize, 'Verifying']
 							else:
-								bar.count = blockCount
-								bar.refresh()
+								if Print.isMinimalOutput():
+									Print.progress('Progress', {"sourceSize": filesize, "processed": min(blockCount * CHUNK_SZ, filesize), "step": "Verifying"})
+								else:
+									bar.count = blockCount
+									bar.refresh()
 							if not data:
 								break
 							originalHash.update(data)
 					originalHashHex = originalHash.hexdigest()
-					if statusReportInfo == None:
+					if statusReportInfo == None and not Print.isMinimalOutput():
 						bar.close()
+					elif statusReportInfo == None and Print.isMinimalOutput():
+						Print.progress('Complete', {"filePath": str(originalFilePath)})
 					Print.info("[NSP SHA256] " + originalHashHex)
 					if nsp.getHash() == originalHashHex:
 						Print.info("[VERIFIED]   NSP SHA256")

@@ -49,12 +49,15 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 	UNCOMPRESSABLE_HEADER_SIZE = 0x4000
 
 	machineReadableOutput = False
+	minimalOutput = False
 
 	args = ParseArguments.parse()
 
 	# Does the user want machine readable output?
 	if (args.machine_readable):
 		machineReadableOutput = True
+	if (args.minimal_output):
+		minimalOutput = True
 
 	if blockSizeExponent < 14 or blockSizeExponent > 32:
 		raise ValueError("Block size must be between 14 and 32")
@@ -131,7 +134,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 				decompressedBytes = UNCOMPRESSABLE_HEADER_SIZE
 				compressedBytes = f.tell()
 
-				if machineReadableOutput == False:
+				if machineReadableOutput == False and minimalOutput == False:
 					BAR_FMT = u'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} {unit} [{elapsed}<{eta}, {rate:.2f}{unit_pad}{unit}/s]'
 					bar = enlighten.Counter(total=nspf.size//1048576, desc='Compressing', unit='MiB', color='cyan', bar_format=BAR_FMT)
 					subBars = bar.add_subcounter('green', all_fields=True)
@@ -148,7 +151,7 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 				partNr = 0
 				decompressedBytesOld = nspf.tell()//1048576
 
-				if machineReadableOutput == False:
+				if machineReadableOutput == False and minimalOutput == False:
 					bar.count = nspf.tell()//1048576
 					subBars.count = f.tell()//1048576
 					bar.refresh()
@@ -183,18 +186,18 @@ def blockCompressContainer(readContainer, writeContainer, compressionLevel, keep
 					if decompressedBytes - decompressedBytesOld > 10485760: #Refresh every 10 MB
 						decompressedBytesOld = decompressedBytes
 
-						if machineReadableOutput == False:
+						if machineReadableOutput == False and minimalOutput == False:
 							bar.count = decompressedBytes//1048576
 							subBars.count = compressedBytes//1048576
 							bar.refresh()
 
-					Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell()})
+					Print.progress('LoadingIntoRAM', {"sourceSize": nspf.size, "processed": nspf.tell(), "step": "Compressing"})
 					sys.stdout.flush()
 				partitions[partNr].close()
 				partitions[partNr] = None
 				endPos = f.tell()
 
-				if machineReadableOutput == False:
+				if machineReadableOutput == False and minimalOutput == False:
 					bar.count = decompressedBytes//1048576
 					subBars.count = compressedBytes//1048576
 					bar.close()
