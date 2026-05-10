@@ -22,11 +22,11 @@ There are several ways the install this tool. You can find details on installati
 You must legally obtain your keys!  
 The keys file must be named `prod.keys` or `keys.txt`, and located in the `nsz` folder or in:
 
-| OS      | Location                 |
-| ------- | ------------------------ |
-| Linux   | `$HOME/.switch/`         |
-| macOS   | `$HOME/.switch/`         |
-| windows | `%USERPROFILE%/.switch/` |
+| OS      | Location                                                        |
+| ------- | --------------------------------------------------------------- |
+| Linux   | `$HOME/.switch/`, `$XDG_CONFIG_HOME/nsz/`, `$HOME/.config/nsz/` |
+| macOS   | `$HOME/.switch/`                                                |
+| windows | `%USERPROFILE%/.switch/`                                        |
 
 You can also provide a custom keys path at runtime with `--keys /path/to/prod.keys` (or a directory containing `prod.keys` / `keys.txt`).
 For a compact terminal progress style, use `--minimal-output` to print only `<percentage>% <current step>`.
@@ -63,6 +63,27 @@ Use the following command to install the console-only versions requirements:\
 
 Use the following command to install the GUI versions requirements:\
 `pip3 install -r requirements-gui.txt`
+
+## Docker Container
+
+NSZ is also available as a Docker container with multi-architecture support for easy deployment and usage without Python installation.
+
+The container provides:
+- **Multi-architecture support**: linux/amd64, linux/arm64, linux/arm/v7, linux/ppc64le
+- **Optimized size**: ~88MB Alpine-based image
+- **Easy Nintendo Switch keys mounting**
+- **Shell-like command usage**
+
+For complete Docker setup, build instructions, and usage examples, see [container/README.md](container/README.md).
+
+Quick example:
+```bash
+# Build for local testing
+make -C container build-single-arch
+
+# Use with your Nintendo Switch keys
+docker run --rm -v "$(pwd)":/data -v "$HOME/.switch/prod.keys":/root/.switch/prod.keys nsz-tool:latest game.nsp
+```
 
 ## Usage
 
@@ -263,4 +284,4 @@ Forum thread: <https://gbatemp.net/threads/nsz-homebrew-compatible-nsp-xci-compr
 
 SciresM for his hardware crypto functions; the blazing install speeds (50 MB/sec +) achieved here would not be possible without this.
 
-Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni, anthonyu, teknoraver, KWottrich, gabest11, siddhartha77, alucryd, seiya-git, drizzt, 16BitWonder, 2weak2live, thatch, maki-chan, pR0Ps, and clearmist.
+Thanks to our contributors: nicoboss, blawar, plato79, eXhumer, Taorni, anthonyu, teknoraver, KWottrich, gabest11, siddhartha77, alucryd, seiya-git, drizzt, 16BitWonder, 2weak2live, thatch, maki-chan, pR0Ps, clearmist and jparrill.
