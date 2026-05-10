@@ -217,56 +217,56 @@ def load_default(customKeysPath = None):
 		else:
 			keyfiles = [customPath]
 
-    keyScriptPath = Path(sys.argv[0]).resolve().parent
-    keyfiles = [
-        keyScriptPath / "prod.keys",
-        keyScriptPath / "keys.txt",
-    ]
+	keyScriptPath = Path(sys.argv[0]).resolve().parent
+	keyfiles = [
+		keyScriptPath / "prod.keys",
+		keyScriptPath / "keys.txt",
+	]
 
-    for d in config_dirs():
-        keyfiles.extend([
-            d / "prod.keys",
-            d / "keys.txt",
-        ])
+	for d in config_dirs():
+		keyfiles.extend([
+			d / "prod.keys",
+			d / "keys.txt",
+		])
 
-    keys_loaded = False
+	keys_loaded = False
 
-    for kf in keyfiles:
-        if kf.is_file():
-            keys_loaded = load(str(kf))
-            if keys_loaded:
-                break
+	for kf in keyfiles:
+		if kf.is_file():
+			keys_loaded = load(str(kf))
+			if keys_loaded:
+				break
 
-    if not keys_loaded:
+	if not keys_loaded:
 		if customKeysPath:
 			errorMsg = "Failed to load keys file(s) from --keys:\n" + errorMsg
 		else:
-            errorMsg = "Failed to load default keys files:\n"
-    
-            for i, kf in enumerate(keyfiles):
-                if i:
-                    errorMsg += "\nor "
-                errorMsg += str(kf)
-    
-            errorMsg += (
-                "\n\nPlease dump your keys using "
-                "https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
-            )
-        Print.error(703, errorMsg)
+			errorMsg = "Failed to load default keys files:\n"
+	
+			for i, kf in enumerate(keyfiles):
+				if i:
+					errorMsg += "\nor "
+				errorMsg += str(kf)
+	
+			errorMsg += (
+				"\n\nPlease dump your keys using "
+				"https://gbatemp.net/download/lockpick_rcm-1-9-15-fw-20-zoria.39129/\n"
+			)
+		Print.error(703, errorMsg)
 
-    return keys_loaded
+	return keys_loaded
 
 def config_dirs():
-    dirs = [
-        # legacy location first
-        Path.home() / ".switch",
-    ]
+	dirs = [
+		# legacy location first
+		Path.home() / ".switch",
+	]
 
-    # XDG Base Directory spec
-    xdg = os.environ.get("XDG_CONFIG_HOME")
-    if xdg:
-        dirs.append(Path(xdg) / "nsz")
-    else:
-        dirs.append(Path.home() / ".config" / "nsz")
+	# XDG Base Directory spec
+	xdg = os.environ.get("XDG_CONFIG_HOME")
+	if xdg:
+		dirs.append(Path(xdg) / "nsz")
+	else:
+		dirs.append(Path.home() / ".config" / "nsz")
 
-    return dirs
+	return dirs
