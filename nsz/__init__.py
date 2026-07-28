@@ -289,6 +289,7 @@ def _validate_output_mode(args):
 
     if minimalOutput:
         Print.enableInfo = False
+
     return True
 
 
@@ -351,7 +352,8 @@ def _handle_create(args):
     Print.info('Creating "{0}"'.format(args.create))
     nsp = Nsp.Nsp()
     nsp.path = args.create
-    nsp.pack(args.file, args.fix_padding)
+    if not nsp.pack(args.file, args.fix_padding, args.overwrite):
+        raise Exception
 
 
 def _adjust_compression_verify_flags(args):
@@ -362,7 +364,7 @@ def _adjust_compression_verify_flags(args):
         args.quick_verify = True
     if args.verify and not args.quick_verify and args.fix_padding:
         Print.info(
-            "Warning: --verify and --fix-padding are incompatible with each others. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.6.0."
+            "Warning: --verify and --fix-padding are incompatible with each other. For compatibility reasons --quick-verify will be automatically used instead to match the command line argument behavior prior to NSZ v4.6.0."
         )
         args.quick_verify = True
 
@@ -705,12 +707,13 @@ def main():
         args = _get_args()
         if args is None:
             return
+
         if not _validate_output_mode(args):
-            return
+            raise Exception("Invalid terminal output mode arguments.")
 
         argOutFolder, ok = _resolve_output_folder(args)
         if not ok:
-            return
+            raise Exception("Unable to open output directory.")
 
         _print_banner()
         Print.startHeartbeat()
