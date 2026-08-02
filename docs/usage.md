@@ -1,11 +1,12 @@
 # Command line parameters
 
 ```
-usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K] [-F] [-P] [-t THREADS] [-m MULTI] [-o [OUTPUT]] [-w]
-              [-r] [--rm-source] [-i] [--depth DEPTH] [-x] [--extractregex EXTRACTREGEX] [--titlekeys] [--undupe] [--undupe-dryrun]
-              [--undupe-rename] [--undupe-hardlink] [--undupe-prioritylist UNDUPE_PRIORITYLIST]
-              [--undupe-whitelist UNDUPE_WHITELIST] [--undupe-blacklist UNDUPE_BLACKLIST] [--undupe-old-versions] [-c CREATE]
-              [--machine-readable] [--minimal-output] [--keys KEYS]
+usage: nsz.py [-h] [-C] [-D] [-l LEVEL] [-L] [-B] [-S] [-s BS] [-V] [-Q] [-K] [-F] [-P] [-t THREADS]
+              [-m MULTI] [-o [OUTPUT]] [-w] [-r] [--rm-source] [-i] [--depth DEPTH] [-x]
+              [--extractregex EXTRACTREGEX] [--titlekeys] [--undupe] [--undupe-dryrun] [--undupe-rename]
+              [--undupe-hardlink] [--undupe-prioritylist UNDUPE_PRIORITYLIST]
+              [--undupe-whitelist UNDUPE_WHITELIST] [--undupe-blacklist UNDUPE_BLACKLIST]
+              [--undupe-old-versions] [-c CREATE] [--machine-readable] [--minimal-output] [--keys KEYS]
               [file ...]
 
 positional arguments:
@@ -15,55 +16,63 @@ options:
   -h, --help            show this help message and exit
   -C                    Compress NSP/XCI
   -D                    Decompress NSZ/XCZ/NCZ
-  -l, --level LEVEL     Compression Level: Trade-off between compression speed and compression ratio. Default: 18, Max: 22
+  -l, --level LEVEL     Compression Level: Trade-off between compression speed and compression ratio.
+                        Default: 18, Max: 22
   -L, --long            Enables zStandard long distance mode for even better compression
-  -B, --block           Use block compression option. This mode allows highly multi-threaded compression/decompression with random
-                        read access allowing compressed games to be played without decompression in the future however this comes
-                        with a slightly lower compression ratio cost. This is the default option for XCZ.
-  -S, --solid           Use solid compression option. Slightly higher compression ratio but won't allow for random read access.
-                        File compressed this way will never be mountable (have to be installed or decompressed first to run). This
-                        is the default option for NSZ.
+  -B, --block           Use block compression option. This mode allows highly multi-threaded
+                        compression/decompression with random read access allowing compressed games to be
+                        played without decompression in the future however this comes with a slightly lower
+                        compression ratio cost. This is the default option for XCZ.
+  -S, --solid           Use solid compression option. Slightly higher compression ratio but won't allow for
+                        random read access. File compressed this way will never be mountable (have to be
+                        installed or decompressed first to run). This is the default option for NSZ.
   -s, --bs BS           Block Size for random read access 2^x while x between 14 and 32. Default: 20 => 1 MB
-  -V, --verify          Verifies files after compression raising an unhandled exception on hash mismatch and verify existing NSP
-                        and NSZ files when given as parameter. Requires --keep when used during compression.
-  -Q, --quick-verify    Same as --verify but skips the NSP SHA256 hash verification and only verifies NCA hashes. Does not require
-                        --keep when used during compression.
-  -K, --keep            Keep all useless files and partitions during compression to allow bit-identical recreation
-  -F, --fix-padding     Fixes PFS0 padding to match the nxdumptool/no-intro standard. Incompatible with --verify so --quick-verify
-                        will be used instead.
+  -V, --verify          Verifies files after compression raising an unhandled exception on hash mismatch and
+                        verify existing NSP and NSZ files when given as parameter. Requires --keep when used
+                        during compression.
+  -Q, --quick-verify    Same as --verify but skips the NSP SHA256 hash verification and only verifies NCA
+                        hashes. Does not require --keep when used during compression.
+  -K, --keep            Keep all useless files and partitions during compression to allow bit-identical
+                        recreation
+  -F, --fix-padding     Fixes PFS0 padding to match the nxdumptool/no-intro standard. Incompatible with
+                        --verify so --quick-verify will be used instead.
   -P, --alwaysParseCnmt
                         Always extract TitleId/Version from Cnmt and never trust filenames
   -t, --threads THREADS
-                        Number of threads to compress with. Numbers < 1 corresponds to the number of logical CPU cores for block
-                        compression and 3 for solid compression
-  -m, --multi MULTI     Executes multiple compression tasks in parallel. Take a look at available RAM especially if compression
-                        level is over 18.
+                        Number of threads to compress with. Numbers < 1 corresponds to the number of logical
+                        CPU cores for block compression and 3 for solid compression
+  -m, --multi MULTI     Executes multiple compression tasks in parallel. Take a look at available RAM
+                        especially if compression level is over 18.
   -o, --output [OUTPUT]
                         Directory to save the output NSZ files
-  -w, --overwrite       Continues even if there already is a file with the same name or title id inside the output directory
+  -w, --overwrite       Continues even if there already is a file with the same name or title id inside the
+                        output directory
   -r, --rm-old-version  Removes older versions if found
-  --rm-source           Deletes source file/s after compressing/decompressing. It's recommended to only use this in combination
-                        with --verify
+  --rm-source           Deletes source file/s after compressing/decompressing. It's recommended to only use
+                        this in combination with --verify
   -i, --info            Show info about title or file
   --depth DEPTH         Max depth for file info and extraction
   -x, --extract         Extract a NSP/XCI/NSZ/XCZ/NSPZ
   --extractregex EXTRACTREGEX
-                        Regex specifying which files inside the container should be extracted. Example: "^.*\.(cert|tik)$"
-  --titlekeys           Extracts titlekeys from your NSP/NSZ files and adds missing keys to ./titlekeys.txt and JSON files inside
-                        ./titledb/ (obtainable from https://github.com/blawar/titledb).
-  --undupe              Deleted all duplicates (games with same ID and Version). The Files folder will get parsed in order so the
-                        later in the argument list the more likely the file is to be deleted
+                        Regex specifying which files inside the container should be extracted. Example:
+                        "^.*\.(cert|tik)$"
+  --titlekeys           Extracts titlekeys from your NSP/NSZ files and adds missing keys to ./titlekeys.txt
+                        and JSON files inside ./titledb/ (obtainable from https://github.com/blawar/titledb).
+  --undupe              Deleted all duplicates (games with same ID and Version). The Files folder will get
+                        parsed in order so the later in the argument list the more likely the file is to be
+                        deleted
   --undupe-dryrun       Shows what files would get deleted using --undupe
   --undupe-rename       Renames files to minimal standard: [TitleId][vVersion].nsz
   --undupe-hardlink     Hardlinks files to minimal standard: [TitleId][vVersion].nsz
   --undupe-prioritylist UNDUPE_PRIORITYLIST
-                        Regex specifying which duplicate deletion should be prioritized before following the normal deletion order.
-                        Example: "^.*\.(nsp|xci)$"
+                        Regex specifying which duplicate deletion should be prioritized before following the
+                        normal deletion order. Example: "^.*\.(nsp|xci)$"
   --undupe-whitelist UNDUPE_WHITELIST
-                        Regex specifying which duplicates should under no circumstances be deleted. Example: "^.*\.(nsz|xcz)$"
+                        Regex specifying which duplicates should under no circumstances be deleted. Example:
+                        "^.*\.(nsz|xcz)$"
   --undupe-blacklist UNDUPE_BLACKLIST
-                        Regex specifying which files should always be deleted - even if they are not even a duplicate! Be careful!
-                        Example: "^.*\.(nsp|xci)$"
+                        Regex specifying which files should always be deleted - even if they are not even a
+                        duplicate! Be careful! Example: "^.*\.(nsp|xci)$"
   --undupe-old-versions
                         Removes every old version as long there is a newer one of the same titleID.
   -c, --create CREATE   Inverse of --extract. Repacks files/folders to an NSP. Example: --create out.nsp .\in
