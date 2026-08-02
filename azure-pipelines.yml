@@ -9,7 +9,7 @@ pool:
 variables:
   testDir: 'C:\Users\Azure\.switch\tests'
 strategy:
-  maxParallel: 8
+  maxParallel: 4
   matrix:
     Python360:
       python.version: '3.6.0'
