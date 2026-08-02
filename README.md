@@ -110,7 +110,7 @@ If you are interested in reporting/fixing issues and contributing directly to th
 
 ## Mirrors
 
-* [https://gitlab.nicobosshard.ch/nicoboss/nsz](https://gitlab.nicobosshard.ch/nicoboss/nsz).
+* Swiss mirror: [https://gitlab.nicobosshard.ch/nicoboss/nsz](https://gitlab.nicobosshard.ch/nicoboss/nsz)
 
 The Swiss mirror will be the new home in case GitHub ever takes down this repository. Please bookmark it.
 
