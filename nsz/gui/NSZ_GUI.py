@@ -1,6 +1,7 @@
 from nsz.gui.GuiPath import getGuiPath
 from kivy.core.text import LabelBase, DEFAULT_FONT
 from kivy.app import App
+from kivy.config import Config
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
@@ -14,6 +15,38 @@ from nsz.gui.SettingScrollOptions import SettingScrollOptions
 from nsz.nut import Print
 from pathlib import Path
 import logging
+import sys
+import subprocess
+import ctypes
+
+def apply_dpi_scaling(config):
+    enable = int(config.get("DPI", "dpi_enable"))
+    auto = int(config.get("DPI", "dpi_auto"))
+    scale = float(config.get("DPI", "dpi_scale"))
+
+    if not enable:
+        return
+
+    if auto:
+        if sys.platform.startswith("linux"):
+            try:
+                out = subprocess.check_output(["xdpyinfo"]).decode()
+                for line in out.splitlines():
+                    if "resolution:" in line:
+                        dpi = int(line.split()[1].split("x")[0])
+                        scale = dpi / 96.0
+            except Exception:
+                pass
+
+        elif sys.platform == "win32":
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(2)
+                dpi = ctypes.windll.user32.GetDpiForSystem()
+                scale = dpi / 96.0
+            except Exception:
+                pass
+
+    Config.set("graphics", "display_scale", str(scale))
 
 try:
     from nsz.version import GUI_VERSION as GUI_TITLE_VERSION
@@ -96,6 +129,7 @@ class GUI(App):
             return None
 
     def build(self):
+        apply_dpi_scaling(self.config)
         realLevel = Logger.level
         # To hide the wrongly appearance of "[WARNING] Both Window.minimum_width
         # and Window.minimum_height must be bigger than 0 for the size restriction
@@ -157,6 +191,15 @@ class GUI(App):
                 "kivy_topmost": 1,
             },
         )
+        config.setdefaults(
+            "DPI",
+            {
+                "dpi_enable": 1,
+                "dpi_scale": 1.0,
+                "dpi_auto": 1,
+            },
+        )
+
 
     def build_settings(self, settings):
         settings.register_type("scrolloptions", SettingScrollOptions)
@@ -168,6 +211,9 @@ class GUI(App):
         )
         settings.add_json_panel(
             "Tools", self.config, getGuiPath("json/settings_tools.json")
+        )
+        settings.add_json_panel(
+            "DPI", self.config, getGuiPath("json/settings_dpi.json")
         )
 
     def on_config_change(self, config, section, key, value):

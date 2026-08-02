@@ -1,0 +1,23 @@
+[
+    {
+        "type": "bool",
+        "title": "Enable DPI Scaling",
+        "desc": "Turn on custom DPI scaling for high-resolution displays.",
+        "section": "DPI",
+        "key": "dpi_enable"
+    },
+    {
+        "type": "numeric",
+        "title": "Scale Factor",
+        "desc": "UI scale multiplier (1.0 = normal, 2.0 = double size).",
+        "section": "DPI",
+        "key": "dpi_scale"
+    },
+    {
+        "type": "bool",
+        "title": "Auto Detect DPI",
+        "desc": "Automatically detect DPI on Linux and Windows.",
+        "section": "DPI",
+        "key": "dpi_auto"
+    }
+]
