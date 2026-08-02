@@ -452,8 +452,13 @@ class Nsp(Pfs0):
                 )
                 nca.header.setIsGameCard(targetValue)
 
-    def pack(self, files, fix_padding):
+    def pack(self, files, fix_padding, overwrite):
         if not self.path:
+            Print.error(601, 'Error: No output path given to Nsp.pack function!')
+            return False
+
+        if os.path.isdir(self.path):
+            Print.error(602, 'Error: Output path "{0}" is a directory!'.format(self.path))
             return False
 
         Print.info("\tRepacking to NSP...")
@@ -461,9 +466,9 @@ class Nsp(Pfs0):
         hd = self.generateHeader(files, fix_padding)
 
         totalSize = len(hd) + sum(os.path.getsize(file) for file in files)
-        if os.path.exists(self.path) and os.path.getsize(self.path) == totalSize:
+        if (not overwrite) and os.path.exists(self.path) and os.path.getsize(self.path) == totalSize:
             Print.info("\t\tRepack %s is already complete!" % self.path)
-            return
+            return True
 
         useBar = not Print.isMinimalOutput() and not Print.machineReadableOutput
         t = (
@@ -496,6 +501,8 @@ class Nsp(Pfs0):
 
         Print.info("\t\tRepacked to %s!" % outf.name)
         outf.close()
+
+        return True
 
     def generateHeader(self, files, fix_padding):
         filesNb = len(files)

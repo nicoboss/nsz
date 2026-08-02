@@ -6,6 +6,8 @@ trigger:
 pool:
   name: default
   #vmImage: 'windows-latest'
+variables:
+  testDir: 'C:\Users\Azure\.switch\tests'
 strategy:
   maxParallel: 4
   matrix:
@@ -17,6 +19,14 @@ strategy:
       python.version: '3.7.6'
     Python383:
       python.version: '3.8.3'
+    #Python39:
+    #  python.version: '3.9'
+    #Python310x:
+    #  python.version: '3.10'
+    #Python311x:
+    #  python.version: '3.11'
+    #Python312x:
+    #  python.version: '3.12'
 steps:
 - task: UsePythonVersion@0
   inputs:
@@ -27,27 +37,180 @@ steps:
     python -m pip install --upgrade pip
     python -m pip install -r requirements.txt
   displayName: 'Install dependencies'
-  
+
+- script: |
+    for %%d in (out nsz_solid_out nsz_block_out nsp_from_solid_out nsp_from_block_out) do (
+      if exist "$(testDir)\%%d" rmdir /S /Q "$(testDir)\%%d"
+    )
+  displayName: 'Clean test outputs'
+
 - task: CmdLine@2
   inputs:
-    script: python nsz.py -D -V --keep -w -m 4 -t 4 -o C:\Users\Azure\.switch\tests\nsp_from_solid_out C:\Users\Azure\.switch\tests\nsz_solid
+    script: python nsz.py --info "$(testDir)\nsp"
     failOnStderr: true
-  displayName: 'Test NSZ solid decompression'
-  
+  displayName: 'Show NSP info'
+
 - task: CmdLine@2
   inputs:
-    script: python nsz.py -D -V --keep -w -m 4 -t 4 -o C:\Users\Azure\.switch\tests\nsp_from_block_out C:\Users\Azure\.switch\tests\nsz_block
+    script: python nsz.py --verify "$(testDir)\nsp"
     failOnStderr: true
-  displayName: 'Test NSZ block decompression'
-  
+  displayName: 'Verify NSP'
+
 - task: CmdLine@2
   inputs:
-    script: python nsz.py -C -V --keep -w -m 4 -t 4 -o C:\Users\Azure\.switch\tests\nsz_solid_out C:\Users\Azure\.switch\tests\nsp
+    script: python nsz.py --quick-verify "$(testDir)\nsp"
     failOnStderr: true
-  displayName: 'Test NSP solid compression'
-  
+  displayName: 'Quick-verify NSP'
+
 - task: CmdLine@2
   inputs:
-    script: python nsz.py -C -B -V --keep -w -m 4 -t 4 -o C:\Users\Azure\.switch\tests\nsz_block_out C:\Users\Azure\.switch\tests\nsp
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\default"
+      python nsz.py -C -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\default" "$(testDir)\nsp"
     failOnStderr: true
-  displayName: 'Test NSP block compression'
+  displayName: 'Test NSP solid compression (default level)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_solid\default"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_solid\default" "$(testDir)\nsz_solid"
+    failOnStderr: true
+  displayName: 'Test NSZ solid decompression (default level)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_block\default"
+      python nsz.py -C -B -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_block\default" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP block compression (default level)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_block\default"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_block\default" "$(testDir)\nsz_block"
+    failOnStderr: true
+  displayName: 'Test NSZ block decompression (default level)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\22"
+      python nsz.py -C --level 22 -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\22" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP solid compression (level 22)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_solid\22"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_solid\22" "$(testDir)\out\nsz_solid\22"
+    failOnStderr: true
+  displayName: 'Test NSZ solid decompression (level 22)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_block\22"
+      python nsz.py -C --level 22 -B -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_block\22" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP block compression (level 22)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_block\22"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_block\22" "$(testDir)\out\nsz_block\22"
+    failOnStderr: true
+  displayName: 'Test NSZ block decompression (level 22)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\long"
+      python nsz.py -C --long -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\long" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP solid compression (long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_solid\long"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_solid\long" "$(testDir)\out\nsz_solid\long"
+    failOnStderr: true
+  displayName: 'Test NSZ solid decompression (long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_block\long"
+      python nsz.py -C --long -B -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_block\long" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP block compression (long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_block\long"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_block\long" "$(testDir)\out\nsz_block\long"
+    failOnStderr: true
+  displayName: 'Test NSZ block decompression (long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\22long"
+      python nsz.py -C --level 22 --long -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\22long" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP solid compression (level 22, long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_from_solid\22long"
+      python nsz.py -D -V --keep -w -m 4 -t 4 -o "$(testDir)\out\nsp_from_solid\22long" "$(testDir)\out\nsz_solid\22long"
+    failOnStderr: true
+  displayName: 'Test NSZ solid decompression (level 22, long)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\quick"
+      python nsz.py -C --quick-verify --keep -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\quick" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP solid compression (quick-verify)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsz_solid\quickfixpadding"
+      python nsz.py -C --quick-verify --keep --fix-padding -w -m 4 -t 4 -o "$(testDir)\out\nsz_solid\quickfixpadding" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP solid compression (quick-verify, fix-padding)'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_extracted"
+      python nsz.py --extract -w -o "$(testDir)\out\nsp_extracted" "$(testDir)\nsp"
+    failOnStderr: true
+  displayName: 'Test NSP extraction'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir "$(testDir)\out\nsp_created"
+      for /d %%d in ("$(testDir)\out\nsp_extracted\*") do (
+        python nsz.py --create "$(testDir)\out\nsp_created\%%~nxd.nsp" "%%d"
+      )
+    failOnStderr: true
+  displayName: 'Test NSP creation'
+
+- script: |
+    for %%d in (out) do (
+      if exist "$(testDir)\%%d" rmdir /S /Q "$(testDir)\%%d"
+    )
+  displayName: 'Re-clean test outputs'
+  condition: always()
