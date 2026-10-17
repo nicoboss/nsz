@@ -31,6 +31,7 @@ class XciStream(BaseFile):
         self.gamecardFlags = 0
         self.packageId = 0
         self.validDataEndOffset = 0
+        self.reserved0x11C = bytes(4)
         self.gamecardInfo = b"\x00" * 0x10
 
         self.hfs0Offset = 0
@@ -132,7 +133,8 @@ class XciStream(BaseFile):
         self.writeInt8(self.gamecardHeaderVersion)
         self.writeInt8(self.gamecardFlags)
         self.writeInt64(self.packageId)
-        self.writeInt64(self.validDataEndOffset)
+        self.writeInt32(self.validDataEndOffset)
+        self.write(self.reserved0x11C)
         self.write(self.gamecardInfo)
 
         self.writeInt64(self.hfs0Offset)
@@ -256,6 +258,7 @@ class Xci(File):
         self.gamecardFlags = None
         self.packageId = None
         self.validDataEndOffset = None
+        self.reserved0x11C = None
         self.gamecardInfo = None
 
         self.hfs0Offset = None
@@ -301,7 +304,8 @@ class Xci(File):
         self.gamecardHeaderVersion = self.readInt8()
         self.gamecardFlags = self.readInt8()
         self.packageId = self.readInt64()
-        self.validDataEndOffset = self.readInt64()
+        self.validDataEndOffset = self.readInt32()
+        self.reserved0x11C = self.read(4)
         self.gamecardInfo = self.read(0x10)
 
         self.hfs0Offset = self.readInt64()
