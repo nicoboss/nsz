@@ -7,7 +7,11 @@ def sortedFs(nca):
 def isNcaPacked(nca):
     fs = sortedFs(nca)
     if len(fs) == 0:
-        return True
+        raise IOError(
+            "Could not read the sections of {0}, the title key may be missing".format(
+                nca._path
+            )
+        )
     next = fs[0].offset
 
     for i in range(len(fs)):
