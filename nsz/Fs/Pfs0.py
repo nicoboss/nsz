@@ -1,4 +1,5 @@
 from nsz.Fs.File import BaseFile
+from nsz.Fs.Ticket import Ticket
 from hashlib import sha256
 from nsz import Fs
 import os
@@ -313,20 +314,21 @@ class Pfs0(BaseFs):
                 self.partition(offset + self._headerSize, f.size, f, autoOpen=False)
             )
 
-        ticket = None
-
-        try:
-            ticket = self.ticket()
-            ticket.open(None, None)
-            # key = format(ticket.getTitleKeyBlock(), 'X').zfill(32)
-
-            if ticket.titleKey() != ("0" * 32):
-                Titles.get(ticket.titleId()).key = ticket.titleKey()
-        except Exception:
-            pass
+        # load the title key of every ticket, a multi-content nsp has one per title
+        tickets = []
+        for file in self.files:
+            if not isinstance(file, Ticket):
+                continue
+            try:
+                file.open(None, None)
+                if file.titleKey() != ("0" * 32):
+                    Titles.get(file.titleId()).key = file.titleKey()
+                tickets.append(file)
+            except Exception:
+                pass
 
         for file in self.files:
-            if file != ticket:
+            if file not in tickets:
                 try:
                     file.open(None, None)
                 except Exception:
