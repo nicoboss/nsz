@@ -64,6 +64,14 @@ def solidCompressTask(
     problemQueue,
     keysPath,
 ):
+    # On Windows, spawned worker processes don't inherit the parent's stdout/
+    # stderr text encoding (PYTHONIOENCODING is set in the environment, but
+    # each worker's own streams still default to the system's ANSI codepage).
+    # Force UTF-8 here so printing a filename with non-ASCII characters
+    # (accented Latin, Asian titles, etc.) can't crash this worker with a
+    # UnicodeEncodeError.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     if not Keys.keys_loaded:
         Keys.load_default(keysPath)
     while True:

@@ -15,6 +15,13 @@ else:
 
 
 def compressBlockTask(in_queue, out_list, readyForWork, pleaseKillYourself, blockSize):
+    # On Windows, spawned worker processes don't inherit the parent's stdout/
+    # stderr text encoding (PYTHONIOENCODING is set in the environment, but
+    # each worker's own streams still default to the system's ANSI codepage).
+    # Force UTF-8 here so this worker can't crash with a UnicodeEncodeError
+    # the moment it needs to print something outside that codepage.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     while True:
         readyForWork.increment()
         item = in_queue.get()
