@@ -90,7 +90,10 @@ def __decompressNcz(nspf, f):
     hash.update(header)
 
     if useBlockCompression:
-        pos = sections[0].offset
+        # The first section can start inside the NCA header (at 0xC00 in small
+        # NCAs), which was written already: its data in the block stream begins at
+        # the header's end
+        pos = max(sections[0].offset, nca_header_size)
         section_id = 0
         s = sections[section_id]
         block_size = 1 << block_header.blockSizeExponent
@@ -113,7 +116,10 @@ def __decompressNcz(nspf, f):
                 pos += part_size
     else:
         for s in sections:
-            i = s.offset
+            # The first section can start inside the NCA header (at 0xC00 in small
+            # NCAs), which was written already: its data in the stream begins at the
+            # header's end
+            i = max(s.offset, nca_header_size)
             crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
             end = s.offset + s.size
             while i < end:
