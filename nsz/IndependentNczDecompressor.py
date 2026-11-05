@@ -115,7 +115,10 @@ def __decompressNcz(nspf, f):
     hash.update(header)
 
     for s in sections:
-        i = s.offset
+        # The first section can start inside the NCA header (at 0xC00 in small
+        # NCAs), which was written already: its data in the stream begins at the
+        # header's end
+        i = max(s.offset, ncaHeaderSize)
         crypto = AESCTR(s.cryptoKey, s.cryptoCounter)
         end = s.offset + s.size
         while i < end:

@@ -277,6 +277,11 @@ def __getDecompressedNczSize(nspf):
     nca_size = INCOMPRESSIBLE_HEADER_SIZE
     for s in sections:
         nca_size += s.size
+    # The first section can start inside the uncompressed NCA header (at 0xC00 in
+    # small NCAs): those bytes are written once, as part of the header, so they
+    # must not be counted twice
+    if sections[0].offset < INCOMPRESSIBLE_HEADER_SIZE:
+        nca_size -= INCOMPRESSIBLE_HEADER_SIZE - sections[0].offset
     return nca_size
 
 
@@ -315,6 +320,11 @@ def __decompressNcz(
     nca_size = INCOMPRESSIBLE_HEADER_SIZE
     for s in sections:
         nca_size += s.size
+    # The first section can start inside the uncompressed NCA header (at 0xC00 in
+    # small NCAs): those bytes are written once, as part of the header, so they
+    # must not be counted twice
+    if sections[0].offset < INCOMPRESSIBLE_HEADER_SIZE:
+        nca_size -= INCOMPRESSIBLE_HEADER_SIZE - sections[0].offset
     pos = nspf.tell()
     blockMagic = nspf.read(8)
     nspf.seek(pos)
